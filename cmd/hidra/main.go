@@ -12,7 +12,8 @@ import (
 )
 
 type flagConfig struct {
-	testFile string
+	testFile   string
+	listenAddr string
 }
 
 // This mode is used for fast checking yaml
@@ -62,17 +63,21 @@ func main() {
 	cfg := flagConfig{}
 
 	// Initialize flags
-	var runnerMode, apiMode bool
+	var runnerMode, apiMode, testMode bool
 	flag.BoolVar(&apiMode, "api", false, "--api enable api mode in given hidra")
 	flag.BoolVar(&runnerMode, "runner", false, "--runner enable runner mode in given hidra")
-	flag.StringVar(&cfg.testFile, "testFile", "", "--testFile your-test-file-yaml")
+	flag.BoolVar(&testMode, "test", false, "--test enable test mode in given hidra")
+
+	flag.StringVar(&cfg.testFile, "file", "", "--file your-test-file-yaml")
+	flag.StringVar(&cfg.listenAddr, "listenAddr", "", "--listenAddr listen address")
+
 	flag.Parse()
 
 	if runnerMode {
 		runRunnerMode(&cfg)
 	} else if apiMode {
 		runApiMode(&cfg)
-	} else {
+	} else if testMode {
 		runTestMode(&cfg)
 	}
 }

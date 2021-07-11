@@ -23,4 +23,4 @@ jobs:
       - name: Test
         run: go test ./...
       - name: Test cmd execution
-        run: go run ./cmd/hidra/main.go --testFile ./examples/http_test.yaml
+        run: go run ./cmd/hidra/main.go --test --file ./examples/http_test.yaml
