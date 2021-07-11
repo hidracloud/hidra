@@ -19,6 +19,7 @@ type HttpScenario struct {
 	Response *http.Response
 	Body     string
 	Headers  map[string]string
+	Client   *http.Client
 }
 
 // Set user agent
@@ -46,24 +47,30 @@ func (h *HttpScenario) addHttpHeader(c map[string]string) error {
 // Send a request depends of the method
 func (h *HttpScenario) requestByMethod(c map[string]string) error {
 	var err error
-	switch h.Method {
-	case "get":
-		h.Response, err = http.Get(h.Url)
-	case "post":
-		if _, ok := c["content-type"]; !ok {
-			return fmt.Errorf("content-type parameter missing but needed for post")
-		}
 
-		if _, ok := c["body"]; !ok {
-			return fmt.Errorf("body parameter missing but needed for post")
-		}
+	body := ""
 
-		h.Response, err = http.Post(h.Url, c["content-type"], strings.NewReader(c["body"]))
+	if _, ok := c["body"]; ok {
+		body = c["body"]
 	}
+
+	req, err := http.NewRequest(h.Method, h.Url, strings.NewReader(body))
 
 	if err != nil {
 		return err
 	}
+
+	for k, v := range h.Headers {
+		req.Header.Set(k, v)
+	}
+
+	resp, err := h.Client.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	h.Response = resp
 
 	b, err := ioutil.ReadAll(h.Response.Body)
 
@@ -86,10 +93,10 @@ func (h *HttpScenario) request(c map[string]string) error {
 		return fmt.Errorf("url parameter missing")
 	}
 
-	h.Method = "get"
+	h.Method = "GET"
 
 	if _, ok = c["method"]; ok {
-		h.Method = strings.ToLower(c["method"])
+		h.Method = strings.ToUpper(c["method"])
 	}
 
 	err = h.requestByMethod(c)
@@ -145,6 +152,8 @@ func (h *HttpScenario) Init() {
 
 	h.Headers = make(map[string]string)
 	h.Headers["User-Agent"] = "hidra/monitoring"
+
+	h.Client = &http.Client{}
 
 	h.RegisterStep("request", h.request)
 	h.RegisterStep("statusCodeShouldBe", h.statusCodeShouldBe)
