@@ -12,8 +12,7 @@ import (
 )
 
 type flagConfig struct {
-	hidraMode int
-	testFile  string
+	testFile string
 }
 
 // This mode is used for fast checking yaml
@@ -50,18 +49,30 @@ func runTestMode(cfg *flagConfig) {
 
 }
 
+func runRunnerMode(cfg *flagConfig) {
+	log.Println("Running hidra in agent mode")
+}
+
+func runApiMode(cfg *flagConfig) {
+	log.Println("Running hidra in api mode")
+}
+
 func main() {
 	// Start default configuration
-	cfg := flagConfig{
-		hidraMode: 0,
-	}
+	cfg := flagConfig{}
 
 	// Initialize flags
+	var runnerMode, apiMode bool
+	flag.BoolVar(&apiMode, "api", false, "--api enable api mode in given hidra")
+	flag.BoolVar(&runnerMode, "runner", false, "--runner enable runner mode in given hidra")
 	flag.StringVar(&cfg.testFile, "testFile", "", "--testFile your-test-file-yaml")
 	flag.Parse()
 
-	// Run hidra in test mode, for testing yaml
-	if cfg.hidraMode == 0 {
+	if runnerMode {
+		runRunnerMode(&cfg)
+	} else if apiMode {
+		runApiMode(&cfg)
+	} else {
 		runTestMode(&cfg)
 	}
 }
