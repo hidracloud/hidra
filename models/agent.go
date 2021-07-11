@@ -40,6 +40,10 @@ func VerifyRegisterAgentToken(tokenString string) (jwt.Claims, error) {
 	return token.Claims, err
 }
 
+func CreateAgent(host, secret string, port uint, tags map[string]string) error {
+	return nil
+}
+
 func AuthRegisterAgentMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

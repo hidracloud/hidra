@@ -53,7 +53,7 @@ func runTestMode(cfg *flagConfig) {
 
 }
 
-func runRunnerMode(cfg *flagConfig) {
+func runAgentMode(cfg *flagConfig) {
 	log.Println("Running hidra in agent mode")
 }
 
@@ -69,9 +69,9 @@ func main() {
 	cfg := flagConfig{}
 
 	// Initialize flags
-	var runnerMode, apiMode, testMode bool
+	var agentMode, apiMode, testMode bool
 	flag.BoolVar(&apiMode, "api", false, "--api enable api mode in given hidra")
-	flag.BoolVar(&runnerMode, "runner", false, "--runner enable runner mode in given hidra")
+	flag.BoolVar(&agentMode, "agent", false, "--agent enable agent mode in given hidra")
 	flag.BoolVar(&testMode, "test", false, "--test enable test mode in given hidra")
 	flag.StringVar(&cfg.configFile, "config", "", "--config your configuration")
 	flag.StringVar(&cfg.testFile, "file", "", "--file your-test-file-yaml")
@@ -79,8 +79,8 @@ func main() {
 
 	flag.Parse()
 
-	if runnerMode {
-		runRunnerMode(&cfg)
+	if agentMode {
+		runAgentMode(&cfg)
 	} else if apiMode {
 		runApiMode(&cfg)
 	} else if testMode {

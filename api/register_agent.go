@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/JoseCarlosGarcia95/hidra/models"
 	"github.com/JoseCarlosGarcia95/hidra/utils"
 )
 
@@ -29,6 +30,14 @@ func (a *API) RegisterAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	registerAgentResponse.Secret = utils.RandString(128)
+	agentSecret := utils.RandString(256)
+	err = models.CreateAgent(registerAgentRequest.Host, agentSecret, registerAgentRequest.Port, registerAgentRequest.Tags)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	registerAgentResponse.Secret = agentSecret
+
 	json.NewEncoder(w).Encode(registerAgentResponse)
 }
