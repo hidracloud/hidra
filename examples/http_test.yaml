@@ -1,0 +1,19 @@
+name: http_basic_example
+scenarios:
+  - name: http_test_example
+    description: Test that google.com return HTTP 200
+    kind: http
+    steps:
+      - type: request
+        params:
+          url: 'https://www.google.com/'
+      - type: statusCodeShouldBe
+        params:
+          statusCode: '200'
+      - type: bodyShouldContain
+        params:
+          search: google
+      - type: bodyShouldContain
+        params:
+          search: aebfou3rfbro3b3oon
+        negate: true
