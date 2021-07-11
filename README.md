@@ -1,5 +1,5 @@
 <p align="center">
-![hidra logo](https://github.com/JoseCarlosGarcia95/hidra/blob/main/logo.png?raw=true)
+![hidra logo](https://github.com/JoseCarlosGarcia95/hidra/blob/main/docs/logo.png?raw=true)
 
 # hidra
 </p>
