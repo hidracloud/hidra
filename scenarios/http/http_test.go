@@ -68,7 +68,7 @@ func TestHttpRequestTestGoogle(t *testing.T) {
 	}
 
 	params = make(map[string]string)
-	params["url"] = "https://www.google.com"
+	params["url"] = "https://example.org/"
 	err = h.RunStep("request", params)
 
 	if err != nil {
@@ -92,7 +92,7 @@ func TestHttpRequestTestGoogle(t *testing.T) {
 	}
 
 	params = make(map[string]string)
-	params["search"] = "google"
+	params["search"] = "example"
 	err = h.RunStep("bodyShouldContain", params)
 
 	if err != nil {

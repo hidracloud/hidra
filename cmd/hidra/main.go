@@ -40,6 +40,11 @@ func runTestMode(cfg *flagConfig) {
 
 	for _, s := range slist.Scenarios {
 		m := scenarios.RunScenario(s)
+
+		if m.Error != nil {
+			log.Fatal(m.Error)
+		}
+
 		scenarios.PrettyPrintScenarioMetrics(m)
 	}
 
