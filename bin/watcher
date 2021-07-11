@@ -1,0 +1,2 @@
+#!/bin/bash
+nodemon --exec go run cmd/hidra/main.go --api --signal SIGTERM

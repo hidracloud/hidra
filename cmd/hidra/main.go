@@ -6,14 +6,17 @@ import (
 	"log"
 	"os"
 
+	"github.com/JoseCarlosGarcia95/hidra/api"
 	"github.com/JoseCarlosGarcia95/hidra/models"
 	"github.com/JoseCarlosGarcia95/hidra/scenarios"
 	_ "github.com/JoseCarlosGarcia95/hidra/scenarios/all"
+	"github.com/joho/godotenv"
 )
 
 type flagConfig struct {
 	testFile   string
 	listenAddr string
+	configFile string
 }
 
 // This mode is used for fast checking yaml
@@ -56,9 +59,12 @@ func runRunnerMode(cfg *flagConfig) {
 
 func runApiMode(cfg *flagConfig) {
 	log.Println("Running hidra in api mode")
+	api.StartApi(cfg.listenAddr)
 }
 
 func main() {
+	godotenv.Load()
+
 	// Start default configuration
 	cfg := flagConfig{}
 
@@ -67,9 +73,9 @@ func main() {
 	flag.BoolVar(&apiMode, "api", false, "--api enable api mode in given hidra")
 	flag.BoolVar(&runnerMode, "runner", false, "--runner enable runner mode in given hidra")
 	flag.BoolVar(&testMode, "test", false, "--test enable test mode in given hidra")
-
+	flag.StringVar(&cfg.configFile, "config", "", "--config your configuration")
 	flag.StringVar(&cfg.testFile, "file", "", "--file your-test-file-yaml")
-	flag.StringVar(&cfg.listenAddr, "listenAddr", "", "--listenAddr listen address")
+	flag.StringVar(&cfg.listenAddr, "listenAddr", ":8080", "--listenAddr listen address")
 
 	flag.Parse()
 
