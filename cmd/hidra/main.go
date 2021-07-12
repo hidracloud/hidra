@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/JoseCarlosGarcia95/hidra/agent"
 	"github.com/JoseCarlosGarcia95/hidra/api"
 	"github.com/JoseCarlosGarcia95/hidra/models"
 	"github.com/JoseCarlosGarcia95/hidra/scenarios"
@@ -14,9 +15,12 @@ import (
 )
 
 type flagConfig struct {
-	testFile   string
-	listenAddr string
-	configFile string
+	testFile    string
+	listenAddr  string
+	configFile  string
+	agentSecret string
+	apiEndpoint string
+	dataDir     string
 }
 
 // This mode is used for fast checking yaml
@@ -55,6 +59,7 @@ func runTestMode(cfg *flagConfig) {
 
 func runAgentMode(cfg *flagConfig) {
 	log.Println("Running hidra in agent mode")
+	agent.StartAgent(cfg.apiEndpoint, cfg.agentSecret, cfg.dataDir)
 }
 
 func runApiMode(cfg *flagConfig) {
@@ -75,7 +80,10 @@ func main() {
 	flag.BoolVar(&testMode, "test", false, "--test enable test mode in given hidra")
 	flag.StringVar(&cfg.configFile, "config", "", "--config your configuration")
 	flag.StringVar(&cfg.testFile, "file", "", "--file your-test-file-yaml")
-	flag.StringVar(&cfg.listenAddr, "listenAddr", ":8080", "--listenAddr listen address")
+	flag.StringVar(&cfg.listenAddr, "listen-addr", ":8080", "--listen-addr listen address")
+	flag.StringVar(&cfg.agentSecret, "agent-secret", "", "--agent-secret for registering this agent")
+	flag.StringVar(&cfg.apiEndpoint, "api-url", "", "--api-url where is api url?")
+	flag.StringVar(&cfg.dataDir, "data-dir", "/tmp", "--data-dir where you want to store agent data?")
 
 	flag.Parse()
 

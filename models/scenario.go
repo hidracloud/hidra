@@ -72,10 +72,12 @@ func (s *Scenario) RegisterStep(name string, step stepFn) {
 // Read scenarios pointer from yaml
 func ReadScenariosYAML(data []byte) (*Scenarios, error) {
 	scenarios := Scenarios{}
+
 	err := yaml.Unmarshal([]byte(data), &scenarios)
 
 	if err != nil {
 		return nil, err
 	}
+
 	return &scenarios, nil
 }

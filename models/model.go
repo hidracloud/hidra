@@ -28,6 +28,7 @@ func init() {
 	database.ORM.AutoMigrate(&Permission{})
 	database.ORM.AutoMigrate(&Agent{})
 	database.ORM.AutoMigrate(&AgentTag{})
+	database.ORM.AutoMigrate(&Sample{})
 
 	setupDB()
 }

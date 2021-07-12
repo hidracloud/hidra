@@ -9,8 +9,6 @@ import (
 )
 
 type RegisterAgentRequest struct {
-	Host string
-	Port uint
 	Tags map[string]string
 }
 
@@ -31,7 +29,8 @@ func (a *API) RegisterAgent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	agentSecret := utils.RandString(256)
-	err = models.CreateAgent(registerAgentRequest.Host, agentSecret, registerAgentRequest.Port, registerAgentRequest.Tags)
+
+	err = models.CreateAgent(agentSecret, registerAgentRequest.Tags)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
