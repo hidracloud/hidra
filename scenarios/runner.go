@@ -21,11 +21,6 @@ func RunScenario(s models.Scenario) *models.ScenarioMetric {
 	metric.StartDate = time.Now()
 
 	for _, step := range s.Steps {
-		log.Printf("[%s] Running %s\n", s.Name, step.Type)
-		for k, v := range step.Params {
-			log.Printf("[%s]   |_ %s: %s\n", s.Name, k, v)
-		}
-
 		smetric := models.StepMetric{}
 		smetric.Step = step
 		smetric.StartDate = time.Now()

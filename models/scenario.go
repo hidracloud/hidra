@@ -38,12 +38,14 @@ type ScenarioMetric struct {
 	EndDate     time.Time
 	StepMetrics []*StepMetric
 	Error       error
+	ErrorString string
 }
 
 // Define a set of scenarios
 type Scenarios struct {
-	Name      string
-	Scenarios []Scenario
+	Name           string
+	Scenarios      []Scenario
+	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
 }
 
 // Define scenario interface

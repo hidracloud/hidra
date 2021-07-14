@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"time"
 
 	"github.com/JoseCarlosGarcia95/hidra/database"
 	uuid "github.com/satori/go.uuid"
@@ -17,6 +18,25 @@ type Sample struct {
 	Owner      User      `gorm:"foreignKey:OwnerId" json:"-"`
 	SampleData []byte    `json:"-"`
 	Checksum   string
+}
+
+type SampleStepMetric struct {
+	gorm.Model     `json:"-"`
+	ID             uuid.UUID    `gorm:"primaryKey;type:char(36);"`
+	SampleMetricId uuid.UUID    `json:"-"`
+	SampleMetric   SampleMetric `gorm:"foreignKey:SampleMetricId" json:"-"`
+	StartDate      time.Time
+	EndDate        time.Time
+}
+
+type SampleMetric struct {
+	gorm.Model `json:"-"`
+	ID         uuid.UUID `gorm:"primaryKey;type:char(36);"`
+	SampleId   uuid.UUID `json:"-"`
+	Sample     Sample    `gorm:"foreignKey:SampleId" json:"-"`
+	StartDate  time.Time
+	EndDate    time.Time
+	Error      string
 }
 
 func GetSamples() ([]Sample, error) {
@@ -36,6 +56,35 @@ func GetSampleById(id string) (*Sample, error) {
 		return nil, result.Error
 	}
 	return &sample, nil
+}
+
+func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric) error {
+	sampleMetric := SampleMetric{
+		ID:        uuid.NewV4(),
+		Sample:    *s,
+		StartDate: scenarioMetric.StartDate,
+		EndDate:   scenarioMetric.EndDate,
+		Error:     scenarioMetric.ErrorString,
+	}
+
+	if result := database.ORM.Create(&sampleMetric); result.Error != nil {
+		return result.Error
+	}
+
+	for _, step := range scenarioMetric.StepMetrics {
+		sampleStepMetric := SampleStepMetric{
+			ID:           uuid.NewV4(),
+			StartDate:    step.StartDate,
+			EndDate:      step.EndDate,
+			SampleMetric: sampleMetric,
+		}
+
+		if result := database.ORM.Create(&sampleStepMetric); result.Error != nil {
+			return result.Error
+		}
+	}
+
+	return nil
 }
 
 func RegisterSample(name string, sampleData []byte, user *User) error {
