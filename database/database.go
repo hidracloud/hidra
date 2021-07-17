@@ -1,3 +1,4 @@
+// Represent a database connection
 package database
 
 import (

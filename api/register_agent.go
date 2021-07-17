@@ -16,6 +16,7 @@ type RegisterAgentResponse struct {
 	Secret string
 }
 
+// Register a new agent, and generate a secret.
 func (a *API) RegisterAgent(w http.ResponseWriter, r *http.Request) {
 	var registerAgentRequest RegisterAgentRequest
 	var registerAgentResponse RegisterAgentResponse

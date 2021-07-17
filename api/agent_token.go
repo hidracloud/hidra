@@ -7,11 +7,12 @@ import (
 	"github.com/JoseCarlosGarcia95/hidra/models"
 )
 
-// Response for ping req
+// Response for agent token req
 type AgentTokenResponse struct {
 	AgentToken string
 }
 
+// Generate a temporal agent token
 func (a *API) AgentToken(w http.ResponseWriter, r *http.Request) {
 	user := models.GetLoggedUser(r)
 

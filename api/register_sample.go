@@ -8,6 +8,7 @@ import (
 	"github.com/JoseCarlosGarcia95/hidra/models"
 )
 
+// Generate a new sample
 func (a *API) RegisterSample(w http.ResponseWriter, r *http.Request) {
 	user := models.GetLoggedUser(r)
 

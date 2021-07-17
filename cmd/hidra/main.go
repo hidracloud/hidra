@@ -1,3 +1,4 @@
+// Represent essential entrypoint for hidra
 package main
 
 import (

@@ -15,6 +15,7 @@ import (
 
 const PASSWORD_COST int = 4
 
+// Represent user
 type User struct {
 	gorm.Model
 	ID       uuid.UUID `gorm:"primaryKey;type:char(36);"`
@@ -22,6 +23,7 @@ type User struct {
 	Password []byte    `json:"-"`
 }
 
+// Get one user given an email
 func GetUserByEmail(email string) *User {
 	var user User
 	database.ORM.First(&user, "email = ?", email)
@@ -29,13 +31,15 @@ func GetUserByEmail(email string) *User {
 	return &user
 }
 
+// Get user by id
 func GetUserById(id string) *User {
 	var user User
 	database.ORM.First(&user, "id = ?", id)
 	return &user
 }
 
-func CreateUser(email, password string, rootAccount uint) (*User, error) {
+// Create a new username
+func CreateUser(email, password string) (*User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), PASSWORD_COST)
 
 	if err != nil {
@@ -51,6 +55,7 @@ func CreateUser(email, password string, rootAccount uint) (*User, error) {
 	return &newUser, nil
 }
 
+// Generate a new login token
 func CreateUserToken(user *User) (string, error) {
 	var err error
 
@@ -67,10 +72,12 @@ func CreateUserToken(user *User) (string, error) {
 	return token, nil
 }
 
+// Return user by http header
 func GetLoggedUser(r *http.Request) *User {
 	return GetUserById(r.Header.Get("user_id"))
 }
 
+// Verify if token is correct
 func VerifyUserToken(tokenString string) (jwt.Claims, error) {
 	signingKey := []byte(os.Getenv("JWT_SECRET_TOKEN"))
 
@@ -83,6 +90,7 @@ func VerifyUserToken(tokenString string) (jwt.Claims, error) {
 	return token.Claims, err
 }
 
+// Verify if user is logged
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

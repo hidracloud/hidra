@@ -1,3 +1,4 @@
+// Package agent provide support for hidra-agents
 package agent
 
 import (
@@ -17,6 +18,7 @@ import (
 	"github.com/JoseCarlosGarcia95/hidra/scenarios"
 )
 
+// Represent one agent configuration
 type Agent struct {
 	ApiURL  string
 	Secret  string
@@ -25,6 +27,7 @@ type Agent struct {
 
 var sampleScrapeInterval map[string]time.Time
 
+// Make a request to hidra API
 func (a *Agent) DoApiCall(endpoint, method string, body io.Reader) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, a.ApiURL+endpoint, body)
@@ -38,6 +41,7 @@ func (a *Agent) DoApiCall(endpoint, method string, body io.Reader) (*http.Respon
 	return client.Do(req)
 }
 
+// List all samples related to current agent
 func (a *Agent) ListSamples() []models.Sample {
 	samples := make([]models.Sample, 0)
 
@@ -53,6 +57,7 @@ func (a *Agent) ListSamples() []models.Sample {
 	return samples
 }
 
+// Get one sample
 func (a *Agent) GetSample(id string) []byte {
 	res, err := a.DoApiCall("/agent_get_sample/"+id, "GET", nil)
 	if err != nil {
@@ -70,6 +75,7 @@ func (a *Agent) GetSample(id string) []byte {
 	return b
 }
 
+// Push metrics to API
 func (a *Agent) PushMetrics(sampleId string, metrics *models.ScenarioMetric) error {
 	if metrics.Error != nil {
 		metrics.ErrorString = metrics.Error.Error()
@@ -86,6 +92,7 @@ func (a *Agent) PushMetrics(sampleId string, metrics *models.ScenarioMetric) err
 	return err
 }
 
+// Clean up old samples
 func (a *Agent) RemoveDeprecatedSamples(samples []models.Sample, files []fs.FileInfo) {
 	for _, file := range files {
 		found := false
@@ -102,6 +109,7 @@ func (a *Agent) RemoveDeprecatedSamples(samples []models.Sample, files []fs.File
 	}
 }
 
+// Calculate checksum from a local file
 func calculateLocalChecksum(filePath string) (string, error) {
 	var returnMD5String string
 	file, err := os.Open(filePath)
@@ -119,6 +127,7 @@ func calculateLocalChecksum(filePath string) (string, error) {
 
 }
 
+// Check if current sample should be updated
 func (a *Agent) UpdateSamplesIfNeeded(samples []models.Sample, files []fs.FileInfo) {
 	for _, sample := range samples {
 		needupdate := true
@@ -141,6 +150,7 @@ func (a *Agent) UpdateSamplesIfNeeded(samples []models.Sample, files []fs.FileIn
 	}
 }
 
+// Try to update local resources
 func (a *Agent) UpdateLocalResources() {
 	if time.Since(sampleScrapeInterval["foobar"]) < time.Minute*5 {
 		return
@@ -164,6 +174,7 @@ func (a *Agent) UpdateLocalResources() {
 	sampleScrapeInterval["foobar"] = time.Now()
 }
 
+// Run all samples in current agent
 func (a *Agent) RunAllSamples() {
 	files, err := ioutil.ReadDir(a.DataDir)
 
@@ -203,6 +214,7 @@ func (a *Agent) RunAllSamples() {
 	}
 }
 
+// Initialize an agent
 func StartAgent(apiUrl, secretToken, datadir string) {
 	agent := Agent{ApiURL: apiUrl, Secret: secretToken, DataDir: datadir}
 

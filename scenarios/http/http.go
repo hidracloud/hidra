@@ -1,3 +1,4 @@
+// HTTP scenario do test using HTTP protocol
 package http
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/JoseCarlosGarcia95/hidra/scenarios"
 )
 
+// Represent an http scenario
 type HttpScenario struct {
 	models.Scenario
 

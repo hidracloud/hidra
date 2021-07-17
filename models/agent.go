@@ -12,12 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// Represent one agent in db.
 type Agent struct {
 	gorm.Model
 	ID     uuid.UUID `gorm:"primaryKey;type:char(36);"`
 	Secret string    `json:"-" gorm:"primaryKey;type:char(36);"`
 }
 
+// Represent agent tags
 type AgentTag struct {
 	gorm.Model
 	ID      uuid.UUID `gorm:"primaryKey;type:char(36);"`
@@ -27,6 +29,7 @@ type AgentTag struct {
 	Value   string
 }
 
+// Verify that agent token is correct
 func VerifyRegisterAgentToken(tokenString string) (jwt.Claims, error) {
 	signingKey := []byte(os.Getenv("AGENT_JWT_SECRET_TOKEN"))
 
@@ -39,6 +42,7 @@ func VerifyRegisterAgentToken(tokenString string) (jwt.Claims, error) {
 	return token.Claims, err
 }
 
+// Create a new agent.
 func CreateAgent(secret string, tags map[string]string) error {
 	newAgent := Agent{ID: uuid.NewV4(), Secret: secret}
 
@@ -56,6 +60,7 @@ func CreateAgent(secret string, tags map[string]string) error {
 	return nil
 }
 
+// Check if temporal token is correct
 func AuthRegisterAgentMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -86,6 +91,7 @@ func AuthRegisterAgentMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// Check if agent secret is correct
 func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -110,6 +116,7 @@ func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// Generate a new temporal token
 func CreateRegisterAgentToken() (string, error) {
 	var err error
 

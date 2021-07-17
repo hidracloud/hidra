@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Represent a sample, that could be saved on database.
 type Sample struct {
 	gorm.Model `json:"-"`
 	ID         uuid.UUID `gorm:"primaryKey;type:char(36);"`
@@ -20,6 +21,7 @@ type Sample struct {
 	Checksum   string
 }
 
+// Represent a sample step metric
 type SampleStepMetric struct {
 	gorm.Model     `json:"-"`
 	ID             uuid.UUID    `gorm:"primaryKey;type:char(36);"`
@@ -29,6 +31,7 @@ type SampleStepMetric struct {
 	EndDate        time.Time
 }
 
+// Represent sample metric
 type SampleMetric struct {
 	gorm.Model `json:"-"`
 	ID         uuid.UUID `gorm:"primaryKey;type:char(36);"`
@@ -39,6 +42,7 @@ type SampleMetric struct {
 	Error      string
 }
 
+// Return a list of samples
 func GetSamples() ([]Sample, error) {
 	samples := make([]Sample, 0)
 
@@ -49,6 +53,7 @@ func GetSamples() ([]Sample, error) {
 	return samples, nil
 }
 
+// Get one sample by id
 func GetSampleById(id string) (*Sample, error) {
 	sample := Sample{}
 
@@ -58,6 +63,7 @@ func GetSampleById(id string) (*Sample, error) {
 	return &sample, nil
 }
 
+// Push metrics to db.
 func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric) error {
 	sampleMetric := SampleMetric{
 		ID:        uuid.NewV4(),
@@ -87,6 +93,7 @@ func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric) error {
 	return nil
 }
 
+// Register a new sample
 func RegisterSample(name string, sampleData []byte, user *User) error {
 	checksum := md5.Sum(sampleData)
 

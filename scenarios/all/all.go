@@ -1,3 +1,4 @@
+// Represent a wrapper for all availables scenarios
 package all
 
 import (

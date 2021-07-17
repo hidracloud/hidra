@@ -21,6 +21,7 @@ type LoginResponse struct {
 	Error     string `json:"Error,omitempty"`
 }
 
+// Generate a login session
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	var loginRequest LoginRequest
 	var loginResponse LoginResponse

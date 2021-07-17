@@ -1,3 +1,4 @@
+// Represent a data model
 package models
 
 import (
@@ -13,7 +14,7 @@ func setupDB() {
 	if admin.ID == uuid.Nil {
 		randomPass := utils.RandString(32)
 		log.Println("Creating admin Account for first setup with pass:", randomPass)
-		user, err := CreateUser("root", randomPass, 0)
+		user, err := CreateUser("root", randomPass)
 
 		if err != nil {
 			log.Fatal(err)

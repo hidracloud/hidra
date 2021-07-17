@@ -1,3 +1,4 @@
+// Represent an API object
 package api
 
 import (
@@ -13,6 +14,7 @@ type API struct {
 	router http.Handler
 }
 
+// Start a new API process
 func StartApi(serverAddr string) {
 	log.Printf("Starting api at %s\n", serverAddr)
 

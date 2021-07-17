@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Recieve new metrics from an agent
 func (a *API) AgentPushMetrics(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var scenarioMetric models.ScenarioMetric
