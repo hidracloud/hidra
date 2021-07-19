@@ -1,4 +1,5 @@
 name: http_basic_example
+scrapeInterval: 1m
 scenarios:
   - name: http_test_example
     description: Test that example.com return HTTP 200

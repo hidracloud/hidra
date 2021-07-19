@@ -38,12 +38,14 @@ type ScenarioMetric struct {
 	EndDate     time.Time
 	StepMetrics []*StepMetric
 	Error       error
+	ErrorString string
 }
 
 // Define a set of scenarios
 type Scenarios struct {
-	Name      string
-	Scenarios []Scenario
+	Name           string
+	Scenarios      []Scenario
+	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
 }
 
 // Define scenario interface
@@ -72,10 +74,12 @@ func (s *Scenario) RegisterStep(name string, step stepFn) {
 // Read scenarios pointer from yaml
 func ReadScenariosYAML(data []byte) (*Scenarios, error) {
 	scenarios := Scenarios{}
+
 	err := yaml.Unmarshal([]byte(data), &scenarios)
 
 	if err != nil {
 		return nil, err
 	}
+
 	return &scenarios, nil
 }

@@ -1,3 +1,4 @@
+// Represent essential entrypoint for hidra
 package main
 
 import (
@@ -6,14 +7,21 @@ import (
 	"log"
 	"os"
 
+	"github.com/JoseCarlosGarcia95/hidra/agent"
+	"github.com/JoseCarlosGarcia95/hidra/api"
 	"github.com/JoseCarlosGarcia95/hidra/models"
 	"github.com/JoseCarlosGarcia95/hidra/scenarios"
 	_ "github.com/JoseCarlosGarcia95/hidra/scenarios/all"
+	"github.com/joho/godotenv"
 )
 
 type flagConfig struct {
-	hidraMode int
-	testFile  string
+	testFile    string
+	listenAddr  string
+	configFile  string
+	agentSecret string
+	apiEndpoint string
+	dataDir     string
 }
 
 // This mode is used for fast checking yaml
@@ -50,18 +58,41 @@ func runTestMode(cfg *flagConfig) {
 
 }
 
+func runAgentMode(cfg *flagConfig) {
+	log.Println("Running hidra in agent mode")
+	agent.StartAgent(cfg.apiEndpoint, cfg.agentSecret, cfg.dataDir)
+}
+
+func runApiMode(cfg *flagConfig) {
+	log.Println("Running hidra in api mode")
+	api.StartApi(cfg.listenAddr)
+}
+
 func main() {
+	godotenv.Load()
+
 	// Start default configuration
-	cfg := flagConfig{
-		hidraMode: 0,
-	}
+	cfg := flagConfig{}
 
 	// Initialize flags
-	flag.StringVar(&cfg.testFile, "testFile", "", "--testFile your-test-file-yaml")
+	var agentMode, apiMode, testMode bool
+	flag.BoolVar(&apiMode, "api", false, "--api enable api mode in given hidra")
+	flag.BoolVar(&agentMode, "agent", false, "--agent enable agent mode in given hidra")
+	flag.BoolVar(&testMode, "test", false, "--test enable test mode in given hidra")
+	flag.StringVar(&cfg.configFile, "config", "", "--config your configuration")
+	flag.StringVar(&cfg.testFile, "file", "", "--file your-test-file-yaml")
+	flag.StringVar(&cfg.listenAddr, "listen-addr", ":8080", "--listen-addr listen address")
+	flag.StringVar(&cfg.agentSecret, "agent-secret", "", "--agent-secret for registering this agent")
+	flag.StringVar(&cfg.apiEndpoint, "api-url", "", "--api-url where is api url?")
+	flag.StringVar(&cfg.dataDir, "data-dir", "/tmp", "--data-dir where you want to store agent data?")
+
 	flag.Parse()
 
-	// Run hidra in test mode, for testing yaml
-	if cfg.hidraMode == 0 {
+	if agentMode {
+		runAgentMode(&cfg)
+	} else if apiMode {
+		runApiMode(&cfg)
+	} else if testMode {
 		runTestMode(&cfg)
 	}
 }
