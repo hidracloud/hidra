@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/JoseCarlosGarcia95/hidra/database"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
