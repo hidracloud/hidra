@@ -4,7 +4,9 @@ package http
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"strconv"
 	"strings"
 
@@ -20,6 +22,7 @@ type HttpScenario struct {
 	Method   string
 	Response *http.Response
 	Body     string
+	Redirect string
 	Headers  map[string]string
 	Client   *http.Client
 }
@@ -55,6 +58,14 @@ func (h *HttpScenario) requestByMethod(c map[string]string) error {
 	if _, ok := c["body"]; ok {
 		body = c["body"]
 	}
+
+	jar, err := cookiejar.New(nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	h.Client.Jar = jar
 
 	req, err := http.NewRequest(h.Method, h.Url, strings.NewReader(body))
 
@@ -139,6 +150,18 @@ func (h *HttpScenario) bodyShouldContain(c map[string]string) error {
 	return nil
 }
 
+func (h *HttpScenario) shouldRedirectTo(c map[string]string) error {
+	if _, ok := c["url"]; !ok {
+		return fmt.Errorf("url parameter missing")
+	}
+
+	if h.Response.Header.Get("Location") != c["url"] {
+		return fmt.Errorf("expected redirect to %s, but got %s", c["url"], h.Response.Header.Get("Location"))
+	}
+
+	return nil
+}
+
 // Clear parameters
 func (h *HttpScenario) clear(c map[string]string) error {
 	h.Url = ""
@@ -157,11 +180,16 @@ func (h *HttpScenario) Init() {
 
 	h.Client = &http.Client{}
 
+	h.Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
 	h.RegisterStep("request", h.request)
 	h.RegisterStep("statusCodeShouldBe", h.statusCodeShouldBe)
 	h.RegisterStep("setUserAgent", h.setUserAgent)
 	h.RegisterStep("addHttpHeader", h.addHttpHeader)
 	h.RegisterStep("bodyShouldContain", h.bodyShouldContain)
+	h.RegisterStep("shouldRedirectTo", h.shouldRedirectTo)
 
 	h.RegisterStep("clear", h.clear)
 }

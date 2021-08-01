@@ -31,6 +31,4 @@ func StartDatabase(db_type, db_path, db_uri string) {
 	if err != nil {
 		log.Panic(err)
 	}
-
-	log.Println("Loading database models")
 }

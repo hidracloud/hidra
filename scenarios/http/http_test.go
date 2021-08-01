@@ -101,4 +101,19 @@ func TestHttpRequestTestGoogle(t *testing.T) {
 
 	h.RunStep("clear", params)
 
+	params = make(map[string]string)
+	params["url"] = "http://google.com/"
+	err = h.RunStep("request", params)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	params = make(map[string]string)
+	params["url"] = "http://www.google.com/"
+	err = h.RunStep("shouldRedirectTo", params)
+
+	if err != nil {
+		t.Error(err)
+	}
 }
