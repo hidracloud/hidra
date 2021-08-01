@@ -1,5 +1,5 @@
 BUILD_PATH = 'build'
-VERSION = 1.0.0
+VERSION = v1.0.0-alpha.1
 
 build:
 	GOOS=linux GOARCH=amd64 go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-amd64/hidra cmd/hidra/main.go
