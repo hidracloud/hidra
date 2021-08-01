@@ -60,37 +60,6 @@ func CreateAgent(secret string, tags map[string]string) error {
 	return nil
 }
 
-// Check if temporal token is correct
-func AuthRegisterAgentMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		tokenString := r.Header.Get("Authorization")
-
-		if len(tokenString) == 0 {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Missing Authorization Header"))
-			return
-		}
-		tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
-		claims, err := VerifyRegisterAgentToken(tokenString)
-		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Error verifying JWT token: " + err.Error()))
-			return
-		}
-
-		exp := claims.(jwt.MapClaims)["exp"].(float64)
-
-		if exp < float64(time.Now().Unix()) {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Error verifying JWT token: " + err.Error()))
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 // Check if agent secret is correct
 func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

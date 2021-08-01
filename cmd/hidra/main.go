@@ -76,15 +76,15 @@ func main() {
 
 	// Initialize flags
 	var agentMode, apiMode, testMode bool
-	flag.BoolVar(&apiMode, "api", false, "--api enable api mode in given hidra")
-	flag.BoolVar(&agentMode, "agent", false, "--agent enable agent mode in given hidra")
-	flag.BoolVar(&testMode, "test", false, "--test enable test mode in given hidra")
-	flag.StringVar(&cfg.configFile, "config", "", "--config your configuration")
-	flag.StringVar(&cfg.testFile, "file", "", "--file your-test-file-yaml")
-	flag.StringVar(&cfg.listenAddr, "listen-addr", ":8080", "--listen-addr listen address")
-	flag.StringVar(&cfg.agentSecret, "agent-secret", "", "--agent-secret for registering this agent")
-	flag.StringVar(&cfg.apiEndpoint, "api-url", "", "--api-url where is api url?")
-	flag.StringVar(&cfg.dataDir, "data-dir", "/tmp", "--data-dir where you want to store agent data?")
+	flag.BoolVar(&apiMode, "api", false, "-api enable api mode in given hidra")
+	flag.BoolVar(&agentMode, "agent", false, "-agent enable agent mode in given hidra")
+	flag.BoolVar(&testMode, "test", false, "-test enable test mode in given hidra")
+	flag.StringVar(&cfg.configFile, "config", "", "-config your configuration")
+	flag.StringVar(&cfg.testFile, "file", "", "-file your-test-file-yaml")
+	flag.StringVar(&cfg.listenAddr, "listen-addr", ":8080", "-listen-addr listen address")
+	flag.StringVar(&cfg.agentSecret, "agent-secret", "", "-agent-secret for registering this agent")
+	flag.StringVar(&cfg.apiEndpoint, "api-url", "", "-api-url where is api url?")
+	flag.StringVar(&cfg.dataDir, "data-dir", "/tmp", "-data-dir where you want to store agent data?")
 
 	flag.Parse()
 
