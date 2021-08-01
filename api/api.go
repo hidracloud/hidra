@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
-	_ "github.com/JoseCarlosGarcia95/hidra/prometheus"
 	"github.com/gorilla/mux"
+	"github.com/hidracloud/hidra/models"
+	_ "github.com/hidracloud/hidra/prometheus"
 )
 
 // Represent API object

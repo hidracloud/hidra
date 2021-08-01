@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
+	"github.com/hidracloud/hidra/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

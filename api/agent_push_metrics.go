@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
 	"github.com/gorilla/mux"
+	"github.com/hidracloud/hidra/models"
 )
 
 // Recieve new metrics from an agent

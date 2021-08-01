@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
-	"github.com/JoseCarlosGarcia95/hidra/scenarios"
-	"github.com/JoseCarlosGarcia95/hidra/utils"
+	"github.com/hidracloud/hidra/models"
+	"github.com/hidracloud/hidra/scenarios"
+	"github.com/hidracloud/hidra/utils"
 )
 
 // Represent an ssl scenario

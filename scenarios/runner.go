@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
+	"github.com/hidracloud/hidra/models"
 )
 
 // Run one scenario

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
+	"github.com/hidracloud/hidra/models"
 )
 
 // Get a list of samples by id and checksum

@@ -1,4 +1,4 @@
-module github.com/JoseCarlosGarcia95/hidra
+module github.com/hidracloud/hidra
 
 go 1.16
 

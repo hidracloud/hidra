@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
+	"github.com/hidracloud/hidra/models"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )

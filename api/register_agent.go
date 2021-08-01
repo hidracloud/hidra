@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
-	"github.com/JoseCarlosGarcia95/hidra/utils"
+	"github.com/hidracloud/hidra/models"
+	"github.com/hidracloud/hidra/utils"
 )
 
 type RegisterAgentRequest struct {

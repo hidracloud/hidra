@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JoseCarlosGarcia95/hidra/database"
 	"github.com/golang-jwt/jwt"
+	"github.com/hidracloud/hidra/database"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"

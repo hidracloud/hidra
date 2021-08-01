@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
+	"github.com/hidracloud/hidra/models"
 )
 
 // Generate a new sample

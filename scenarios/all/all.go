@@ -2,6 +2,6 @@
 package all
 
 import (
-	_ "github.com/JoseCarlosGarcia95/hidra/scenarios/http"
-	_ "github.com/JoseCarlosGarcia95/hidra/scenarios/tls"
+	_ "github.com/hidracloud/hidra/scenarios/http"
+	_ "github.com/hidracloud/hidra/scenarios/tls"
 )

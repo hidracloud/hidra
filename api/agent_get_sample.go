@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
 	"github.com/gorilla/mux"
+	"github.com/hidracloud/hidra/models"
 )
 
 // Get one sample from agent

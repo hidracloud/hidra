@@ -1,7 +1,7 @@
 // Scenario base package for autoregistering
 package scenarios
 
-import "github.com/JoseCarlosGarcia95/hidra/models"
+import "github.com/hidracloud/hidra/models"
 
 type ScenarioGenerator func() models.IScenario
 

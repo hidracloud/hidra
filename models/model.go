@@ -4,8 +4,8 @@ package models
 import (
 	"log"
 
-	"github.com/JoseCarlosGarcia95/hidra/database"
-	"github.com/JoseCarlosGarcia95/hidra/utils"
+	"github.com/hidracloud/hidra/database"
+	"github.com/hidracloud/hidra/utils"
 	uuid "github.com/satori/go.uuid"
 )
 

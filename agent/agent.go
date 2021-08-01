@@ -14,8 +14,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/JoseCarlosGarcia95/hidra/models"
-	"github.com/JoseCarlosGarcia95/hidra/scenarios"
+	"github.com/hidracloud/hidra/models"
+	"github.com/hidracloud/hidra/scenarios"
 )
 
 // Represent one agent configuration

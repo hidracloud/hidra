@@ -9,12 +9,12 @@ import (
 
 	"github.com/namsral/flag"
 
-	"github.com/JoseCarlosGarcia95/hidra/agent"
-	"github.com/JoseCarlosGarcia95/hidra/api"
-	"github.com/JoseCarlosGarcia95/hidra/models"
-	"github.com/JoseCarlosGarcia95/hidra/prometheus"
-	"github.com/JoseCarlosGarcia95/hidra/scenarios"
-	_ "github.com/JoseCarlosGarcia95/hidra/scenarios/all"
+	"github.com/hidracloud/hidra/agent"
+	"github.com/hidracloud/hidra/api"
+	"github.com/hidracloud/hidra/models"
+	"github.com/hidracloud/hidra/prometheus"
+	"github.com/hidracloud/hidra/scenarios"
+	_ "github.com/hidracloud/hidra/scenarios/all"
 	"github.com/joho/godotenv"
 )
 
