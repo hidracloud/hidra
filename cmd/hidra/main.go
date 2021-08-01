@@ -99,22 +99,30 @@ func main() {
 
 	// Initialize flags
 	var agentMode, apiMode, testMode, metricMode bool
+
+	// Operating mode
 	flag.BoolVar(&apiMode, "api", false, "-api enable api mode in given hidra")
 	flag.BoolVar(&agentMode, "agent", false, "-agent enable agent mode in given hidra")
 	flag.BoolVar(&testMode, "test", false, "-test enable test mode in given hidra")
 	flag.BoolVar(&metricMode, "metric", false, "-metric metric mode in given hidra")
 
+	// Test mode
 	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
-	flag.StringVar(&cfg.listenAddr, "listen_addr", ":8080", "-listen_addr listen address")
-	flag.StringVar(&cfg.metricsListenAddr, "metric_listen_addr", ":9096", "-metric_listen_addr listen address")
-	flag.IntVar(&cfg.metricsPullSeconds, "metric_pull_seconds", 1, "-metric_pull_seconds time to pull for new metrics")
 
-	flag.StringVar(&cfg.agentSecret, "agent_secret", "", "-agent_secret for registering this agent")
-	flag.StringVar(&cfg.apiEndpoint, "api_url", "", "-api_url where is api url?")
-	flag.StringVar(&cfg.dataDir, "data_dir", "/tmp", "-data_dir where you want to store agent data?")
+	// API mode
+	flag.StringVar(&cfg.listenAddr, "listen_addr", ":8080", "-listen_addr listen address")
 	flag.StringVar(&cfg.dbType, "db_type", "sqlite", "-db_type which type of database you want to use?")
 	flag.StringVar(&cfg.dbPath, "db_path", "test.db", "-db_path database path")
 	flag.StringVar(&cfg.dbUri, "db_uri", "", "-db_uri database uri")
+
+	// Metric mode
+	flag.StringVar(&cfg.metricsListenAddr, "metric_listen_addr", ":9096", "-metric_listen_addr listen address")
+	flag.IntVar(&cfg.metricsPullSeconds, "metric_pull_seconds", 1, "-metric_pull_seconds time to pull for new metrics")
+
+	// Agent mode
+	flag.StringVar(&cfg.agentSecret, "agent_secret", "", "-agent_secret for registering this agent")
+	flag.StringVar(&cfg.apiEndpoint, "api_url", "http://localhost:8080/api", "-api_url where is api url?")
+	flag.StringVar(&cfg.dataDir, "data_dir", "/var/tmp/agent-data", "-data_dir where you want to store agent data?")
 
 	flag.Parse()
 
