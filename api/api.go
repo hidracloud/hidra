@@ -22,19 +22,19 @@ func StartApi(serverAddr string) {
 	r := mux.NewRouter()
 
 	// Public functions
-	r.HandleFunc("/ping", api.Ping).Methods(http.MethodGet)
-	r.HandleFunc("/login", api.Login).Methods(http.MethodPost)
+	r.HandleFunc("/api/ping", api.Ping).Methods(http.MethodGet)
+	r.HandleFunc("/api/login", api.Login).Methods(http.MethodPost)
 
 	// User registered functions
-	r.Handle("/register_sample", models.AuthMiddleware(http.HandlerFunc(api.RegisterSample))).Methods(http.MethodPost)
+	r.Handle("/api/register_sample", models.AuthMiddleware(http.HandlerFunc(api.RegisterSample))).Methods(http.MethodPost)
 
 	// Pre-register agent functions
-	r.Handle("/register_agent", models.AuthMiddleware(http.HandlerFunc(api.RegisterAgent))).Methods(http.MethodPost)
+	r.Handle("/api/register_agent", models.AuthMiddleware(http.HandlerFunc(api.RegisterAgent))).Methods(http.MethodPost)
 
 	// Registered agent functions
-	r.Handle("/agent_list_samples", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentListSamples))).Methods(http.MethodGet)
-	r.Handle("/agent_push_metrics/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentPushMetrics))).Methods(http.MethodPost)
-	r.Handle("/agent_get_sample/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentGetSample))).Methods(http.MethodGet)
+	r.Handle("/api/agent_list_samples", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentListSamples))).Methods(http.MethodGet)
+	r.Handle("/api/agent_push_metrics/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentPushMetrics))).Methods(http.MethodPost)
+	r.Handle("/api/agent_get_sample/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentGetSample))).Methods(http.MethodGet)
 
 	api.router = r
 
