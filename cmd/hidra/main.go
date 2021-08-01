@@ -2,11 +2,12 @@
 package main
 
 import (
-	"flag"
 	"io/ioutil"
 	"log"
 	"os"
 	"sync"
+
+	"github.com/namsral/flag"
 
 	"github.com/JoseCarlosGarcia95/hidra/agent"
 	"github.com/JoseCarlosGarcia95/hidra/api"
@@ -18,14 +19,26 @@ import (
 )
 
 type flagConfig struct {
-	testFile           string
-	listenAddr         string
-	metricsListenAddr  string
+	// Which configuration file to use
+	testFile string
+	// Which port to listen
+	listenAddr string
+	// Which port to listen for metrics
+	metricsListenAddr string
+	// How often to pull metrics
 	metricsPullSeconds int
-	configFile         string
-	agentSecret        string
-	apiEndpoint        string
-	dataDir            string
+	// Agent secret
+	agentSecret string
+	// API endpoint
+	apiEndpoint string
+	// Data directory
+	dataDir string
+	// Database technology
+	dbType string
+	// Database path
+	dbPath string
+	// Database uri
+	dbUri string
 }
 
 // This mode is used for fast checking yaml
@@ -91,22 +104,24 @@ func main() {
 	flag.BoolVar(&testMode, "test", false, "-test enable test mode in given hidra")
 	flag.BoolVar(&metricMode, "metric", false, "-metric metric mode in given hidra")
 
-	flag.StringVar(&cfg.configFile, "config", "", "-config your configuration")
-	flag.StringVar(&cfg.testFile, "file", "", "-file your-test-file-yaml")
-	flag.StringVar(&cfg.listenAddr, "listen-addr", ":8080", "-listen-addr listen address")
-	flag.StringVar(&cfg.metricsListenAddr, "metric-listen-addr", ":9096", "-metric-listen-addr listen address")
-	flag.IntVar(&cfg.metricsPullSeconds, "metric-pull-seconds", 1, "-metric-pull-seconds time to pull for new metrics")
+	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
+	flag.StringVar(&cfg.listenAddr, "listen_addr", ":8080", "-listen_addr listen address")
+	flag.StringVar(&cfg.metricsListenAddr, "metric_listen_addr", ":9096", "-metric_listen_addr listen address")
+	flag.IntVar(&cfg.metricsPullSeconds, "metric_pull_seconds", 1, "-metric_pull_seconds time to pull for new metrics")
 
-	flag.StringVar(&cfg.agentSecret, "agent-secret", "", "-agent-secret for registering this agent")
-	flag.StringVar(&cfg.apiEndpoint, "api-url", "", "-api-url where is api url?")
-	flag.StringVar(&cfg.dataDir, "data-dir", "/tmp", "-data-dir where you want to store agent data?")
+	flag.StringVar(&cfg.agentSecret, "agent_secret", "", "-agent_secret for registering this agent")
+	flag.StringVar(&cfg.apiEndpoint, "api_url", "", "-api_url where is api url?")
+	flag.StringVar(&cfg.dataDir, "data_dir", "/tmp", "-data_dir where you want to store agent data?")
+	flag.StringVar(&cfg.dbType, "db_type", "sqlite", "-db_type which type of database you want to use?")
+	flag.StringVar(&cfg.dbPath, "db_path", "test.db", "-db_path database path")
+	flag.StringVar(&cfg.dbUri, "db_uri", "", "-db_uri database uri")
 
 	flag.Parse()
 
 	var wg sync.WaitGroup
 
 	if apiMode || metricMode {
-		models.SetupDB()
+		models.SetupDB(cfg.dbType, cfg.dbPath, cfg.dbUri)
 	}
 
 	if agentMode {

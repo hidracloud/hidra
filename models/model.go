@@ -9,8 +9,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func SetupDB() {
-	database.StartDatabase()
+func SetupDB(db_type, db_path, db_uri string) {
+	database.StartDatabase(db_type, db_path, db_uri)
 
 	database.ORM.AutoMigrate(&User{})
 	database.ORM.AutoMigrate(&Permission{})
