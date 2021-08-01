@@ -1,6 +1,5 @@
 BUILD_PATH = 'build'
-SHA1_COMMIT = '$(shell git rev-parse --short HEAD)'
-VERSION = 1.0.0-${SHA1_COMMIT}
+VERSION = 1.0.0
 
 build:
 	GOOS=linux GOARCH=amd64 go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-amd64/hidra cmd/hidra/main.go
