@@ -1,20 +1,19 @@
 name: http_basic_example
+description: Test that example.com return HTTP 200
 scrapeInterval: 1m
-scenarios:
-  - name: http_test_example
-    description: Test that example.com return HTTP 200
-    kind: http
-    steps:
-      - type: request
-        params:
-          url: 'https://example.org/'
-      - type: statusCodeShouldBe
-        params:
-          statusCode: '200'
-      - type: bodyShouldContain
-        params:
-          search: example
-      - type: bodyShouldContain
-        params:
-          search: aebfou3rfbro3b3oon
-        negate: true
+scenario:
+  kind: http
+  steps:
+    - type: request
+      params:
+        url: "https://example.org/"
+    - type: statusCodeShouldBe
+      params:
+        statusCode: "200"
+    - type: bodyShouldContain
+      params:
+        search: example
+    - type: bodyShouldContain
+      params:
+        search: aebfou3rfbro3b3oon
+      negate: true

@@ -60,6 +60,15 @@ func CreateAgent(secret string, tags map[string]string) error {
 	return nil
 }
 
+// Get all agents
+func GetAgents() ([]Agent, error) {
+	var agents []Agent
+	if result := database.ORM.Find(&agents); result.Error != nil {
+		return nil, result.Error
+	}
+	return agents, nil
+}
+
 // Check if agent secret is correct
 func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -81,6 +90,9 @@ func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+
+		r.Header.Set("agent_id", newAgent.ID.String())
+
 		next.ServeHTTP(w, r)
 	})
 }

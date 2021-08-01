@@ -9,7 +9,17 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func setupDB() {
+func SetupDB() {
+	database.StartDatabase()
+
+	database.ORM.AutoMigrate(&User{})
+	database.ORM.AutoMigrate(&Permission{})
+	database.ORM.AutoMigrate(&Agent{})
+	database.ORM.AutoMigrate(&AgentTag{})
+	database.ORM.AutoMigrate(&Sample{})
+	database.ORM.AutoMigrate(&SampleMetric{})
+	database.ORM.AutoMigrate(&SampleStepMetric{})
+
 	admin := GetUserByEmail("root")
 	if admin.ID == uuid.Nil {
 		randomPass := utils.RandString(32)
@@ -22,16 +32,4 @@ func setupDB() {
 
 		AddPermission2User(user, "superadmin")
 	}
-}
-
-func init() {
-	database.ORM.AutoMigrate(&User{})
-	database.ORM.AutoMigrate(&Permission{})
-	database.ORM.AutoMigrate(&Agent{})
-	database.ORM.AutoMigrate(&AgentTag{})
-	database.ORM.AutoMigrate(&Sample{})
-	database.ORM.AutoMigrate(&SampleMetric{})
-	database.ORM.AutoMigrate(&SampleStepMetric{})
-
-	setupDB()
 }

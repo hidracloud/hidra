@@ -40,6 +40,8 @@ type SampleMetric struct {
 	StartDate  time.Time
 	EndDate    time.Time
 	Error      string
+	Agent      Agent     `gorm:"foreignKey:AgentId" json:"-"`
+	AgentId    uuid.UUID `json:"-"`
 }
 
 // Return a list of samples
@@ -64,13 +66,15 @@ func GetSampleById(id string) (*Sample, error) {
 }
 
 // Push metrics to db.
-func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric) error {
+func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric, agentId string) error {
+
 	sampleMetric := SampleMetric{
 		ID:        uuid.NewV4(),
 		Sample:    *s,
 		StartDate: scenarioMetric.StartDate,
 		EndDate:   scenarioMetric.EndDate,
 		Error:     scenarioMetric.ErrorString,
+		AgentId:   uuid.FromStringOrNil(agentId),
 	}
 
 	if result := database.ORM.Create(&sampleMetric); result.Error != nil {
@@ -79,10 +83,10 @@ func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric) error {
 
 	for _, step := range scenarioMetric.StepMetrics {
 		sampleStepMetric := SampleStepMetric{
-			ID:           uuid.NewV4(),
-			StartDate:    step.StartDate,
-			EndDate:      step.EndDate,
-			SampleMetric: sampleMetric,
+			ID:             uuid.NewV4(),
+			StartDate:      step.StartDate,
+			EndDate:        step.EndDate,
+			SampleMetricId: sampleMetric.ID,
 		}
 
 		if result := database.ORM.Create(&sampleStepMetric); result.Error != nil {
@@ -91,6 +95,35 @@ func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric) error {
 	}
 
 	return nil
+}
+
+// Get last metric from a sample group by agent id
+func (sample *Sample) GetLastMetricByAgent(agentId string) (*SampleMetric, error) {
+	sampleMetric := SampleMetric{}
+	if result := database.ORM.Where("sample_id = ? AND agent_id = ?", sample.ID, agentId).Order("end_date DESC").First(&sampleMetric); result.Error != nil {
+		return nil, result.Error
+	}
+	return &sampleMetric, nil
+}
+
+// Get step metrics by sample id
+func (sample *SampleMetric) GetStepMetrics() ([]SampleStepMetric, error) {
+	sampleStepMetrics := make([]SampleStepMetric, 0)
+	if result := database.ORM.Where("sample_metric_id = ?", sample.ID).Find(&sampleStepMetrics); result.Error != nil {
+		return nil, result.Error
+	}
+	return sampleStepMetrics, nil
+}
+
+// Get last metrics from a sample
+func (sample *Sample) GetLastMetrics() (*SampleMetric, error) {
+	sampleMetric := SampleMetric{}
+
+	if result := database.ORM.First(&sampleMetric, "sample_id = ?", sample.ID); result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &sampleMetric, nil
 }
 
 // Register a new sample

@@ -22,6 +22,6 @@ func (a *API) AgentPushMetrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sample.PushMetrics(&scenarioMetric)
+	sample.PushMetrics(&scenarioMetric, r.Header.Get("agent_id"))
 
 }

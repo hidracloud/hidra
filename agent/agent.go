@@ -203,11 +203,11 @@ func (a *Agent) RunAllSamples() {
 			continue
 		}
 
-		for _, s := range slist.Scenarios {
-			m := scenarios.RunScenario(s)
+		m := scenarios.RunScenario(slist.Scenario, slist.Name, slist.Description)
+		err = a.PushMetrics(file.Name(), m)
 
-			err := a.PushMetrics(file.Name(), m)
-			log.Println(err)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		sampleScrapeInterval[file.Name()] = time.Now()

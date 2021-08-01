@@ -17,11 +17,9 @@ type Step struct {
 
 // Define one scenario
 type Scenario struct {
-	Name        string
-	Description string
-	Kind        string
-	Steps       []Step
-	StepsFn     map[string]stepFn
+	Kind    string
+	Steps   []Step
+	StepsFn map[string]stepFn
 }
 
 // Define step metrics
@@ -43,8 +41,10 @@ type ScenarioMetric struct {
 
 // Define a set of scenarios
 type Scenarios struct {
-	Name           string
-	Scenarios      []Scenario
+	Name        string
+	Description string
+
+	Scenario       Scenario
 	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
 }
 

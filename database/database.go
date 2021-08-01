@@ -10,7 +10,7 @@ import (
 
 var ORM *gorm.DB
 
-func init() {
+func StartDatabase() {
 	var err error
 
 	log.Println("Loading database")

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/JoseCarlosGarcia95/hidra/models"
+	_ "github.com/JoseCarlosGarcia95/hidra/prometheus"
 	"github.com/gorilla/mux"
 )
 
