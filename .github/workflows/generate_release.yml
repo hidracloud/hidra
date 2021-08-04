@@ -20,13 +20,9 @@ jobs:
         run: |
           make
           make compress
-      - name: Extract tag name
-        id: tag
-        uses: actions/github-script@0.2.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            return context.payload.ref.replace(/\/refs\/tags\//, '');
+
+      - name: Set git-tag
+        run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - uses: 'marvinpinto/action-automatic-releases@latest'
         with:
@@ -34,10 +30,10 @@ jobs:
           prerelease: true
           draft: true
           files: |
-            build/hidra-${{ steps.tag.outputs.result }}-darwin-amd64.tar.gz
-            build/hidra-${{ steps.tag.outputs.result }}-darwin-arm64.tar.gz
-            build/hidra-${{ steps.tag.outputs.result }}-linux-386.tar.gz
-            build/hidra-${{ steps.tag.outputs.result }}-linux-amd64.tar.gz
-            build/hidra-${{ steps.tag.outputs.result }}-linux-arm.tar.gz
-            build/hidra-${{ steps.tag.outputs.result }}-windows-386.tar.gz
-            build/hidra-${{ steps.tag.outputs.result }}-windows-amd64.tar.gz
+            build/hidra-${{ GIT_TAG }}-darwin-amd64.tar.gz
+            build/hidra-${{ GIT_TAG }}-darwin-arm64.tar.gz
+            build/hidra-${{ GIT_TAG }}-linux-386.tar.gz
+            build/hidra-${{ GIT_TAG }}-linux-amd64.tar.gz
+            build/hidra-${{ GIT_TAG }}-linux-arm.tar.gz
+            build/hidra-${{ GIT_TAG }}-windows-386.tar.gz
+            build/hidra-${{ GIT_TAG }}-windows-amd64.tar.gz
