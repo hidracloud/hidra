@@ -1,0 +1,39 @@
+name: Create a new release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+      - name: 'Build & test'
+        run: |
+          make
+          make compress
+
+      - name: Set git-tag
+        run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          prerelease: true
+          draft: true
+          files: |
+            build/hidra-${{ env.GIT_TAG }}-darwin-amd64.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-darwin-arm64.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-linux-386.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-linux-amd64.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-linux-arm.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-windows-386.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-windows-amd64.tar.gz
