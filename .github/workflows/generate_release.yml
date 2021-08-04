@@ -1,0 +1,39 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: 'Build & test'
+        run: |
+          make
+          make compress
+      - name: Extract tag name
+        id: tag
+        uses: actions/github-script@0.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            return context.payload.ref.replace(/\/refs\/tags\//, '');
+
+      - uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          prerelease: true
+          draft: true
+          files: |
+            build/hidra-${{ steps.tag.outputs.result }}-darwin-amd64.tar.gz
+            build/hidra-${{ steps.tag.outputs.result }}-darwin-arm64.tar.gz
+            build/hidra-${{ steps.tag.outputs.result }}-linux-386.tar.gz
+            build/hidra-${{ steps.tag.outputs.result }}-linux-amd64.tar.gz
+            build/hidra-${{ steps.tag.outputs.result }}-linux-arm.tar.gz
+            build/hidra-${{ steps.tag.outputs.result }}-windows-386.tar.gz
+            build/hidra-${{ steps.tag.outputs.result }}-windows-amd64.tar.gz
