@@ -81,9 +81,10 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 	}
 
 	sample_metric_time := Metric{
-		ID:    uuid.NewV4(),
-		Name:  "sample_metric_time",
-		Value: float64(sample_result.EndDate.UnixNano() - sample_result.StartDate.UnixNano()),
+		ID:             uuid.NewV4(),
+		Name:           "sample_metric_time",
+		Value:          float64(sample_result.EndDate.UnixNano() - sample_result.StartDate.UnixNano()),
+		LabelsChecksum: CalculateLabelsChecksum(common_labels),
 	}
 
 	err := sample_metric_time.PushToDB(common_labels)
@@ -99,9 +100,10 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 	}
 
 	sample_metric_status := Metric{
-		ID:    uuid.NewV4(),
-		Name:  "sample_metric_status",
-		Value: float64(status),
+		ID:             uuid.NewV4(),
+		Name:           "sample_metric_status",
+		Value:          float64(status),
+		LabelsChecksum: CalculateLabelsChecksum(common_labels),
 	}
 
 	err = sample_metric_status.PushToDB(common_labels)
@@ -118,9 +120,10 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 		common_labels["params"] = string(paramsStr)
 
 		step_sample_metric_time := Metric{
-			ID:    uuid.NewV4(),
-			Name:  "sample_step_metric_time",
-			Value: float64(step.EndDate.UnixNano() - step.StartDate.UnixNano()),
+			ID:             uuid.NewV4(),
+			Name:           "sample_step_metric_time",
+			Value:          float64(step.EndDate.UnixNano() - step.StartDate.UnixNano()),
+			LabelsChecksum: CalculateLabelsChecksum(common_labels),
 		}
 
 		err = step_sample_metric_time.PushToDB(common_labels)
@@ -130,7 +133,15 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 		}
 
 		for _, metric := range step.Metrics {
-			metric.PushToDB(metric.Labels)
+			labels := make(map[string]string)
+			for k, v := range common_labels {
+				labels[k] = v
+			}
+			for k, v := range metric.Labels {
+				labels[k] = v
+			}
+			metric.LabelsChecksum = CalculateLabelsChecksum(labels)
+			metric.PushToDB(labels)
 		}
 	}
 

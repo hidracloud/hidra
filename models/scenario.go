@@ -56,12 +56,13 @@ type Scenarios struct {
 // metric for scenarios
 type Metric struct {
 	gorm.Model
-	ID       uuid.UUID `gorm:"primaryKey;type:char(36);"`
-	Name     string
-	Value    float64
-	Step     string
-	Scenario string
-	Labels   map[string]string `gorm:"-"`
+	ID             uuid.UUID `gorm:"primaryKey;type:char(36);"`
+	Name           string
+	Value          float64
+	Step           string
+	Scenario       string
+	Labels         map[string]string `gorm:"-"`
+	LabelsChecksum string
 }
 
 // Metric labels
@@ -117,6 +118,15 @@ func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 // Register step default method
 func (s *Scenario) RegisterStep(name string, step stepFn) {
 	s.StepsFn[name] = step
+}
+
+// Calculate labels checksum
+func CalculateLabelsChecksum(labels map[string]string) string {
+	var checksum string
+	for k, v := range labels {
+		checksum += k + v
+	}
+	return checksum
 }
 
 // Read scenarios pointer from yaml
