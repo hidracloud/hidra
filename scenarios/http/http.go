@@ -27,7 +27,7 @@ type HttpScenario struct {
 }
 
 // Set user agent
-func (h *HttpScenario) setUserAgent(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) setUserAgent(c map[string]string) ([]models.Metric, error) {
 	var ok bool
 	if h.Headers["User-Agent"], ok = c["user-agent"]; !ok {
 		return nil, fmt.Errorf("user-agent parameter missing")
@@ -36,7 +36,7 @@ func (h *HttpScenario) setUserAgent(c map[string]string) ([]models.CustomMetric,
 }
 
 // Add new HTTP header
-func (h *HttpScenario) addHttpHeader(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) addHttpHeader(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["key"]; !ok {
 		return nil, fmt.Errorf("key parameter missing")
 	}
@@ -49,7 +49,7 @@ func (h *HttpScenario) addHttpHeader(c map[string]string) ([]models.CustomMetric
 }
 
 // Send a request depends of the method
-func (h *HttpScenario) requestByMethod(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) requestByMethod(c map[string]string) ([]models.Metric, error) {
 	var err error
 
 	body := ""
@@ -97,7 +97,7 @@ func (h *HttpScenario) requestByMethod(c map[string]string) ([]models.CustomMetr
 }
 
 // Make http request to given URL
-func (h *HttpScenario) request(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) request(c map[string]string) ([]models.Metric, error) {
 	var err error
 	var ok bool
 
@@ -121,7 +121,7 @@ func (h *HttpScenario) request(c map[string]string) ([]models.CustomMetric, erro
 }
 
 // Check if status code match
-func (h *HttpScenario) statusCodeShouldBe(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) statusCodeShouldBe(c map[string]string) ([]models.Metric, error) {
 	if h.Response == nil {
 		return nil, fmt.Errorf("request should be initialized first")
 	}
@@ -137,7 +137,7 @@ func (h *HttpScenario) statusCodeShouldBe(c map[string]string) ([]models.CustomM
 	return nil, nil
 }
 
-func (h *HttpScenario) bodyShouldContain(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) bodyShouldContain(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["search"]; !ok {
 		return nil, fmt.Errorf("search parameter missing")
 	}
@@ -149,7 +149,7 @@ func (h *HttpScenario) bodyShouldContain(c map[string]string) ([]models.CustomMe
 	return nil, nil
 }
 
-func (h *HttpScenario) shouldRedirectTo(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) shouldRedirectTo(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["url"]; !ok {
 		return nil, fmt.Errorf("url parameter missing")
 	}
@@ -162,7 +162,7 @@ func (h *HttpScenario) shouldRedirectTo(c map[string]string) ([]models.CustomMet
 }
 
 // Clear parameters
-func (h *HttpScenario) clear(c map[string]string) ([]models.CustomMetric, error) {
+func (h *HttpScenario) clear(c map[string]string) ([]models.Metric, error) {
 	h.Url = ""
 	h.Response = nil
 	h.Method = ""

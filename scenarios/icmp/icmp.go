@@ -17,7 +17,7 @@ type IcmpScenario struct {
 	models.Scenario
 }
 
-func (h *IcmpScenario) traceroute(c map[string]string) ([]models.CustomMetric, error) {
+func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["hostname"]; !ok {
 		return nil, fmt.Errorf("hostname parameter missing")
 	}
@@ -42,10 +42,10 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.CustomMetric, e
 		return nil, err
 	}
 
-	custom_metrics := make([]models.CustomMetric, 0)
+	custom_metrics := make([]models.Metric, 0)
 
 	for i := 0; i < len(tcrresult.Hops); i++ {
-		custom_metrics = append(custom_metrics, models.CustomMetric{
+		custom_metrics = append(custom_metrics, models.Metric{
 			Name:  fmt.Sprintf("hop_%d_elapsed", i),
 			Value: float64(tcrresult.Hops[i].ElapsedTime.Milliseconds()),
 			Labels: map[string]string{
@@ -60,7 +60,7 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.CustomMetric, e
 			status = 1
 		}
 
-		custom_metrics = append(custom_metrics, models.CustomMetric{
+		custom_metrics = append(custom_metrics, models.Metric{
 			Name:  fmt.Sprintf("hop_%d_status", i),
 			Value: float64(status),
 			Labels: map[string]string{
@@ -70,7 +70,7 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.CustomMetric, e
 		})
 	}
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "hops",
 		Value: float64(len(tcrresult.Hops)),
 	})
@@ -78,7 +78,7 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.CustomMetric, e
 	return custom_metrics, nil
 }
 
-func (h *IcmpScenario) ping(c map[string]string) ([]models.CustomMetric, error) {
+func (h *IcmpScenario) ping(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["hostname"]; !ok {
 		return nil, fmt.Errorf("hostname parameter missing")
 	}
@@ -108,39 +108,39 @@ func (h *IcmpScenario) ping(c map[string]string) ([]models.CustomMetric, error) 
 
 	stats := pinger.Statistics()
 
-	custom_metrics := make([]models.CustomMetric, 0)
+	custom_metrics := make([]models.Metric, 0)
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "packet_loss",
 		Value: stats.PacketLoss,
 	})
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "min_rtt",
 		Value: float64(stats.MinRtt.Milliseconds()),
 	})
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "max_rtt",
 		Value: float64(stats.MinRtt.Milliseconds()),
 	})
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "avg_rtt",
 		Value: float64(stats.AvgRtt.Milliseconds()),
 	})
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "packet_duplicates",
 		Value: float64(stats.PacketsRecvDuplicates),
 	})
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "packet_receive",
 		Value: float64(stats.PacketsRecv),
 	})
 
-	custom_metrics = append(custom_metrics, models.CustomMetric{
+	custom_metrics = append(custom_metrics, models.Metric{
 		Name:  "packet_send",
 		Value: float64(stats.PacketsSent),
 	})

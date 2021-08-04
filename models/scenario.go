@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hidracloud/hidra/database"
+	uuid "github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
+	"gorm.io/gorm"
 )
 
-type stepFn func(map[string]string) ([]CustomMetric, error)
+type stepFn func(map[string]string) ([]Metric, error)
 
 // Define one step
 type Step struct {
@@ -24,18 +27,19 @@ type Scenario struct {
 }
 
 // Define step metrics
-type StepMetric struct {
+type StepResult struct {
 	Step      Step
 	StartDate time.Time
 	EndDate   time.Time
+	Metrics   []Metric
 }
 
 // Define scenario metrics
-type ScenarioMetric struct {
+type ScenarioResult struct {
 	Scenario    Scenario
 	StartDate   time.Time
 	EndDate     time.Time
-	StepMetrics []*StepMetric
+	StepResults []*StepResult
 	Error       error
 	ErrorString string
 }
@@ -49,18 +53,31 @@ type Scenarios struct {
 	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
 }
 
-// Custom metric for scenarios
-type CustomMetric struct {
-	Name   string
-	Value  float64
-	Labels map[string]string
+// metric for scenarios
+type Metric struct {
+	gorm.Model
+	ID       uuid.UUID `gorm:"primaryKey;type:char(36);"`
+	Name     string
+	Value    float64
+	Step     string
+	Scenario string
+	Labels   map[string]string `gorm:"-"`
+}
+
+// Metric labels
+type MetricLabel struct {
+	gorm.Model
+	Key      string
+	Value    string
+	Metric   Metric `gorm:"foreignKey:MetricId" json:"-"`
+	MetricId string
 }
 
 // Define scenario interface
 type IScenario interface {
 	StartPrimitives()
 	Init()
-	RunStep(string, map[string]string) ([]CustomMetric, error)
+	RunStep(string, map[string]string) ([]Metric, error)
 	RegisterStep(string, stepFn)
 }
 
@@ -69,8 +86,28 @@ func (s *Scenario) StartPrimitives() {
 	s.StepsFn = make(map[string]stepFn)
 }
 
+// Push new metric to db
+func (m *Metric) PushToDB(labels map[string]string) error {
+	if result := database.ORM.Create(m); result.Error != nil {
+		return result.Error
+	}
+
+	for k, v := range labels {
+		label := MetricLabel{
+			Key:      k,
+			Value:    v,
+			MetricId: m.ID.String(),
+		}
+
+		if result := database.ORM.Create(&label); result.Error != nil {
+			return result.Error
+		}
+	}
+	return nil
+}
+
 // Run an step
-func (s *Scenario) RunStep(name string, c map[string]string) ([]CustomMetric, error) {
+func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 	if _, ok := s.StepsFn[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
 	}

@@ -1,19 +1,8 @@
 package prometheus
 
-import (
-	"encoding/json"
-	"log"
-	"net/http"
-	"strconv"
-	"time"
-
-	"github.com/hidracloud/hidra/models"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-)
-
+/*
 var (
-	sampleMetricStatus = prometheus.NewGaugeVec(
+	SampleResultStatus = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: "hidra",
 			Name:      "sample_metric_status",
@@ -22,7 +11,7 @@ var (
 		[]string{"agent_id", "sample_id", "sample_name", "checksum"},
 	)
 
-	sampleMetricTime = prometheus.NewGaugeVec(
+	SampleResultTime = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: "hidra",
 			Name:      "sample_metric_time",
@@ -31,7 +20,7 @@ var (
 		[]string{"agent_id", "sample_id", "sample_name", "checksum"},
 	)
 
-	sampleStepMetricTime = prometheus.NewGaugeVec(
+	sampleStepResultTime = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: "hidra",
 			Name:      "sample_step_metric_time",
@@ -42,9 +31,9 @@ var (
 )
 
 func StartPrometheus(listenAddr string, pullTime int) {
-	prometheus.MustRegister(sampleMetricStatus)
-	prometheus.MustRegister(sampleMetricTime)
-	prometheus.MustRegister(sampleStepMetricTime)
+	prometheus.MustRegister(SampleResultStatus)
+	prometheus.MustRegister(SampleResultTime)
+	prometheus.MustRegister(sampleStepResultTime)
 
 	go func() {
 		for {
@@ -63,36 +52,36 @@ func StartPrometheus(listenAddr string, pullTime int) {
 					}
 
 					// Write test status
-					sampleMetricStatus.WithLabelValues(
+					SampleResultStatus.WithLabelValues(
 						agent.ID.String(),
 						sample.ID.String(),
 						sample.Name,
 						sample.Checksum).Set(float64(sampleStatus))
 
 					testTime := float64(lastMetricByAgent.EndDate.UnixNano() - lastMetricByAgent.StartDate.UnixNano())
-					sampleMetricTime.WithLabelValues(
+					SampleResultTime.WithLabelValues(
 						agent.ID.String(),
 						sample.ID.String(),
 						sample.Name,
 						sample.Checksum).Set(testTime)
 
-					stepMetrics, _ := lastMetricByAgent.GetStepMetrics()
+					StepResults, _ := lastMetricByAgent.GetStepResults()
 
-					for i := 0; i < len(stepMetrics); i++ {
-						stepMetric := stepMetrics[i]
+					for i := 0; i < len(StepResults); i++ {
+						StepResult := StepResults[i]
 						step := sampleDef.Scenario.Steps[i]
 
 						paramsStr, _ := json.Marshal(step.Params)
 
-						stepMetricTime := float64(stepMetric.EndDate.UnixNano() - stepMetric.StartDate.UnixNano())
-						sampleStepMetricTime.WithLabelValues(
+						StepResultTime := float64(StepResult.EndDate.UnixNano() - StepResult.StartDate.UnixNano())
+						sampleStepResultTime.WithLabelValues(
 							agent.ID.String(),
 							sample.ID.String(),
 							sample.Name,
 							sample.Checksum,
 							step.Type,
 							string(paramsStr),
-							strconv.FormatBool(step.Negate)).Set(stepMetricTime)
+							strconv.FormatBool(step.Negate)).Set(StepResultTime)
 					}
 				}
 			}
@@ -106,3 +95,4 @@ func StartPrometheus(listenAddr string, pullTime int) {
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }
+*/

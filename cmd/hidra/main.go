@@ -12,7 +12,6 @@ import (
 	"github.com/hidracloud/hidra/agent"
 	"github.com/hidracloud/hidra/api"
 	"github.com/hidracloud/hidra/models"
-	"github.com/hidracloud/hidra/prometheus"
 	"github.com/hidracloud/hidra/scenarios"
 	_ "github.com/hidracloud/hidra/scenarios/all"
 	"github.com/joho/godotenv"
@@ -69,7 +68,7 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		log.Fatal(m.Error)
 	}
 
-	scenarios.PrettyPrintScenarioMetrics(m, slist.Name, slist.Description)
+	scenarios.PrettyPrintScenarioResults(m, slist.Name, slist.Description)
 	wg.Done()
 }
 
@@ -87,7 +86,7 @@ func runApiMode(cfg *flagConfig, wg *sync.WaitGroup) {
 
 func runMetricMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	log.Println("Running hidra in metric mode")
-	prometheus.StartPrometheus(cfg.metricsListenAddr, cfg.metricsPullSeconds)
+	//prometheus.StartPrometheus(cfg.metricsListenAddr, cfg.metricsPullSeconds)
 	wg.Done()
 }
 

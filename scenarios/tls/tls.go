@@ -19,7 +19,7 @@ type TLSScneario struct {
 	certificates []*x509.Certificate
 }
 
-func (s *TLSScneario) connectTo(c map[string]string) ([]models.CustomMetric, error) {
+func (s *TLSScneario) connectTo(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["to"]; !ok {
 		return nil, fmt.Errorf("to parameter missing")
 	}
@@ -40,7 +40,7 @@ func (s *TLSScneario) connectTo(c map[string]string) ([]models.CustomMetric, err
 	return nil, nil
 }
 
-func (s *TLSScneario) dnsShouldBePresent(c map[string]string) ([]models.CustomMetric, error) {
+func (s *TLSScneario) dnsShouldBePresent(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["dns"]; !ok {
 		return nil, fmt.Errorf("dns parameter missing")
 	}
@@ -66,7 +66,7 @@ func (s *TLSScneario) dnsShouldBePresent(c map[string]string) ([]models.CustomMe
 	return nil, fmt.Errorf("dns missing")
 }
 
-func (s *TLSScneario) shouldBeValidFor(c map[string]string) ([]models.CustomMetric, error) {
+func (s *TLSScneario) shouldBeValidFor(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["for"]; !ok {
 		return nil, fmt.Errorf("for parameter missing")
 	}
