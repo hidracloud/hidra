@@ -13,7 +13,7 @@ func TestTLSScenario(t *testing.T) {
 
 	params := make(map[string]string)
 	params["to"] = "google.com:443"
-	err := s.RunStep("connectTo", params)
+	_, err := s.RunStep("connectTo", params)
 
 	if err != nil {
 		t.Error(err)
@@ -22,7 +22,7 @@ func TestTLSScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["dns"] = "google.com"
 
-	err = s.RunStep("dnsShouldBePresent", params)
+	_, err = s.RunStep("dnsShouldBePresent", params)
 
 	if err != nil {
 		t.Error(err)
@@ -31,7 +31,7 @@ func TestTLSScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["for"] = "7d"
 
-	err = s.RunStep("shouldBeValidFor", params)
+	_, err = s.RunStep("shouldBeValidFor", params)
 
 	if err != nil {
 		t.Error(err)

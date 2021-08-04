@@ -1,12 +1,13 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
-type stepFn func(map[string]string) error
+type stepFn func(map[string]string) ([]CustomMetric, error)
 
 // Define one step
 type Step struct {
@@ -48,11 +49,18 @@ type Scenarios struct {
 	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
 }
 
+// Custom metric for scenarios
+type CustomMetric struct {
+	Name   string
+	Value  float64
+	Labels map[string]string
+}
+
 // Define scenario interface
 type IScenario interface {
 	StartPrimitives()
 	Init()
-	RunStep(string, map[string]string) error
+	RunStep(string, map[string]string) ([]CustomMetric, error)
 	RegisterStep(string, stepFn)
 }
 
@@ -62,7 +70,10 @@ func (s *Scenario) StartPrimitives() {
 }
 
 // Run an step
-func (s *Scenario) RunStep(name string, c map[string]string) error {
+func (s *Scenario) RunStep(name string, c map[string]string) ([]CustomMetric, error) {
+	if _, ok := s.StepsFn[name]; !ok {
+		return nil, fmt.Errorf("sorry but %s not found", name)
+	}
 	return s.StepsFn[name](c)
 }
 
