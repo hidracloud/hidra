@@ -4,6 +4,7 @@ package icmp
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hidracloud/hidra/models"
 	"github.com/hidracloud/hidra/scenarios"
@@ -44,6 +45,8 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) 
 
 	custom_metrics := make([]models.Metric, 0)
 
+	now := time.Now()
+
 	for i := 0; i < len(tcrresult.Hops); i++ {
 		custom_metrics = append(custom_metrics, models.Metric{
 			Name:  fmt.Sprintf("hop_%d_elapsed", i),
@@ -52,6 +55,8 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) 
 				"host": tcrresult.Hops[i].Host,
 				"ip":   fmt.Sprintf("%v.%v.%v.%v", tcrresult.Hops[i].Address[0], tcrresult.Hops[i].Address[1], tcrresult.Hops[i].Address[2], tcrresult.Hops[i].Address[3]),
 			},
+			Description: "time to completed hop",
+			Expires:     time.Duration(now.Add(time.Minute * 5).Unix()),
 		})
 
 		status := 0
@@ -67,12 +72,16 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) 
 				"host": tcrresult.Hops[i].Host,
 				"ip":   fmt.Sprintf("%v.%v.%v.%v", tcrresult.Hops[i].Address[0], tcrresult.Hops[i].Address[1], tcrresult.Hops[i].Address[2], tcrresult.Hops[i].Address[3]),
 			},
+			Description: "hop status",
+			Expires:     time.Duration(now.Add(time.Minute * 5).Unix()),
 		})
 	}
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "hops",
-		Value: float64(len(tcrresult.Hops)),
+		Name:        "hops",
+		Value:       float64(len(tcrresult.Hops)),
+		Description: "number of hops",
+		Expires:     time.Duration(now.Add(time.Minute * 5).Unix()),
 	})
 
 	return custom_metrics, nil
@@ -111,38 +120,45 @@ func (h *IcmpScenario) ping(c map[string]string) ([]models.Metric, error) {
 	custom_metrics := make([]models.Metric, 0)
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "packet_loss",
-		Value: stats.PacketLoss,
+		Name:        "packet_loss",
+		Value:       stats.PacketLoss,
+		Description: "number of lost packets",
 	})
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "min_rtt",
-		Value: float64(stats.MinRtt.Milliseconds()),
+		Name:        "min_rtt",
+		Value:       float64(stats.MinRtt.Milliseconds()),
+		Description: "min ping",
 	})
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "max_rtt",
-		Value: float64(stats.MinRtt.Milliseconds()),
+		Name:        "max_rtt",
+		Value:       float64(stats.MinRtt.Milliseconds()),
+		Description: "max ping",
 	})
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "avg_rtt",
-		Value: float64(stats.AvgRtt.Milliseconds()),
+		Name:        "avg_rtt",
+		Value:       float64(stats.AvgRtt.Milliseconds()),
+		Description: "avg ping",
 	})
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "packet_duplicates",
-		Value: float64(stats.PacketsRecvDuplicates),
+		Name:        "packet_duplicates",
+		Value:       float64(stats.PacketsRecvDuplicates),
+		Description: "duplicate packets",
 	})
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "packet_receive",
-		Value: float64(stats.PacketsRecv),
+		Name:        "packet_receive",
+		Value:       float64(stats.PacketsRecv),
+		Description: "packets received",
 	})
 
 	custom_metrics = append(custom_metrics, models.Metric{
-		Name:  "packet_send",
-		Value: float64(stats.PacketsSent),
+		Name:        "packet_send",
+		Value:       float64(stats.PacketsSent),
+		Description: "packets send",
 	})
 
 	return custom_metrics, nil

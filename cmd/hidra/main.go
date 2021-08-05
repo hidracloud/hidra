@@ -12,6 +12,7 @@ import (
 	"github.com/hidracloud/hidra/agent"
 	"github.com/hidracloud/hidra/api"
 	"github.com/hidracloud/hidra/models"
+	"github.com/hidracloud/hidra/prometheus"
 	"github.com/hidracloud/hidra/scenarios"
 	_ "github.com/hidracloud/hidra/scenarios/all"
 	"github.com/joho/godotenv"
@@ -86,7 +87,7 @@ func runApiMode(cfg *flagConfig, wg *sync.WaitGroup) {
 
 func runMetricMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	log.Println("Running hidra in metric mode")
-	//prometheus.StartPrometheus(cfg.metricsListenAddr, cfg.metricsPullSeconds)
+	prometheus.StartPrometheus(cfg.metricsListenAddr, cfg.metricsPullSeconds)
 	wg.Done()
 }
 
@@ -116,7 +117,7 @@ func main() {
 
 	// Metric mode
 	flag.StringVar(&cfg.metricsListenAddr, "metric_listen_addr", ":9096", "-metric_listen_addr listen address")
-	flag.IntVar(&cfg.metricsPullSeconds, "metric_pull_seconds", 1, "-metric_pull_seconds time to pull for new metrics")
+	flag.IntVar(&cfg.metricsPullSeconds, "metric_pull_seconds", 15, "-metric_pull_seconds time to pull for new metrics")
 
 	// Agent mode
 	flag.StringVar(&cfg.agentSecret, "agent_secret", "", "-agent_secret for registering this agent")

@@ -140,6 +140,8 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 			for k, v := range metric.Labels {
 				labels[k] = v
 			}
+
+			metric.ID = uuid.NewV4()
 			metric.LabelsChecksum = CalculateLabelsChecksum(labels)
 			metric.PushToDB(labels)
 		}

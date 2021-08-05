@@ -26,10 +26,6 @@ func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 		smetric.StartDate = time.Now()
 		custom_metrics, err := srunner.RunStep(step.Type, step.Params)
 
-		for _, m := range custom_metrics {
-			log.Printf("Custom metric `%s` with value %f & labels %s\n", m.Name, m.Value, m.Labels)
-		}
-
 		smetric.Metrics = custom_metrics
 		smetric.EndDate = time.Now()
 		metric.StepResults = append(metric.StepResults, &smetric)

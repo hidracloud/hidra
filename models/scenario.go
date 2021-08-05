@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/hidracloud/hidra/database"
@@ -63,6 +64,8 @@ type Metric struct {
 	Scenario       string
 	Labels         map[string]string `gorm:"-"`
 	LabelsChecksum string
+	Description    string
+	Expires        time.Duration
 }
 
 // Metric labels
@@ -72,6 +75,62 @@ type MetricLabel struct {
 	Value    string
 	Metric   Metric `gorm:"foreignKey:MetricId" json:"-"`
 	MetricId string
+}
+
+// Delete all expired metrics
+func DeleteExpiredMetrics() error {
+	if result := database.ORM.Where("expires < ? and expires != 0", time.Now().Unix()).Unscoped().Delete(&Metric{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// Get disticnt metric name
+func GetDistinctMetricName() ([]string, error) {
+	var results []string
+
+	if result := database.ORM.Model(&Metric{}).Distinct().Pluck("name", &results); result.Error != nil {
+		return nil, result.Error
+	}
+
+	return results, nil
+}
+
+// Get distint checksum by name
+func GetDistinctChecksumByName(name string) ([]string, error) {
+	var results []string
+	if result := database.ORM.Model(&Metric{}).Where("name = ?", name).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
+		return nil, result.Error
+	}
+	return results, nil
+}
+
+// Get one metric by name
+func GetMetricByName(name string) (*Metric, error) {
+	var result Metric
+	if result := database.ORM.Model(&Metric{}).Where("name = ?", name).Last(&result); result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &result, nil
+}
+
+// Get one metric by checksum
+func GetMetricByChecksum(checksum string) (*Metric, error) {
+	var result Metric
+	if result := database.ORM.Model(&Metric{}).Where("labels_checksum = ?", checksum).Last(&result); result.Error != nil {
+		return nil, result.Error
+	}
+	return &result, nil
+}
+
+// Get metric label by metric id
+func GetMetricLabelByMetricID(id uuid.UUID) ([]MetricLabel, error) {
+	var results []MetricLabel
+	if result := database.ORM.Model(&MetricLabel{}).Where("metric_id = ?", id).Find(&results); result.Error != nil {
+		return nil, result.Error
+	}
+	return results, nil
 }
 
 // Define scenario interface
@@ -123,8 +182,16 @@ func (s *Scenario) RegisterStep(name string, step stepFn) {
 // Calculate labels checksum
 func CalculateLabelsChecksum(labels map[string]string) string {
 	var checksum string
-	for k, v := range labels {
-		checksum += k + v
+
+	keys := make([]string, 0, len(labels))
+	for k := range labels {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		checksum += k + labels[k]
 	}
 	return checksum
 }
