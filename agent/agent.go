@@ -76,7 +76,7 @@ func (a *Agent) GetSample(id string) []byte {
 }
 
 // Push metrics to API
-func (a *Agent) PushMetrics(sampleId string, metrics *models.ScenarioMetric) error {
+func (a *Agent) PushMetrics(sampleId string, metrics *models.ScenarioResult) error {
 	if metrics.Error != nil {
 		metrics.ErrorString = metrics.Error.Error()
 	}

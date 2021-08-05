@@ -1,10 +1,8 @@
 package prometheus
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/hidracloud/hidra/models"
@@ -12,88 +10,95 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	sampleMetricStatus = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: "hidra",
-			Name:      "sample_metric_status",
-			Help:      "This is my sample metric status",
-		},
-		[]string{"agent_id", "sample_id", "sample_name", "checksum"},
-	)
-
-	sampleMetricTime = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: "hidra",
-			Name:      "sample_metric_time",
-			Help:      "This is my sample metric status",
-		},
-		[]string{"agent_id", "sample_id", "sample_name", "checksum"},
-	)
-
-	sampleStepMetricTime = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: "hidra",
-			Name:      "sample_step_metric_time",
-			Help:      "This is my sample metric status",
-		},
-		[]string{"agent_id", "sample_id", "sample_name", "checksum", "step_name", "params", "negate"},
-	)
-)
-
 func StartPrometheus(listenAddr string, pullTime int) {
-	prometheus.MustRegister(sampleMetricStatus)
-	prometheus.MustRegister(sampleMetricTime)
-	prometheus.MustRegister(sampleStepMetricTime)
-
 	go func() {
+		gaugeDict := make(map[string]*prometheus.GaugeVec)
+		labelSet := make(map[string][]string, 0)
+
 		for {
-			samples, _ := models.GetSamples()
-			agents, _ := models.GetAgents()
+			metricsNames, err := models.GetDistinctMetricName()
 
-			for _, sample := range samples {
-				sampleDef, _ := models.ReadScenariosYAML(sample.SampleData)
-				for _, agent := range agents {
-					lastMetricByAgent, _ := sample.GetLastMetricByAgent(agent.ID.String())
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 
-					sampleStatus := 1
-					if len(lastMetricByAgent.Error) == 0 {
-						sampleStatus = 0
-
+			// Search for new metrics
+			for _, metricName := range metricsNames {
+				if _, ok := gaugeDict[metricName]; !ok {
+					oneMetric, err := models.GetMetricByName(metricName)
+					if err != nil {
+						log.Println(err)
+						continue
 					}
 
-					// Write test status
-					sampleMetricStatus.WithLabelValues(
-						agent.ID.String(),
-						sample.ID.String(),
-						sample.Name,
-						sample.Checksum).Set(float64(sampleStatus))
-
-					testTime := float64(lastMetricByAgent.EndDate.UnixNano() - lastMetricByAgent.StartDate.UnixNano())
-					sampleMetricTime.WithLabelValues(
-						agent.ID.String(),
-						sample.ID.String(),
-						sample.Name,
-						sample.Checksum).Set(testTime)
-
-					stepMetrics, _ := lastMetricByAgent.GetStepMetrics()
-
-					for i := 0; i < len(stepMetrics); i++ {
-						stepMetric := stepMetrics[i]
-						step := sampleDef.Scenario.Steps[i]
-
-						paramsStr, _ := json.Marshal(step.Params)
-
-						stepMetricTime := float64(stepMetric.EndDate.UnixNano() - stepMetric.StartDate.UnixNano())
-						sampleStepMetricTime.WithLabelValues(
-							agent.ID.String(),
-							sample.ID.String(),
-							sample.Name,
-							sample.Checksum,
-							step.Type,
-							string(paramsStr),
-							strconv.FormatBool(step.Negate)).Set(stepMetricTime)
+					metriLabels, err := models.GetMetricLabelByMetricID(oneMetric.ID)
+					if err != nil {
+						log.Println(err)
+						continue
 					}
+
+					labels := []string{}
+
+					for _, label := range metriLabels {
+						labels = append(labels, label.Key)
+					}
+
+					helpText := oneMetric.Description
+
+					if helpText == "" {
+						helpText = "Auto generated metric by hidra"
+					}
+
+					gaugeDict[metricName] = prometheus.NewGaugeVec(
+						prometheus.GaugeOpts{
+							Namespace: "hidra",
+							Name:      metricName,
+							Help:      helpText,
+						},
+						labels,
+					)
+
+					labelSet[metricName] = labels
+
+					prometheus.MustRegister(gaugeDict[metricName])
+				}
+
+				gaugeDict[metricName].Reset()
+
+				distinct_labels, err := models.GetDistinctChecksumByName(metricName)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				for _, label := range distinct_labels {
+					oneMetric, err := models.GetMetricByChecksum(label)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+
+					labelsDict := make(map[string]string)
+
+					metricLabels, err := models.GetMetricLabelByMetricID(oneMetric.ID)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+
+					for _, label := range metricLabels {
+						labelsDict[label.Key] = label.Value
+					}
+
+					labels := make([]string, len(labelSet[metricName]))
+					for k, v := range labelSet[metricName] {
+						if _, ok := labelsDict[v]; ok {
+							labels[k] = labelsDict[v]
+						}
+					}
+
+					gaugeDict[metricName].WithLabelValues(labels...).Set(oneMetric.Value)
 				}
 			}
 
@@ -101,7 +106,6 @@ func StartPrometheus(listenAddr string, pullTime int) {
 		}
 	}()
 
-	// Run HTTP metrics server with auth basic
 	log.Println("Starting metrics at " + listenAddr)
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(listenAddr, nil))

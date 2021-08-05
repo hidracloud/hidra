@@ -9,24 +9,26 @@ import (
 )
 
 // Run one scenario
-func RunScenario(s models.Scenario, name, desc string) *models.ScenarioMetric {
+func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 	log.Printf("[%s] Running new scenario, \"%s\"\n", name, desc)
 
 	srunner := Scenarios[s.Kind]()
 	srunner.Init()
 
-	metric := models.ScenarioMetric{}
+	metric := models.ScenarioResult{}
 	metric.Scenario = s
-	metric.StepMetrics = make([]*models.StepMetric, 0)
+	metric.StepResults = make([]*models.StepResult, 0)
 	metric.StartDate = time.Now()
 
 	for _, step := range s.Steps {
-		smetric := models.StepMetric{}
+		smetric := models.StepResult{}
 		smetric.Step = step
 		smetric.StartDate = time.Now()
-		err := srunner.RunStep(step.Type, step.Params)
+		custom_metrics, err := srunner.RunStep(step.Type, step.Params)
+
+		smetric.Metrics = custom_metrics
 		smetric.EndDate = time.Now()
-		metric.StepMetrics = append(metric.StepMetrics, &smetric)
+		metric.StepResults = append(metric.StepResults, &smetric)
 
 		if step.Negate && err == nil {
 			metric.Error = fmt.Errorf("expected fail")
@@ -46,7 +48,7 @@ func RunScenario(s models.Scenario, name, desc string) *models.ScenarioMetric {
 }
 
 // Print scenario metrics
-func PrettyPrintScenarioMetrics(m *models.ScenarioMetric, name, desc string) {
+func PrettyPrintScenarioResults(m *models.ScenarioResult, name, desc string) {
 	log.Printf("[%s] Metrics results for: %s\n", name, desc)
 	if m.Error == nil {
 		log.Printf("[%s] Scenario ran without issues\n", name)
@@ -56,7 +58,7 @@ func PrettyPrintScenarioMetrics(m *models.ScenarioMetric, name, desc string) {
 	}
 	log.Printf("[%s] Total scenario duration: %d (ms)\n", name, m.EndDate.Sub(m.StartDate).Milliseconds())
 
-	for _, s := range m.StepMetrics {
+	for _, s := range m.StepResults {
 		log.Printf("[%s]   |_ %s duration: %d (ms)\n", name, s.Step.Type, s.EndDate.Sub(s.StartDate).Milliseconds())
 	}
 }

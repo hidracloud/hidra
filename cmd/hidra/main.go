@@ -69,7 +69,7 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		log.Fatal(m.Error)
 	}
 
-	scenarios.PrettyPrintScenarioMetrics(m, slist.Name, slist.Description)
+	scenarios.PrettyPrintScenarioResults(m, slist.Name, slist.Description)
 	wg.Done()
 }
 
@@ -117,7 +117,7 @@ func main() {
 
 	// Metric mode
 	flag.StringVar(&cfg.metricsListenAddr, "metric_listen_addr", ":9096", "-metric_listen_addr listen address")
-	flag.IntVar(&cfg.metricsPullSeconds, "metric_pull_seconds", 1, "-metric_pull_seconds time to pull for new metrics")
+	flag.IntVar(&cfg.metricsPullSeconds, "metric_pull_seconds", 15, "-metric_pull_seconds time to pull for new metrics")
 
 	// Agent mode
 	flag.StringVar(&cfg.agentSecret, "agent_secret", "", "-agent_secret for registering this agent")

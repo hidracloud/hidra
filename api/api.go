@@ -4,6 +4,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/hidracloud/hidra/models"
@@ -13,6 +14,16 @@ import (
 // Represent API object
 type API struct {
 	router http.Handler
+}
+
+// Run a cron for API process
+func cron() {
+	log.Println("Starting cron for API")
+
+	for {
+		models.DeleteExpiredMetrics()
+		time.Sleep(time.Second)
+	}
 }
 
 // Start a new API process
@@ -38,6 +49,8 @@ func StartApi(serverAddr string) {
 	r.Handle("/api/agent_get_sample/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentGetSample))).Methods(http.MethodGet)
 
 	api.router = r
+
+	go cron()
 
 	log.Fatal(http.ListenAndServe(":8080", api.router))
 }

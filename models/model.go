@@ -17,8 +17,9 @@ func SetupDB(db_type, db_path, db_uri string) {
 	database.ORM.AutoMigrate(&Agent{})
 	database.ORM.AutoMigrate(&AgentTag{})
 	database.ORM.AutoMigrate(&Sample{})
-	database.ORM.AutoMigrate(&SampleMetric{})
-	database.ORM.AutoMigrate(&SampleStepMetric{})
+	database.ORM.AutoMigrate(&SampleResult{})
+	database.ORM.AutoMigrate(&Metric{})
+	database.ORM.AutoMigrate(&MetricLabel{})
 
 	admin := GetUserByEmail("root")
 	if admin.ID == uuid.Nil {

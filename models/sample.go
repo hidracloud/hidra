@@ -3,6 +3,8 @@ package models
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/hidracloud/hidra/database"
@@ -21,18 +23,8 @@ type Sample struct {
 	Checksum   string
 }
 
-// Represent a sample step metric
-type SampleStepMetric struct {
-	gorm.Model     `json:"-"`
-	ID             uuid.UUID    `gorm:"primaryKey;type:char(36);"`
-	SampleMetricId uuid.UUID    `json:"-"`
-	SampleMetric   SampleMetric `gorm:"foreignKey:SampleMetricId" json:"-"`
-	StartDate      time.Time
-	EndDate        time.Time
-}
-
 // Represent sample metric
-type SampleMetric struct {
+type SampleResult struct {
 	gorm.Model `json:"-"`
 	ID         uuid.UUID `gorm:"primaryKey;type:char(36);"`
 	SampleId   uuid.UUID `json:"-"`
@@ -66,64 +58,96 @@ func GetSampleById(id string) (*Sample, error) {
 }
 
 // Push metrics to db.
-func (s *Sample) PushMetrics(scenarioMetric *ScenarioMetric, agentId string) error {
+func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) error {
 
-	sampleMetric := SampleMetric{
+	sample_result := SampleResult{
 		ID:        uuid.NewV4(),
 		Sample:    *s,
-		StartDate: scenarioMetric.StartDate,
-		EndDate:   scenarioMetric.EndDate,
-		Error:     scenarioMetric.ErrorString,
+		StartDate: ScenarioResult.StartDate,
+		EndDate:   ScenarioResult.EndDate,
+		Error:     ScenarioResult.ErrorString,
 		AgentId:   uuid.FromStringOrNil(agentId),
 	}
 
-	if result := database.ORM.Create(&sampleMetric); result.Error != nil {
+	if result := database.ORM.Create(&sample_result); result.Error != nil {
 		return result.Error
 	}
 
-	for _, step := range scenarioMetric.StepMetrics {
-		sampleStepMetric := SampleStepMetric{
+	common_labels := map[string]string{
+		"agent_id":    agentId,
+		"sample_id":   s.ID.String(),
+		"sample_name": s.Name,
+		"checksum":    s.Checksum,
+	}
+
+	sample_metric_time := Metric{
+		ID:             uuid.NewV4(),
+		Name:           "sample_metric_time",
+		Value:          float64(sample_result.EndDate.UnixNano() - sample_result.StartDate.UnixNano()),
+		LabelsChecksum: CalculateLabelsChecksum(common_labels),
+	}
+
+	err := sample_metric_time.PushToDB(common_labels)
+
+	if err != nil {
+		return err
+	}
+
+	status := 1
+
+	if ScenarioResult.ErrorString != "" {
+		status = 0
+	}
+
+	sample_metric_status := Metric{
+		ID:             uuid.NewV4(),
+		Name:           "sample_metric_status",
+		Value:          float64(status),
+		LabelsChecksum: CalculateLabelsChecksum(common_labels),
+	}
+
+	err = sample_metric_status.PushToDB(common_labels)
+
+	if err != nil {
+		return err
+	}
+
+	for _, step := range ScenarioResult.StepResults {
+
+		common_labels["step"] = step.Step.Type
+		common_labels["negate"] = strconv.FormatBool(step.Step.Negate)
+		paramsStr, _ := json.Marshal(step.Step.Params)
+		common_labels["params"] = string(paramsStr)
+
+		step_sample_metric_time := Metric{
 			ID:             uuid.NewV4(),
-			StartDate:      step.StartDate,
-			EndDate:        step.EndDate,
-			SampleMetricId: sampleMetric.ID,
+			Name:           "sample_step_metric_time",
+			Value:          float64(step.EndDate.UnixNano() - step.StartDate.UnixNano()),
+			LabelsChecksum: CalculateLabelsChecksum(common_labels),
 		}
 
-		if result := database.ORM.Create(&sampleStepMetric); result.Error != nil {
-			return result.Error
+		err = step_sample_metric_time.PushToDB(common_labels)
+
+		if err != nil {
+			return err
+		}
+
+		for _, metric := range step.Metrics {
+			labels := make(map[string]string)
+			for k, v := range common_labels {
+				labels[k] = v
+			}
+			for k, v := range metric.Labels {
+				labels[k] = v
+			}
+
+			metric.ID = uuid.NewV4()
+			metric.LabelsChecksum = CalculateLabelsChecksum(labels)
+			metric.PushToDB(labels)
 		}
 	}
 
 	return nil
-}
-
-// Get last metric from a sample group by agent id
-func (sample *Sample) GetLastMetricByAgent(agentId string) (*SampleMetric, error) {
-	sampleMetric := SampleMetric{}
-	if result := database.ORM.Where("sample_id = ? AND agent_id = ?", sample.ID, agentId).Order("end_date DESC").First(&sampleMetric); result.Error != nil {
-		return nil, result.Error
-	}
-	return &sampleMetric, nil
-}
-
-// Get step metrics by sample id
-func (sample *SampleMetric) GetStepMetrics() ([]SampleStepMetric, error) {
-	sampleStepMetrics := make([]SampleStepMetric, 0)
-	if result := database.ORM.Where("sample_metric_id = ?", sample.ID).Find(&sampleStepMetrics); result.Error != nil {
-		return nil, result.Error
-	}
-	return sampleStepMetrics, nil
-}
-
-// Get last metrics from a sample
-func (sample *Sample) GetLastMetrics() (*SampleMetric, error) {
-	sampleMetric := SampleMetric{}
-
-	if result := database.ORM.First(&sampleMetric, "sample_id = ?", sample.ID); result.Error != nil {
-		return nil, result.Error
-	}
-
-	return &sampleMetric, nil
 }
 
 // Register a new sample

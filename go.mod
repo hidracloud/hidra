@@ -3,6 +3,8 @@ module github.com/hidracloud/hidra
 go 1.16
 
 require (
+	github.com/aeden/traceroute v0.0.0-20210211061815-03f5f7cb7908
+	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.3.0

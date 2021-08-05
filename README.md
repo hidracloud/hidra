@@ -5,3 +5,8 @@
 # hidra
 
 Don't lose your mind monitoring your services. Hidra lends you its head.
+
+# ICMP
+If you want to use ICMP scenario, you should activate on your system:
+
+  sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"
