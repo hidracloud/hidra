@@ -23,7 +23,7 @@ jobs:
 
       - name: 'Build & test'
         run: |
-          make compress
+          make build
 
       - name: 'compresss'
         run: |
