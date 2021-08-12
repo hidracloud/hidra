@@ -14,13 +14,15 @@ import (
 
 // Represent a sample, that could be saved on database.
 type Sample struct {
-	gorm.Model `json:"-"`
-	ID         uuid.UUID `gorm:"primaryKey;type:char(36);"`
-	Name       string    `json:"-"`
-	OwnerId    uuid.UUID `json:"-"`
-	Owner      User      `gorm:"foreignKey:OwnerId" json:"-"`
-	SampleData []byte    `json:"-"`
-	Checksum   string
+	gorm.Model  `json:"-"`
+	ID          uuid.UUID `gorm:"primaryKey;type:char(36);"`
+	Name        string    `json:"-"`
+	OwnerId     uuid.UUID `json:"-"`
+	Owner       User      `gorm:"foreignKey:OwnerId" json:"-"`
+	SampleData  []byte    `json:"-"`
+	Checksum    string
+	Description string `json:"-"`
+	Kind        string `json:"-"`
 }
 
 // Represent sample metric
@@ -40,7 +42,7 @@ type SampleResult struct {
 func GetSamples() ([]Sample, error) {
 	samples := make([]Sample, 0)
 
-	if result := database.ORM.Find(&samples); result.Error != nil {
+	if result := database.ORM.Order("updated_at desc").Find(&samples); result.Error != nil {
 		return nil, result.Error
 	}
 
@@ -150,15 +152,33 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 	return nil
 }
 
-// Register a new sample
-func RegisterSample(name string, sampleData []byte, user *User) error {
-	checksum := md5.Sum(sampleData)
+// Update a sample
+func UpdateSample(id, name, descrption, kind string, sampleData []byte, user *User) (*Sample, error) {
+	suuid, err := uuid.FromString(id)
 
-	newSample := Sample{ID: uuid.NewV4(), Name: name, Owner: *user, SampleData: sampleData, Checksum: hex.EncodeToString(checksum[:])}
-
-	if result := database.ORM.Create(&newSample); result.Error != nil {
-		return result.Error
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	checksum := md5.Sum(sampleData)
+	updateSample := Sample{ID: suuid, Name: name, Kind: kind, Description: descrption, Owner: *user, SampleData: sampleData, Checksum: hex.EncodeToString(checksum[:])}
+
+	// Save the sample
+	if result := database.ORM.Save(&updateSample); result.Error != nil {
+		return nil, result.Error
+	}
+	return &updateSample, nil
+}
+
+// Register a new sample
+func RegisterSample(name, descrption, kind string, sampleData []byte, user *User) (*Sample, error) {
+	checksum := md5.Sum(sampleData)
+
+	newSample := Sample{ID: uuid.NewV4(), Name: name, Kind: kind, Description: descrption, Owner: *user, SampleData: sampleData, Checksum: hex.EncodeToString(checksum[:])}
+
+	if result := database.ORM.Create(&newSample); result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &newSample, nil
 }

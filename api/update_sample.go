@@ -6,11 +6,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/hidracloud/hidra/models"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Generate a new sample
-func (a *API) RegisterSample(w http.ResponseWriter, r *http.Request) {
+func (a *API) UpdateSample(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
 	user := models.GetLoggedUser(r)
 
 	err := models.CheckIfAllowTo(user, "register_sample")
@@ -28,6 +32,17 @@ func (a *API) RegisterSample(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oldSample, err := models.GetSampleById(params["sampleid"])
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	if oldSample.ID == uuid.Nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
 	sample, err := models.ReadScenariosYAML(data)
 	if err != nil {
 		log.Println(err)
@@ -35,7 +50,7 @@ func (a *API) RegisterSample(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newSample, err := models.RegisterSample(sample.Name, sample.Description, sample.Scenario.Kind, data, user)
+	updateSample, err := models.UpdateSample(params["sampleid"], sample.Name, sample.Description, sample.Scenario.Kind, data, user)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusForbidden)
@@ -43,5 +58,5 @@ func (a *API) RegisterSample(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newSample)
+	json.NewEncoder(w).Encode(updateSample)
 }

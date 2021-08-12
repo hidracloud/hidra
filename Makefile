@@ -1,6 +1,9 @@
 BUILD_PATH = 'build'
 VERSION = $(shell git describe --tags --abbrev=0)
 
+versionize:
+	sed -i 's/latest/${VERSION}/g' utils/version.go
+
 build:
 	GOOS=linux GOARCH=amd64 go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-amd64/hidra cmd/hidra/main.go
 	GOOS=linux GOARCH=386 go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-386/hidra cmd/hidra/main.go
@@ -23,4 +26,4 @@ compress:
 clean:
 	rm -rf build
 
-all: deps build compress
+all: versionize deps build compress

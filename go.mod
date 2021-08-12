@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/namsral/flag v1.7.4-pre
 	github.com/prometheus/client_golang v1.11.0
+	github.com/rs/cors v1.8.0
 	github.com/satori/go.uuid v1.2.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	gopkg.in/yaml.v2 v2.4.0
