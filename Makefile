@@ -28,4 +28,4 @@ clean:
 	sed -i 's/${VERSION}/latest/g' utils/version.go
 
 
-all: versionize deps build compress
+all: deps build compress
