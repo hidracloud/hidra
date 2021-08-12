@@ -19,7 +19,8 @@ jobs:
       - name: 'Build & test'
         run: |
           make versionize
-          make
+          make deps
+          make build
           make compress
 
       - name: Set git-tag
