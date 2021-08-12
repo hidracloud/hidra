@@ -16,13 +16,18 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.16.x
-      - name: 'Build & test'
+      - name: 'Generate version and dependencies'
         run: |
           make versionize
           make deps
-          make build
+
+      - name: 'Build & test'
+        run: |
           make compress
 
+      - name: 'compresss'
+        run: |
+          make compress
       - name: Set git-tag
         run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
