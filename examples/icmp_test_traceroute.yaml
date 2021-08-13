@@ -1,5 +1,5 @@
 name: icmp_test_ping
-description: Test ping to 8.8.8.8
+description: Test traceroute to 8.8.8.8
 scrapeInterval: 1m
 scenario:
   kind: icmp
