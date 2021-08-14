@@ -19,7 +19,11 @@ type ListSampleResponse struct {
 
 // Get a list of samples by id and checksum
 func (a *API) ListSamples(w http.ResponseWriter, r *http.Request) {
-	samples, _ := models.GetSamples()
+	samples, err := models.GetSamples()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	sampleResponse := make([]ListSampleResponse, len(samples))
 
 	for sample := range samples {

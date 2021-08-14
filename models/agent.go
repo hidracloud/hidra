@@ -51,13 +51,30 @@ func CreateAgent(secret string, tags map[string]string) error {
 	}
 
 	for k, v := range tags {
-		newAgentTag := AgentTag{ID: uuid.NewV4(), Key: k, Value: v, Agent: newAgent}
-		if result := database.ORM.Create(&newAgentTag); result.Error != nil {
-			return result.Error
+		err := CreateAgentTagByAgentID(newAgent.ID, k, v)
+		if err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+func CreateAgentTagByAgentID(agentID uuid.UUID, key string, value string) error {
+	newAgentTag := AgentTag{ID: uuid.NewV4(), Key: key, Value: value, AgentId: agentID}
+	if result := database.ORM.Create(&newAgentTag); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// Get agent by id
+func GetAgent(agentID uuid.UUID) (Agent, error) {
+	var agent Agent
+	if result := database.ORM.First(&agent, "id = ?", agentID); result.Error != nil {
+		return agent, result.Error
+	}
+	return agent, nil
 }
 
 // Get all agents
@@ -67,6 +84,23 @@ func GetAgents() ([]Agent, error) {
 		return nil, result.Error
 	}
 	return agents, nil
+}
+
+// Delete agent tags by agent id
+func DeleteAgentTags(agentID uuid.UUID) error {
+	if result := database.ORM.Where("agent_id = ?", agentID).Delete(&AgentTag{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// Get agent tags
+func GetAgentTags(agentID uuid.UUID) ([]AgentTag, error) {
+	var agentTags []AgentTag
+	if result := database.ORM.Where("agent_id = ?", agentID).Find(&agentTags); result.Error != nil {
+		return nil, result.Error
+	}
+	return agentTags, nil
 }
 
 // Check if agent secret is correct

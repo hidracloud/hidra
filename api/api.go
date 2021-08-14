@@ -42,8 +42,10 @@ func StartApi(serverAddr string) {
 	r.Handle("/api/register_sample", models.AuthMiddleware(http.HandlerFunc(api.RegisterSample))).Methods(http.MethodPost)
 	r.Handle("/api/update_sample/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.UpdateSample))).Methods(http.MethodPut)
 	r.Handle("/api/list_samples", models.AuthMiddleware(http.HandlerFunc(api.ListSamples))).Methods(http.MethodGet)
+	r.Handle("/api/list_agents", models.AuthMiddleware(http.HandlerFunc(api.ListAgents))).Methods(http.MethodGet)
 	r.Handle("/api/verify_token", models.AuthMiddleware(http.HandlerFunc(api.VerifyToken))).Methods(http.MethodGet)
 	r.Handle("/api/get_sample/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.AgentGetSample))).Methods(http.MethodGet)
+	r.Handle("/api/get_agent/{agentid}", models.AuthMiddleware(http.HandlerFunc(api.GetAgent))).Methods(http.MethodGet)
 
 	// Pre-register agent functions
 	r.Handle("/api/register_agent", models.AuthMiddleware(http.HandlerFunc(api.RegisterAgent))).Methods(http.MethodPost)
