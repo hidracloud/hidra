@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -38,7 +39,14 @@ func (a *Agent) DoApiCall(endpoint, method string, body io.Reader) (*http.Respon
 
 	req.Header.Set("Authorization", "Bearer "+a.Secret)
 
-	return client.Do(req)
+	resp, err := client.Do(req)
+
+	log.Println(endpoint, method, resp.Status)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("error code not 200, %d", resp.StatusCode)
+	}
+
+	return resp, err
 }
 
 // List all samples related to current agent

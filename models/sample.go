@@ -38,6 +38,15 @@ type SampleResult struct {
 	AgentId    uuid.UUID `json:"-"`
 }
 
+// Search samples by name
+func SearchSamples(name string) ([]Sample, error) {
+	samples := []Sample{}
+	if result := database.ORM.Order("updated_at desc").Where("name LIKE ?", "%"+name+"%").Find(&samples); result.Error != nil {
+		return nil, result.Error
+	}
+	return samples, nil
+}
+
 // Return a list of samples
 func GetSamples() ([]Sample, error) {
 	samples := make([]Sample, 0)
@@ -47,6 +56,11 @@ func GetSamples() ([]Sample, error) {
 	}
 
 	return samples, nil
+}
+
+// Get common sample query
+func GetSampleQuery() *gorm.DB {
+	return database.ORM.Order("updated_at desc")
 }
 
 // Get one sample by id
@@ -75,8 +89,14 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 		return result.Error
 	}
 
+	agent, err := GetAgent(uuid.FromStringOrNil(agentId))
+	if err != nil {
+		return err
+	}
+
 	common_labels := map[string]string{
 		"agent_id":    agentId,
+		"agent_name":  agent.Name,
 		"sample_id":   s.ID.String(),
 		"sample_name": s.Name,
 		"checksum":    s.Checksum,
@@ -89,7 +109,7 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 		LabelsChecksum: CalculateLabelsChecksum(common_labels),
 	}
 
-	err := sample_metric_time.PushToDB(common_labels)
+	err = sample_metric_time.PushToDB(common_labels)
 
 	if err != nil {
 		return err

@@ -15,8 +15,10 @@ import (
 // Represent one agent in db.
 type Agent struct {
 	gorm.Model
-	ID     uuid.UUID `gorm:"primaryKey;type:char(36);"`
-	Secret string    `json:"-" gorm:"primaryKey;type:char(36);"`
+	Name        string
+	Description string
+	ID          uuid.UUID `gorm:"primaryKey;type:char(36);"`
+	Secret      string    `json:"-" gorm:"primaryKey;type:char(36);"`
 }
 
 // Represent agent tags
@@ -43,8 +45,8 @@ func VerifyRegisterAgentToken(tokenString string) (jwt.Claims, error) {
 }
 
 // Create a new agent.
-func CreateAgent(secret string, tags map[string]string) error {
-	newAgent := Agent{ID: uuid.NewV4(), Secret: secret}
+func CreateAgent(secret, name, description string, tags map[string]string) error {
+	newAgent := Agent{ID: uuid.NewV4(), Secret: secret, Name: name, Description: description}
 
 	if result := database.ORM.Create(&newAgent); result.Error != nil {
 		return result.Error
@@ -77,13 +79,41 @@ func GetAgent(agentID uuid.UUID) (Agent, error) {
 	return agent, nil
 }
 
+// Search agent by name
+func SearchAgentByName(name string) ([]Agent, error) {
+	var agents []Agent
+	if result := GetAgentQuery().Where("name LIKE ?", "%"+name+"%").Find(&agents); result.Error != nil {
+		return agents, result.Error
+	}
+	return agents, nil
+}
+
 // Get all agents
 func GetAgents() ([]Agent, error) {
 	var agents []Agent
-	if result := database.ORM.Find(&agents); result.Error != nil {
+	if result := GetAgentQuery().Find(&agents); result.Error != nil {
 		return nil, result.Error
 	}
 	return agents, nil
+}
+
+// Get common get agent query
+func GetAgentQuery() *gorm.DB {
+	return database.ORM.Order("updated_at desc")
+}
+
+// Update agent by agent id
+func UpdateAgent(agentID uuid.UUID, name, description string) error {
+	var agent Agent
+	if result := database.ORM.First(&agent, "id = ?", agentID); result.Error != nil {
+		return result.Error
+	}
+	agent.Name = name
+	agent.Description = description
+	if result := database.ORM.Save(&agent); result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
 // Delete agent tags by agent id

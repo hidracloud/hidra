@@ -19,7 +19,25 @@ type ListSampleResponse struct {
 
 // Get a list of samples by id and checksum
 func (a *API) ListSamples(w http.ResponseWriter, r *http.Request) {
-	samples, err := models.GetSamples()
+	var err error
+	var samples []models.Sample
+
+	search := r.URL.Query().Get("search")
+
+	if search == "" {
+		samples, err = models.GetSamples()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	} else {
+		samples, err = models.SearchSamples(search)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

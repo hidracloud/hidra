@@ -28,9 +28,12 @@ func (a *API) GetAgent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newAgent := ListAgentsResponse{
-		Id:     agent.ID.String(),
-		Tags:   make(map[string]string),
-		Secret: agent.Secret,
+		Id:          agent.ID.String(),
+		Name:        agent.Name,
+		Description: agent.Description,
+		Tags:        make(map[string]string),
+		Secret:      agent.Secret,
+		UpdatedAt:   agent.UpdatedAt,
 	}
 
 	for _, tag := range tags {

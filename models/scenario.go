@@ -85,6 +85,17 @@ func DeleteExpiredMetrics() error {
 	return nil
 }
 
+// Delete old metrics
+func DeleteOldMetrics(interval time.Duration) error {
+	expiretime := time.Now()
+	expiretime.Add(interval)
+
+	if result := database.ORM.Where("updated_at < ?", expiretime.Unix()).Unscoped().Delete(&Metric{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 // Get disticnt metric name
 func GetDistinctMetricName() ([]string, error) {
 	var results []string
