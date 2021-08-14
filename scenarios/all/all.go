@@ -2,6 +2,7 @@
 package all
 
 import (
+	_ "github.com/hidracloud/hidra/scenarios/browser"
 	_ "github.com/hidracloud/hidra/scenarios/http"
 	_ "github.com/hidracloud/hidra/scenarios/icmp"
 	_ "github.com/hidracloud/hidra/scenarios/tls"

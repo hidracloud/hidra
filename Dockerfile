@@ -6,7 +6,7 @@ COPY . .
 RUN go mod vendor
 RUN  CGO_ENABLED=0 GOOS=linux go build -o hidra cmd/hidra/main.go
 
-FROM alpine:3 as runtime
+FROM chromedp/headless-shell:stable as runtime
 
 ARG DATA_DIR="/var/lib/hidra/data"
 RUN mkdir -p $DATA_DIR

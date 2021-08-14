@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var defaultStepTimeout = 15 * time.Second
+
 type stepFn func(map[string]string) ([]Metric, error)
 
 // Define one step
@@ -182,7 +184,22 @@ func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 	if _, ok := s.StepsFn[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
 	}
-	return s.StepsFn[name](c)
+
+	metricsChain := make(chan []Metric, 1)
+	errorChain := make(chan error, 1)
+
+	go func() {
+		metrics, err := s.StepsFn[name](c)
+		metricsChain <- metrics
+		errorChain <- err
+	}()
+
+	select {
+	case err := <-errorChain:
+		return <-metricsChain, err
+	case <-time.After(defaultStepTimeout):
+		return nil, fmt.Errorf("your step generated a timeout")
+	}
 }
 
 // Register step default method

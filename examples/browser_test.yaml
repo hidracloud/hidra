@@ -1,0 +1,22 @@
+name: browser_test
+description: test browser
+scrapeInterval: 1m
+scenario:
+  kind: browser
+  steps:
+    - type: navigateTo
+      params:
+        url: "https://hidra.cloud/"
+    - type: waitVisible
+      params:
+        selector: "#td-cover-block-0 > div > div > div > div > div > div > a.btn.btn-lg.btn-primary.mr-3.mb-4"
+    - type: click
+      params:
+        selector: "#td-cover-block-0 > div > div > div > div > div > div > a.btn.btn-lg.btn-primary.mr-3.mb-4"
+    - type: urlShouldBe
+      params:
+        url: "https://hidra.cloud/docs/"
+    - type: textShouldBe
+      params:
+        selector: 'body > div > div > div > main > div > div.pageinfo.pageinfo-primary > p'
+        text: Welcome to the Hidra documentation!
