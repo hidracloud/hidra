@@ -25,7 +25,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
+      - name: Download precompiled assets
+        run: |
+          get_latest_release() {
+            curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
+              grep '"tag_name":' |                                            # Get tag line
+              sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
+          }
+          LATEST_RELEASE=$(get_latest_release "hidracloud/hidra-frontend")
+          mkdir -p api/external/hidra-frontend/app/build
+          cd api/external/hidra-frontend/app
+          wget https://github.com/hidracloud/hidra-frontend/releases/download/$LATEST_RELEASE/hidra-frontend.tar.gz
+          tar -xvzf hidra-frontend.tar.gz
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
