@@ -2,6 +2,8 @@
 package api
 
 import (
+	"embed"
+	"io/fs"
 	"log"
 	"net/http"
 	"time"
@@ -25,6 +27,18 @@ func cron() {
 		models.DeleteExpiredMetrics()
 		time.Sleep(time.Second)
 	}
+}
+
+//go:embed external/hidra-frontend/app/build
+var webapp embed.FS
+
+func getWebApp() http.FileSystem {
+	fsys, err := fs.Sub(webapp, "external/hidra-frontend/app/build")
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FS(fsys)
 }
 
 // Start a new API process
@@ -55,6 +69,10 @@ func StartApi(serverAddr string) {
 	r.Handle("/api/agent_list_samples", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentListSamples))).Methods(http.MethodGet)
 	r.Handle("/api/agent_push_metrics/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentPushMetrics))).Methods(http.MethodPost)
 	r.Handle("/api/agent_get_sample/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentGetSample))).Methods(http.MethodGet)
+
+	// React webapp
+	r.PathPrefix("/static").Handler(http.FileServer(getWebApp()))
+	r.Handle("/", http.FileServer(getWebApp()))
 
 	c := cors.AllowAll()
 
