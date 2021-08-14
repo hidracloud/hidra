@@ -18,6 +18,8 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Download precompiled assets
         run: |
           get_latest_release() {
@@ -30,8 +32,6 @@ jobs:
           cd api/external/hidra-frontend/app
           wget https://github.com/hidracloud/hidra-frontend/releases/download/$LATEST_RELEASE/hidra-frontend.tar.gz
           tar -xvzf hidra-frontend.tar.gz
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Test
         run: go test ./...
       - name: Test cmd execution
