@@ -25,6 +25,7 @@ func cron() {
 
 	for {
 		models.DeleteExpiredMetrics()
+		models.ProcessMetricsQueue()
 		time.Sleep(time.Second)
 	}
 }

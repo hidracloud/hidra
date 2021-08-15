@@ -12,6 +12,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// Represent push metric queue
+type MetricQueue struct {
+	AgentId        string
+	Sample         Sample
+	ScenarioResult ScenarioResult
+}
+
+var metricsQueue []MetricQueue
+
 // Represent a sample, that could be saved on database.
 type Sample struct {
 	gorm.Model  `json:"-"`
@@ -71,6 +80,19 @@ func GetSampleById(id string) (*Sample, error) {
 		return nil, result.Error
 	}
 	return &sample, nil
+}
+
+// Process metrics queue
+func ProcessMetricsQueue() {
+	for len(metricsQueue) > 0 {
+		metricsQueue[0].Sample.PushMetrics(&metricsQueue[0].ScenarioResult, metricsQueue[0].AgentId)
+		metricsQueue = metricsQueue[1:]
+	}
+}
+
+// Push metrics to queue
+func (s *Sample) PushMetricsToQueue(ScenarioResult *ScenarioResult, agentId string) {
+	metricsQueue = append(metricsQueue, MetricQueue{AgentId: agentId, Sample: *s, ScenarioResult: *ScenarioResult})
 }
 
 // Push metrics to db.
@@ -201,4 +223,8 @@ func RegisterSample(name, descrption, kind string, sampleData []byte, user *User
 	}
 
 	return &newSample, nil
+}
+
+func init() {
+	metricsQueue = make([]MetricQueue, 0)
 }

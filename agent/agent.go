@@ -41,7 +41,6 @@ func (a *Agent) DoApiCall(endpoint, method string, body io.Reader) (*http.Respon
 
 	resp, err := client.Do(req)
 
-	log.Println(endpoint, method, resp.Status)
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("error code not 200, %d", resp.StatusCode)
 	}

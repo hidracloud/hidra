@@ -22,6 +22,6 @@ func (a *API) AgentPushMetrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sample.PushMetrics(&ScenarioResult, r.Header.Get("agent_id"))
+	sample.PushMetricsToQueue(&ScenarioResult, r.Header.Get("agent_id"))
 
 }
