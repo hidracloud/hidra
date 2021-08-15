@@ -80,5 +80,5 @@ func StartApi(serverAddr string) {
 
 	go cron()
 
-	log.Fatal(http.ListenAndServe(":8080", c.Handler(api.router)))
+	log.Fatal(http.ListenAndServe(serverAddr, c.Handler(api.router)))
 }
