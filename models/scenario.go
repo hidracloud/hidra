@@ -43,7 +43,7 @@ type ScenarioResult struct {
 	StartDate   time.Time
 	EndDate     time.Time
 	StepResults []*StepResult
-	Error       error
+	Error       error `json:"-"`
 	ErrorString string
 }
 

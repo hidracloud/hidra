@@ -90,6 +90,7 @@ func (a *Agent) PushMetrics(sampleId string, metrics *models.ScenarioResult) err
 	}
 
 	payloadBuf := new(bytes.Buffer)
+	fmt.Println(metrics)
 	err := json.NewEncoder(payloadBuf).Encode(metrics)
 
 	if err != nil {
