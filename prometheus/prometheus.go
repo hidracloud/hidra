@@ -73,7 +73,7 @@ func StartPrometheus(listenAddr string, pullTime int) {
 				}
 
 				for _, label := range distinct_labels {
-					oneMetric, err := models.GetMetricByChecksum(label)
+					oneMetric, err := models.GetMetricByChecksum(label, metricName)
 					if err != nil {
 						log.Println(err)
 						continue

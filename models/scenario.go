@@ -129,9 +129,9 @@ func GetMetricByName(name string) (*Metric, error) {
 }
 
 // Get one metric by checksum
-func GetMetricByChecksum(checksum string) (*Metric, error) {
+func GetMetricByChecksum(checksum, name string) (*Metric, error) {
 	var result Metric
-	if result := database.ORM.Model(&Metric{}).Where("labels_checksum = ?", checksum).Last(&result); result.Error != nil {
+	if result := database.ORM.Model(&Metric{}).Where("labels_checksum = ? and name = ?", checksum, name).Last(&result); result.Error != nil {
 		return nil, result.Error
 	}
 	return &result, nil
