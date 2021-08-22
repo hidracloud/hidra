@@ -43,8 +43,8 @@ type SampleResult struct {
 	StartDate  time.Time
 	EndDate    time.Time
 	Error      string
-	Agent      Agent     `gorm:"foreignKey:AgentId" json:"-"`
-	AgentId    uuid.UUID `json:"-"`
+	Agent      Agent `gorm:"foreignKey:AgentId"`
+	AgentId    uuid.UUID
 }
 
 // Search samples by name
@@ -70,7 +70,7 @@ func GetSamples() ([]Sample, error) {
 // Get sample results by sample id
 func GetSampleResults(sampleId string, limit int) ([]SampleResult, error) {
 	sampleResults := []SampleResult{}
-	if result := database.ORM.Where("sample_id = ?", sampleId).Order("created_at desc").Limit(limit).Find(&sampleResults); result.Error != nil {
+	if result := database.ORM.Where("sample_id = ?", sampleId).Order("created_at desc").Limit(limit).Preload("Agent").Find(&sampleResults); result.Error != nil {
 		return nil, result.Error
 	}
 	return sampleResults, nil

@@ -147,10 +147,19 @@ func GetMetricLabelByMetricID(id uuid.UUID) ([]MetricLabel, error) {
 	return results, nil
 }
 
+// Get distinct metrics by name and sample id
+func GetDistinctChecksumByNameAndSampleID(name, sampleID string) ([]string, error) {
+	var results []string
+	if result := database.ORM.Model(&Metric{}).Where("name = ? and sample_id = ?", name, sampleID).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
+		return nil, result.Error
+	}
+	return results, nil
+}
+
 // Get metrics by name and sample id
-func GetMetricsByNameAndSampleID(name, sampleID string, limit int) ([]Metric, error) {
+func GetMetricsByNameAndSampleID(name, sampleID, checksum string, limit int) ([]Metric, error) {
 	var results []Metric
-	if result := database.ORM.Model(&Metric{}).Where("name = ? and sample_id = ?", name, sampleID).Order("created_at desc").Limit(limit).Find(&results); result.Error != nil {
+	if result := database.ORM.Model(&Metric{}).Where("name = ? and sample_id = ? and labels_checksum = ?", name, sampleID, checksum).Order("created_at desc").Limit(limit).Find(&results); result.Error != nil {
 		return nil, result.Error
 	}
 	return results, nil

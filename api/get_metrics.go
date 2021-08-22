@@ -34,34 +34,43 @@ func (a *API) GetMetrics(w http.ResponseWriter, r *http.Request) {
 		oneMetricResponse := MetricResponse{}
 		oneMetricResponse.MetricName = name
 
-		metricValues, err := models.GetMetricsByNameAndSampleID(name, params["sampleid"], 10)
+		checksums, err := models.GetDistinctChecksumByNameAndSampleID(name, params["sampleid"])
+
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		labels := make(map[string]string)
-
-		for _, metricValue := range metricValues {
-			oneMetricResponse.Values = append(oneMetricResponse.Values, MetricValueResponse{
-				Value: metricValue.Value,
-				Time:  metricValue.CreatedAt.Unix(),
-			})
-
-			metriLabels, err := models.GetMetricLabelByMetricID(metricValue.ID)
-
+		for _, checksum := range checksums {
+			metricValues, err := models.GetMetricsByNameAndSampleID(name, params["sampleid"], checksum, 10)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
-			for _, label := range metriLabels {
-				labels[label.Key] = label.Value
-			}
-		}
+			labels := make(map[string]string)
 
-		oneMetricResponse.Labels = labels
-		response = append(response, oneMetricResponse)
+			for _, metricValue := range metricValues {
+				oneMetricResponse.Values = append(oneMetricResponse.Values, MetricValueResponse{
+					Value: metricValue.Value,
+					Time:  metricValue.CreatedAt.Unix(),
+				})
+
+				metriLabels, err := models.GetMetricLabelByMetricID(metricValue.ID)
+
+				if err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
+
+				for _, label := range metriLabels {
+					labels[label.Key] = label.Value
+				}
+			}
+
+			oneMetricResponse.Labels = labels
+			response = append(response, oneMetricResponse)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
