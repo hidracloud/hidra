@@ -122,7 +122,7 @@ func main() {
 	// Agent mode
 	flag.StringVar(&cfg.agentSecret, "agent_secret", "", "-agent_secret for registering this agent")
 	flag.StringVar(&cfg.apiEndpoint, "api_url", "http://localhost:8080/api", "-api_url where is api url?")
-	flag.StringVar(&cfg.dataDir, "data_dir", "/var/tmp/agent-data", "-data_dir where you want to store agent data?")
+	flag.StringVar(&cfg.dataDir, "data_dir", "/var/lib/hidra/data", "-data_dir where you want to store agent data?")
 
 	flag.Parse()
 
