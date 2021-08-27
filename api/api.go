@@ -77,6 +77,21 @@ func StartApi(serverAddr string) {
 	r.PathPrefix("/static").Handler(http.FileServer(getWebApp()))
 	r.Handle("/", http.FileServer(getWebApp()))
 
+	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		webapp := getWebApp()
+
+		file, err := webapp.Open("index.html")
+
+		if err != nil {
+			log.Println(err)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		defer file.Close()
+		http.ServeContent(w, r, "index.html", time.Now(), file)
+	})
+
 	c := cors.AllowAll()
 
 	api.router = c.Handler(r)
