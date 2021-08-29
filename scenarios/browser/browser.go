@@ -129,6 +129,10 @@ func (b *BrowserScenario) navigateTo(c map[string]string) ([]models.Metric, erro
 	return nil, nil
 }
 
+func (b *BrowserScenario) Description() string {
+	return "It executes actions on a real browser, as if it were being executed by Google Chrome."
+}
+
 func (b *BrowserScenario) Init() {
 	b.StartPrimitives()
 

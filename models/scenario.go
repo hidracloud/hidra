@@ -171,6 +171,7 @@ type IScenario interface {
 	Init()
 	RunStep(string, map[string]string) ([]Metric, error)
 	RegisterStep(string, stepFn)
+	Description() string
 }
 
 // Initialize primitive variables
@@ -241,6 +242,10 @@ func CalculateLabelsChecksum(labels map[string]string) string {
 		checksum += k + labels[k]
 	}
 	return checksum
+}
+
+func (s *Scenario) Description() string {
+	return ""
 }
 
 // Read scenarios pointer from yaml
