@@ -28,22 +28,12 @@ type HttpScenario struct {
 
 // Set user agent
 func (h *HttpScenario) setUserAgent(c map[string]string) ([]models.Metric, error) {
-	var ok bool
-	if h.Headers["User-Agent"], ok = c["user-agent"]; !ok {
-		return nil, fmt.Errorf("user-agent parameter missing")
-	}
+	h.Headers["User-Agent"] = c["user-agent"]
 	return nil, nil
 }
 
 // Add new HTTP header
 func (h *HttpScenario) addHttpHeader(c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["key"]; !ok {
-		return nil, fmt.Errorf("key parameter missing")
-	}
-	if _, ok := c["value"]; !ok {
-		return nil, fmt.Errorf("value parameter missing")
-	}
-
 	h.Headers[c["key"]] = c["value"]
 	return nil, nil
 }
@@ -101,9 +91,7 @@ func (h *HttpScenario) request(c map[string]string) ([]models.Metric, error) {
 	var err error
 	var ok bool
 
-	if h.Url, ok = c["url"]; !ok {
-		return nil, fmt.Errorf("url parameter missing")
-	}
+	h.Url = c["url"]
 
 	h.Method = "GET"
 
@@ -126,10 +114,6 @@ func (h *HttpScenario) statusCodeShouldBe(c map[string]string) ([]models.Metric,
 		return nil, fmt.Errorf("request should be initialized first")
 	}
 
-	if _, ok := c["statusCode"]; !ok {
-		return nil, fmt.Errorf("statusCode parameter missing")
-	}
-
 	if strconv.Itoa(h.Response.StatusCode) != c["statusCode"] {
 		return nil, fmt.Errorf("statusCode expected %s, but %d", c["statusCode"], h.Response.StatusCode)
 	}
@@ -138,8 +122,8 @@ func (h *HttpScenario) statusCodeShouldBe(c map[string]string) ([]models.Metric,
 }
 
 func (h *HttpScenario) bodyShouldContain(c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["search"]; !ok {
-		return nil, fmt.Errorf("search parameter missing")
+	if h.Response == nil {
+		return nil, fmt.Errorf("request should be initialized first")
 	}
 
 	if !strings.Contains(h.Body, strings.ToLower(c["search"])) {
@@ -150,8 +134,14 @@ func (h *HttpScenario) bodyShouldContain(c map[string]string) ([]models.Metric, 
 }
 
 func (h *HttpScenario) shouldRedirectTo(c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["url"]; !ok {
-		return nil, fmt.Errorf("url parameter missing")
+
+	if h.Response == nil {
+		return nil, fmt.Errorf("request should be initialized first")
+	}
+
+	// Check if header Location is present
+	if h.Response.Header.Get("Location") == "" {
+		return nil, fmt.Errorf("expected Location header, but not found")
 	}
 
 	if h.Response.Header.Get("Location") != c["url"] {
@@ -171,6 +161,10 @@ func (h *HttpScenario) clear(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
+func (h *HttpScenario) Description() string {
+	return "Run a HTTP scenario"
+}
+
 func (h *HttpScenario) Init() {
 	h.StartPrimitives()
 
@@ -183,14 +177,63 @@ func (h *HttpScenario) Init() {
 		return http.ErrUseLastResponse
 	}
 
-	h.RegisterStep("request", h.request)
-	h.RegisterStep("statusCodeShouldBe", h.statusCodeShouldBe)
-	h.RegisterStep("setUserAgent", h.setUserAgent)
-	h.RegisterStep("addHttpHeader", h.addHttpHeader)
-	h.RegisterStep("bodyShouldContain", h.bodyShouldContain)
-	h.RegisterStep("shouldRedirectTo", h.shouldRedirectTo)
+	h.RegisterStep("request", models.StepDefinition{
+		Description: "Send a HTTP request",
+		Params: []models.StepParam{
+			{Name: "url", Optional: false, Description: "URL to send the request"},
+			{Name: "method", Optional: true, Description: "HTTP method to use"},
+			{Name: "body", Optional: true, Description: "Body to send"},
+		},
+		Fn: h.request,
+	})
 
-	h.RegisterStep("clear", h.clear)
+	h.RegisterStep("statusCodeShouldBe", models.StepDefinition{
+		Description: "Check if status code is as expected",
+		Params: []models.StepParam{
+			{Name: "statusCode", Optional: false, Description: "Status code to check"},
+		},
+		Fn: h.statusCodeShouldBe,
+	})
+
+	h.RegisterStep("bodyShouldContain", models.StepDefinition{
+		Description: "Check if body contains a string",
+		Params: []models.StepParam{
+			{Name: "search", Optional: false, Description: "String to search"},
+		},
+		Fn: h.bodyShouldContain,
+	})
+
+	h.RegisterStep("shouldRedirectTo", models.StepDefinition{
+		Description: "Check if redirect to a given URL",
+		Params: []models.StepParam{
+			{Name: "url", Optional: false, Description: "URL to check"},
+		},
+		Fn: h.shouldRedirectTo,
+	})
+
+	h.RegisterStep("clear", models.StepDefinition{
+		Description: "Clear parameters",
+		Params:      []models.StepParam{},
+		Fn:          h.clear,
+	})
+
+	h.RegisterStep("addHttpHeader", models.StepDefinition{
+		Description: "Add a HTTP header",
+		Params: []models.StepParam{
+			{Name: "key", Optional: false, Description: "Header name"},
+			{Name: "value", Optional: false, Description: "Header value"},
+		},
+		Fn: h.addHttpHeader,
+	})
+
+	h.RegisterStep("setUserAgent", models.StepDefinition{
+		Description: "Set User-Agent header",
+		Params: []models.StepParam{
+			{Name: "user-agent", Optional: false, Description: "User-Agent value"},
+		},
+		Fn: h.setUserAgent,
+	})
+
 }
 
 func init() {

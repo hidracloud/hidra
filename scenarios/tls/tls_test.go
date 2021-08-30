@@ -8,7 +8,7 @@ import (
 
 func TestTLSScenario(t *testing.T) {
 	// Initialize scenario
-	s := &tls.TLSScneario{}
+	s := &tls.TLSScenario{}
 	s.Init()
 
 	params := make(map[string]string)

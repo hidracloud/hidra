@@ -19,10 +19,6 @@ type IcmpScenario struct {
 }
 
 func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["hostname"]; !ok {
-		return nil, fmt.Errorf("hostname parameter missing")
-	}
-
 	options := traceroute.TracerouteOptions{}
 	options.SetRetries(0)
 	options.SetMaxHops(traceroute.DEFAULT_MAX_HOPS + 1)
@@ -113,8 +109,6 @@ func (h *IcmpScenario) ping(c map[string]string) ([]models.Metric, error) {
 		return nil, err
 	}
 
-	fmt.Println(err)
-
 	stats := pinger.Statistics()
 
 	custom_metrics := make([]models.Metric, 0)
@@ -164,12 +158,28 @@ func (h *IcmpScenario) ping(c map[string]string) ([]models.Metric, error) {
 	return custom_metrics, nil
 }
 
+func (h *IcmpScenario) Description() string {
+	return "Run a ICMP scenario"
+}
+
 func (h *IcmpScenario) Init() {
 	h.StartPrimitives()
 
-	h.RegisterStep("ping", h.ping)
-	h.RegisterStep("traceroute", h.traceroute)
+	h.RegisterStep("ping", models.StepDefinition{
+		Description: "Run a ICMP ping",
+		Params: []models.StepParam{
+			{Name: "hostname", Description: "Hostname to ping", Optional: false},
+		},
+		Fn: h.ping,
+	})
 
+	h.RegisterStep("traceroute", models.StepDefinition{
+		Description: "Run a ICMP traceroute",
+		Params: []models.StepParam{
+			{Name: "hostname", Description: "Hostname to traceroute", Optional: false},
+		},
+		Fn: h.traceroute,
+	})
 }
 
 func init() {
