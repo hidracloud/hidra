@@ -22,11 +22,19 @@ type Step struct {
 	Negate bool
 }
 
-// Define one scenario
-type Scenario struct {
-	Kind    string
-	Steps   []Step
-	StepsFn map[string]stepFn
+// Step parameters
+type StepParam struct {
+	Name        string
+	Description string
+	Optional    bool
+}
+
+// Step function definition
+type StepDefinition struct {
+	Name        string
+	Description string
+	Params      []StepParam
+	Fn          stepFn
 }
 
 // Define step metrics
@@ -35,6 +43,13 @@ type StepResult struct {
 	StartDate time.Time
 	EndDate   time.Time
 	Metrics   []Metric
+}
+
+// Define one scenario
+type Scenario struct {
+	Kind             string
+	Steps            []Step
+	StepsDefinitions map[string]StepDefinition
 }
 
 // Define scenario metrics
@@ -170,13 +185,13 @@ type IScenario interface {
 	StartPrimitives()
 	Init()
 	RunStep(string, map[string]string) ([]Metric, error)
-	RegisterStep(string, stepFn)
+	RegisterStep(string, StepDefinition)
 	Description() string
 }
 
 // Initialize primitive variables
 func (s *Scenario) StartPrimitives() {
-	s.StepsFn = make(map[string]stepFn)
+	s.StepsDefinitions = make(map[string]StepDefinition)
 }
 
 // Push new metric to db
@@ -201,15 +216,22 @@ func (m *Metric) PushToDB(labels map[string]string) error {
 
 // Run an step
 func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
-	if _, ok := s.StepsFn[name]; !ok {
+	if _, ok := s.StepsDefinitions[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
 	}
 
+	params := s.StepsDefinitions[name].Params
+
+	for _, param := range params {
+		if _, ok := c[param.Name]; !ok && !param.Optional {
+			return nil, fmt.Errorf("missing parameter %s but expected", param.Name)
+		}
+	}
 	metricsChain := make(chan []Metric, 1)
 	errorChain := make(chan error, 1)
 
 	go func() {
-		metrics, err := s.StepsFn[name](c)
+		metrics, err := s.StepsDefinitions[name].Fn(c)
 		metricsChain <- metrics
 		errorChain <- err
 	}()
@@ -223,8 +245,8 @@ func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 }
 
 // Register step default method
-func (s *Scenario) RegisterStep(name string, step stepFn) {
-	s.StepsFn[name] = step
+func (s *Scenario) RegisterStep(name string, step StepDefinition) {
+	s.StepsDefinitions[name] = step
 }
 
 // Calculate labels checksum

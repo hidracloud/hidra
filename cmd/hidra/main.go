@@ -81,7 +81,7 @@ func runAgentMode(cfg *flagConfig, wg *sync.WaitGroup) {
 
 func runApiMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	log.Println("Running hidra in api mode")
-	api.StartApi(cfg.listenAddr)
+	api.StartApi(cfg.listenAddr, cfg.dbType)
 	wg.Done()
 }
 

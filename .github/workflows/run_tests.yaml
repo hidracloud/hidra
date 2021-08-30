@@ -33,6 +33,6 @@ jobs:
           wget https://github.com/hidracloud/hidra-frontend/releases/download/$LATEST_RELEASE/hidra-frontend.tar.gz
           tar -xvzf hidra-frontend.tar.gz
       - name: Test
-        run: go test ./...
+        run: sudo go test ./...
       - name: Test cmd execution
         run: go run ./cmd/hidra/main.go --test --file ./examples/http_test.yaml

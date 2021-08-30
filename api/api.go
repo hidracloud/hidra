@@ -16,6 +16,7 @@ import (
 
 // Represent API object
 type API struct {
+	dbType string
 	router http.Handler
 }
 
@@ -43,10 +44,11 @@ func getWebApp() http.FileSystem {
 }
 
 // Start a new API process
-func StartApi(serverAddr string) {
+func StartApi(serverAddr, dbtype string) {
 	log.Printf("Starting api at %s\n", serverAddr)
 
 	api := API{}
+	api.dbType = dbtype
 	r := mux.NewRouter()
 
 	// Public functions
@@ -62,6 +64,8 @@ func StartApi(serverAddr string) {
 	r.Handle("/api/list_samples", models.AuthMiddleware(http.HandlerFunc(api.ListSamples))).Methods(http.MethodGet)
 	r.Handle("/api/list_agents", models.AuthMiddleware(http.HandlerFunc(api.ListAgents))).Methods(http.MethodGet)
 	r.Handle("/api/verify_token", models.AuthMiddleware(http.HandlerFunc(api.VerifyToken))).Methods(http.MethodGet)
+	r.Handle("/api/system_info", models.AuthMiddleware(http.HandlerFunc(api.SystemInfo))).Methods(http.MethodGet)
+
 	r.Handle("/api/get_sample/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.AgentGetSample))).Methods(http.MethodGet)
 	r.Handle("/api/get_sample_result/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.GetSampleResult))).Methods(http.MethodGet)
 	r.Handle("/api/get_metrics/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.GetMetrics))).Methods(http.MethodGet)

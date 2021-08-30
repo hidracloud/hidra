@@ -3,19 +3,16 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/hidracloud/hidra/utils"
 )
 
 // Response for ping req
 type PingResponse struct {
-	Pong    bool
-	Version string
+	Pong bool
 }
 
 // This method return Pong
 func (a *API) Ping(w http.ResponseWriter, r *http.Request) {
-	pingResponse := PingResponse{Pong: true, Version: utils.Version()}
+	pingResponse := PingResponse{Pong: true}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(pingResponse)
 }

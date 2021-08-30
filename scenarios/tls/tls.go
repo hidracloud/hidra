@@ -13,17 +13,13 @@ import (
 )
 
 // Represent an ssl scenario
-type TLSScneario struct {
+type TLSScenario struct {
 	models.Scenario
 
 	certificates []*x509.Certificate
 }
 
-func (s *TLSScneario) connectTo(c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["to"]; !ok {
-		return nil, fmt.Errorf("to parameter missing")
-	}
-
+func (s *TLSScenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -40,11 +36,7 @@ func (s *TLSScneario) connectTo(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (s *TLSScneario) dnsShouldBePresent(c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["dns"]; !ok {
-		return nil, fmt.Errorf("dns parameter missing")
-	}
-
+func (s *TLSScenario) dnsShouldBePresent(c map[string]string) ([]models.Metric, error) {
 	if s.certificates == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
@@ -66,11 +58,7 @@ func (s *TLSScneario) dnsShouldBePresent(c map[string]string) ([]models.Metric, 
 	return nil, fmt.Errorf("dns missing")
 }
 
-func (s *TLSScneario) shouldBeValidFor(c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["for"]; !ok {
-		return nil, fmt.Errorf("for parameter missing")
-	}
-
+func (s *TLSScenario) shouldBeValidFor(c map[string]string) ([]models.Metric, error) {
 	duration, err := utils.ParseDuration(c["for"])
 
 	if err != nil {
@@ -86,16 +74,52 @@ func (s *TLSScneario) shouldBeValidFor(c map[string]string) ([]models.Metric, er
 	return nil, nil
 }
 
-func (s *TLSScneario) Init() {
+func (s *TLSScenario) Description() string {
+	return "Run a TLS scenario"
+}
+
+func (s *TLSScenario) Init() {
 	s.StartPrimitives()
 
-	s.RegisterStep("connectTo", s.connectTo)
-	s.RegisterStep("dnsShouldBePresent", s.dnsShouldBePresent)
-	s.RegisterStep("shouldBeValidFor", s.shouldBeValidFor)
+	s.RegisterStep("connectTo", models.StepDefinition{
+		Description: "Connect to a host",
+		Params: []models.StepParam{
+			{
+				Name:        "to",
+				Description: "Host to connect to",
+				Optional:    false,
+			},
+		},
+		Fn: s.connectTo,
+	})
+
+	s.RegisterStep("dnsShouldBePresent", models.StepDefinition{
+		Description: "Check if the dns is present in the certificate",
+		Params: []models.StepParam{
+			{
+				Name:        "dns",
+				Description: "DNS to check",
+				Optional:    false,
+			},
+		},
+		Fn: s.dnsShouldBePresent,
+	})
+
+	s.RegisterStep("shouldBeValidFor", models.StepDefinition{
+		Description: "Check if the certificate is valid for a given duration",
+		Params: []models.StepParam{
+			{
+				Name:        "for",
+				Description: "Duration to check",
+				Optional:    false,
+			},
+		},
+		Fn: s.shouldBeValidFor,
+	})
 }
 
 func init() {
 	scenarios.Add("tls", func() models.IScenario {
-		return &TLSScneario{}
+		return &TLSScenario{}
 	})
 }
