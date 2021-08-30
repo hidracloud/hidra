@@ -35,6 +35,6 @@ jobs:
       - name: Go path
         run: which go
       - name: Test
-        run: sudo go test ./...
+        run: sudo /opt/hostedtoolcache/go/1.16.7/x64/bin/go test ./...
       - name: Test cmd execution
         run: go run ./cmd/hidra/main.go --test --file ./examples/http_test.yaml
