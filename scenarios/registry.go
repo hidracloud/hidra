@@ -13,3 +13,8 @@ var Scenarios = map[string]ScenarioGenerator{}
 func Add(name string, scenario ScenarioGenerator) {
 	Scenarios[name] = scenario
 }
+
+// Get all scenarios
+func GetAll() map[string]ScenarioGenerator {
+	return Scenarios
+}

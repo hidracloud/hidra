@@ -34,7 +34,7 @@ type StepDefinition struct {
 	Name        string
 	Description string
 	Params      []StepParam
-	Fn          stepFn
+	Fn          stepFn `json:"-"`
 }
 
 // Define step metrics
@@ -187,6 +187,7 @@ type IScenario interface {
 	RunStep(string, map[string]string) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string
+	GetScenarioDefinitions() map[string]StepDefinition
 }
 
 // Initialize primitive variables
@@ -247,6 +248,11 @@ func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 // Register step default method
 func (s *Scenario) RegisterStep(name string, step StepDefinition) {
 	s.StepsDefinitions[name] = step
+}
+
+// Get scenario definitions
+func (s *Scenario) GetScenarioDefinitions() map[string]StepDefinition {
+	return s.StepsDefinitions
 }
 
 // Calculate labels checksum
