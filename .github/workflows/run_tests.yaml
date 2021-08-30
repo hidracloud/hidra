@@ -32,6 +32,8 @@ jobs:
           cd api/external/hidra-frontend/app
           wget https://github.com/hidracloud/hidra-frontend/releases/download/$LATEST_RELEASE/hidra-frontend.tar.gz
           tar -xvzf hidra-frontend.tar.gz
+      - name: Go path
+        run: which go
       - name: Test
         run: sudo go test ./...
       - name: Test cmd execution
