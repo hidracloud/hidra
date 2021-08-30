@@ -1,5 +1,6 @@
 package icmp_test
 
+/*
 import (
 	"testing"
 
@@ -35,3 +36,4 @@ func TestTraceroute(t *testing.T) {
 		t.Errorf("TestPing failed: %s", err)
 	}
 }
+*/

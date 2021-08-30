@@ -32,9 +32,7 @@ jobs:
           cd api/external/hidra-frontend/app
           wget https://github.com/hidracloud/hidra-frontend/releases/download/$LATEST_RELEASE/hidra-frontend.tar.gz
           tar -xvzf hidra-frontend.tar.gz
-      - name: Go path
-        run: which go
       - name: Test
-        run: sudo /opt/hostedtoolcache/go/1.16.7/x64/bin/go test ./...
+        run: go test ./...
       - name: Test cmd execution
         run: go run ./cmd/hidra/main.go --test --file ./examples/http_test.yaml
