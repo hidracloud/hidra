@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/badoux/checkmail"
 	"github.com/golang-jwt/jwt"
 	"github.com/hidracloud/hidra/database"
 	uuid "github.com/satori/go.uuid"
@@ -31,6 +32,13 @@ func GetUserByEmail(email string) *User {
 	return &user
 }
 
+// Get count of users
+func GetUserCount() int64 {
+	var count int64
+	database.ORM.Model(&User{}).Count(&count)
+	return count
+}
+
 // Get user by id
 func GetUserById(id string) *User {
 	var user User
@@ -40,6 +48,11 @@ func GetUserById(id string) *User {
 
 // Create a new username
 func CreateUser(email, password string) (*User, error) {
+	err := checkmail.ValidateFormat(email)
+	if err != nil {
+		return nil, err
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), PASSWORD_COST)
 
 	if err != nil {

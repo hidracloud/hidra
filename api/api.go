@@ -51,6 +51,9 @@ func StartApi(serverAddr string) {
 
 	// Public functions
 	r.HandleFunc("/api/ping", api.Ping).Methods(http.MethodGet)
+	r.HandleFunc("/api/setup_status", api.SetupStatus).Methods(http.MethodGet)
+	r.HandleFunc("/api/create_setup", api.CreateSetup).Methods(http.MethodPost)
+
 	r.HandleFunc("/api/login", api.Login).Methods(http.MethodPost)
 
 	// User registered functions

@@ -2,11 +2,7 @@
 package models
 
 import (
-	"log"
-
 	"github.com/hidracloud/hidra/database"
-	"github.com/hidracloud/hidra/utils"
-	uuid "github.com/satori/go.uuid"
 )
 
 func SetupDB(db_type, db_path, db_uri string) {
@@ -20,17 +16,4 @@ func SetupDB(db_type, db_path, db_uri string) {
 	database.ORM.AutoMigrate(&SampleResult{})
 	database.ORM.AutoMigrate(&Metric{})
 	database.ORM.AutoMigrate(&MetricLabel{})
-
-	admin := GetUserByEmail("root")
-	if admin.ID == uuid.Nil {
-		randomPass := utils.RandString(32)
-		log.Println("Creating admin Account for first setup with pass:", randomPass)
-		user, err := CreateUser("root", randomPass)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		AddPermission2User(user, "superadmin")
-	}
 }
