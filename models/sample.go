@@ -47,10 +47,44 @@ type SampleResult struct {
 	AgentId    uuid.UUID
 }
 
+// Search samples by name with pagination
+func SearchSamplesWithPagination(name string, page, limit int) ([]Sample, error) {
+	samples := []Sample{}
+	if result := database.ORM.Where("name LIKE ?", "%"+name+"%").Order("updated_at desc").Offset(page * limit).Limit(limit).Find(&samples); result.Error != nil {
+		return samples, result.Error
+	}
+	return samples, nil
+}
+
+// Get total samples
+func GetTotalSamples() int64 {
+	var count int64
+	database.ORM.Model(&Sample{}).Count(&count)
+	return count
+}
+
+// Get last sample result by sample id
+func GetLastSampleResultBySampleId(sampleId string) (*SampleResult, error) {
+	sampleResult := SampleResult{}
+	if result := database.ORM.Where("sample_id = ?", sampleId).Order("created_at desc").First(&sampleResult); result.Error != nil {
+		return nil, result.Error
+	}
+	return &sampleResult, nil
+}
+
 // Search samples by name
 func SearchSamples(name string) ([]Sample, error) {
 	samples := []Sample{}
 	if result := database.ORM.Order("updated_at desc").Where("name LIKE ?", "%"+name+"%").Find(&samples); result.Error != nil {
+		return nil, result.Error
+	}
+	return samples, nil
+}
+
+// Return a list of samples with pagination
+func GetSamplesWithPagination(page, limit int) ([]Sample, error) {
+	samples := []Sample{}
+	if result := database.ORM.Order("updated_at desc").Offset(page * limit).Limit(limit).Find(&samples); result.Error != nil {
 		return nil, result.Error
 	}
 	return samples, nil
