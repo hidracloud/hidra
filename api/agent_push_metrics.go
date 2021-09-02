@@ -8,11 +8,11 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-// Recieve new metrics from an agent
+// AgentPushMetrics Receive new metrics from an agent
 func (a *API) AgentPushMetrics(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var ScenarioResult models.ScenarioResult
-	sample, _ := models.GetSampleById(params["sampleid"])
+	sample, _ := models.GetSampleByID(params["sampleid"])
 
 	w.Header().Set("Content-Type", "application/json")
 

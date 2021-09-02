@@ -7,9 +7,9 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-// Get one sample from agent
+// AgentGetSample is a handler that returns a sample of the agent
 func (a *API) AgentGetSample(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	sample, _ := models.GetSampleById(params["sampleid"])
+	sample, _ := models.GetSampleByID(params["sampleid"])
 	w.Write(sample.SampleData)
 }

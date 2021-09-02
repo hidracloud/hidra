@@ -1,12 +1,14 @@
-// Scenario base package for autoregistering
+// Package scenarios contains all scenarios
 package scenarios
 
 import (
 	"github.com/hidracloud/hidra/models"
 )
 
+// ScenarioGenerator interface
 type ScenarioGenerator func() models.IScenario
 
+// Scenarios contains all scenarios
 var Scenarios = map[string]ScenarioGenerator{}
 
 // Add new scenario
@@ -14,7 +16,7 @@ func Add(name string, scenario ScenarioGenerator) {
 	Scenarios[name] = scenario
 }
 
-// Get all scenarios
+// GetAll scenarios
 func GetAll() map[string]ScenarioGenerator {
 	return Scenarios
 }

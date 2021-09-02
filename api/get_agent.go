@@ -9,7 +9,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// Get a list of samples by id and checksum
+// GetAgent is a function to get agent
 func (a *API) GetAgent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -28,7 +28,7 @@ func (a *API) GetAgent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newAgent := ListAgentsResponse{
-		Id:          agent.ID.String(),
+		ID:          agent.ID.String(),
 		Name:        agent.Name,
 		Description: agent.Description,
 		Tags:        make(map[string]string),

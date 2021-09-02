@@ -8,22 +8,23 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-type MetricValueResponse struct {
+type metricValueResponse struct {
 	Value float64
 	Time  int64
 }
 
-type MetricResponse struct {
+type metricResponse struct {
 	MetricName string
 	Labels     map[string]string
-	Values     []MetricValueResponse
+	Values     []metricValueResponse
 }
 
+// GetMetrics returns the metrics for the given namespace and name
 func (a *API) GetMetrics(w http.ResponseWriter, r *http.Request) {
-	response := make([]MetricResponse, 0)
+	response := make([]metricResponse, 0)
 
 	params := mux.Vars(r)
-	distinctNames, err := models.GetDistinctMetricNameBySampleId(params["sampleid"])
+	distinctNames, err := models.GetDistinctMetricNameBySampleID(params["sampleid"])
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -31,7 +32,7 @@ func (a *API) GetMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, name := range distinctNames {
-		oneMetricResponse := MetricResponse{}
+		oneMetricResponse := metricResponse{}
 		oneMetricResponse.MetricName = name
 
 		checksums, err := models.GetDistinctChecksumByNameAndSampleID(name, params["sampleid"])
@@ -51,7 +52,7 @@ func (a *API) GetMetrics(w http.ResponseWriter, r *http.Request) {
 			labels := make(map[string]string)
 
 			for _, metricValue := range metricValues {
-				oneMetricResponse.Values = append(oneMetricResponse.Values, MetricValueResponse{
+				oneMetricResponse.Values = append(oneMetricResponse.Values, metricValueResponse{
 					Value: metricValue.Value,
 					Time:  metricValue.CreatedAt.Unix(),
 				})

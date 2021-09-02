@@ -1,4 +1,4 @@
-// Monitoring ICMP
+// Package icmp implements a plugin that runs a traceroute and ping command
 package icmp
 
 import (
@@ -13,12 +13,12 @@ import (
 	"github.com/go-ping/ping"
 )
 
-// Represent an ICMP scenario
-type IcmpScenario struct {
+// Scenario Represent an ICMP scenario
+type Scenario struct {
 	models.Scenario
 }
 
-func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) traceroute(c map[string]string) ([]models.Metric, error) {
 	options := traceroute.TracerouteOptions{}
 	options.SetRetries(0)
 	options.SetMaxHops(traceroute.DEFAULT_MAX_HOPS + 1)
@@ -39,12 +39,12 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) 
 		return nil, err
 	}
 
-	custom_metrics := make([]models.Metric, 0)
+	customMetrics := make([]models.Metric, 0)
 
 	now := time.Now()
 
 	for i := 0; i < len(tcrresult.Hops); i++ {
-		custom_metrics = append(custom_metrics, models.Metric{
+		customMetrics = append(customMetrics, models.Metric{
 			Name:  fmt.Sprintf("hop_%d_elapsed", i),
 			Value: float64(tcrresult.Hops[i].ElapsedTime.Milliseconds()),
 			Labels: map[string]string{
@@ -61,7 +61,7 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) 
 			status = 1
 		}
 
-		custom_metrics = append(custom_metrics, models.Metric{
+		customMetrics = append(customMetrics, models.Metric{
 			Name:  fmt.Sprintf("hop_%d_status", i),
 			Value: float64(status),
 			Labels: map[string]string{
@@ -73,17 +73,17 @@ func (h *IcmpScenario) traceroute(c map[string]string) ([]models.Metric, error) 
 		})
 	}
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "hops",
 		Value:       float64(len(tcrresult.Hops)),
 		Description: "number of hops",
 		Expires:     time.Duration(now.Add(time.Minute * 5).Unix()),
 	})
 
-	return custom_metrics, nil
+	return customMetrics, nil
 }
 
-func (h *IcmpScenario) ping(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) ping(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["hostname"]; !ok {
 		return nil, fmt.Errorf("hostname parameter missing")
 	}
@@ -111,58 +111,60 @@ func (h *IcmpScenario) ping(c map[string]string) ([]models.Metric, error) {
 
 	stats := pinger.Statistics()
 
-	custom_metrics := make([]models.Metric, 0)
+	customMetrics := make([]models.Metric, 0)
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "packet_loss",
 		Value:       stats.PacketLoss,
 		Description: "number of lost packets",
 	})
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "min_rtt",
 		Value:       float64(stats.MinRtt.Milliseconds()),
 		Description: "min ping",
 	})
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "max_rtt",
 		Value:       float64(stats.MinRtt.Milliseconds()),
 		Description: "max ping",
 	})
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "avg_rtt",
 		Value:       float64(stats.AvgRtt.Milliseconds()),
 		Description: "avg ping",
 	})
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "packet_duplicates",
 		Value:       float64(stats.PacketsRecvDuplicates),
 		Description: "duplicate packets",
 	})
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "packet_receive",
 		Value:       float64(stats.PacketsRecv),
 		Description: "packets received",
 	})
 
-	custom_metrics = append(custom_metrics, models.Metric{
+	customMetrics = append(customMetrics, models.Metric{
 		Name:        "packet_send",
 		Value:       float64(stats.PacketsSent),
 		Description: "packets send",
 	})
 
-	return custom_metrics, nil
+	return customMetrics, nil
 }
 
-func (h *IcmpScenario) Description() string {
+// Description returns the scenario description
+func (h *Scenario) Description() string {
 	return "Run a ICMP scenario"
 }
 
-func (h *IcmpScenario) Init() {
+// Init initializes the scenario
+func (h *Scenario) Init() {
 	h.StartPrimitives()
 
 	h.RegisterStep("ping", models.StepDefinition{
@@ -184,6 +186,6 @@ func (h *IcmpScenario) Init() {
 
 func init() {
 	scenarios.Add("icmp", func() models.IScenario {
-		return &IcmpScenario{}
+		return &Scenario{}
 	})
 }

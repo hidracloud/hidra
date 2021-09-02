@@ -1,4 +1,4 @@
-// HTTP scenario do test using HTTP protocol
+// Package http is a http scenario
 package http
 
 import (
@@ -13,11 +13,11 @@ import (
 	"github.com/hidracloud/hidra/scenarios"
 )
 
-// Represent an http scenario
-type HttpScenario struct {
+// Scenario Represent an http scenario
+type Scenario struct {
 	models.Scenario
 
-	Url      string
+	URL      string
 	Method   string
 	Response *http.Response
 	Body     string
@@ -27,19 +27,19 @@ type HttpScenario struct {
 }
 
 // Set user agent
-func (h *HttpScenario) setUserAgent(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) setUserAgent(c map[string]string) ([]models.Metric, error) {
 	h.Headers["User-Agent"] = c["user-agent"]
 	return nil, nil
 }
 
 // Add new HTTP header
-func (h *HttpScenario) addHttpHeader(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) addHTTPHeader(c map[string]string) ([]models.Metric, error) {
 	h.Headers[c["key"]] = c["value"]
 	return nil, nil
 }
 
 // Send a request depends of the method
-func (h *HttpScenario) requestByMethod(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) requestByMethod(c map[string]string) ([]models.Metric, error) {
 	var err error
 
 	body := ""
@@ -56,7 +56,7 @@ func (h *HttpScenario) requestByMethod(c map[string]string) ([]models.Metric, er
 
 	h.Client.Jar = jar
 
-	req, err := http.NewRequest(h.Method, h.Url, strings.NewReader(body))
+	req, err := http.NewRequest(h.Method, h.URL, strings.NewReader(body))
 
 	if err != nil {
 		return nil, err
@@ -87,11 +87,11 @@ func (h *HttpScenario) requestByMethod(c map[string]string) ([]models.Metric, er
 }
 
 // Make http request to given URL
-func (h *HttpScenario) request(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) request(c map[string]string) ([]models.Metric, error) {
 	var err error
 	var ok bool
 
-	h.Url = c["url"]
+	h.URL = c["url"]
 
 	h.Method = "GET"
 
@@ -109,7 +109,7 @@ func (h *HttpScenario) request(c map[string]string) ([]models.Metric, error) {
 }
 
 // Check if status code match
-func (h *HttpScenario) statusCodeShouldBe(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) statusCodeShouldBe(c map[string]string) ([]models.Metric, error) {
 	if h.Response == nil {
 		return nil, fmt.Errorf("request should be initialized first")
 	}
@@ -121,7 +121,7 @@ func (h *HttpScenario) statusCodeShouldBe(c map[string]string) ([]models.Metric,
 	return nil, nil
 }
 
-func (h *HttpScenario) bodyShouldContain(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) bodyShouldContain(c map[string]string) ([]models.Metric, error) {
 	if h.Response == nil {
 		return nil, fmt.Errorf("request should be initialized first")
 	}
@@ -133,7 +133,7 @@ func (h *HttpScenario) bodyShouldContain(c map[string]string) ([]models.Metric, 
 	return nil, nil
 }
 
-func (h *HttpScenario) shouldRedirectTo(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) shouldRedirectTo(c map[string]string) ([]models.Metric, error) {
 
 	if h.Response == nil {
 		return nil, fmt.Errorf("request should be initialized first")
@@ -152,8 +152,8 @@ func (h *HttpScenario) shouldRedirectTo(c map[string]string) ([]models.Metric, e
 }
 
 // Clear parameters
-func (h *HttpScenario) clear(c map[string]string) ([]models.Metric, error) {
-	h.Url = ""
+func (h *Scenario) clear(c map[string]string) ([]models.Metric, error) {
+	h.URL = ""
 	h.Response = nil
 	h.Method = ""
 	h.Headers = make(map[string]string)
@@ -161,11 +161,13 @@ func (h *HttpScenario) clear(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (h *HttpScenario) Description() string {
+// Description return scenario description
+func (h *Scenario) Description() string {
 	return "Run a HTTP scenario"
 }
 
-func (h *HttpScenario) Init() {
+// Init initialize scenario
+func (h *Scenario) Init() {
 	h.StartPrimitives()
 
 	h.Headers = make(map[string]string)
@@ -217,13 +219,13 @@ func (h *HttpScenario) Init() {
 		Fn:          h.clear,
 	})
 
-	h.RegisterStep("addHttpHeader", models.StepDefinition{
+	h.RegisterStep("addHTTPHeader", models.StepDefinition{
 		Description: "Add a HTTP header",
 		Params: []models.StepParam{
 			{Name: "key", Optional: false, Description: "Header name"},
 			{Name: "value", Optional: false, Description: "Header value"},
 		},
-		Fn: h.addHttpHeader,
+		Fn: h.addHTTPHeader,
 	})
 
 	h.RegisterStep("setUserAgent", models.StepDefinition{
@@ -238,6 +240,6 @@ func (h *HttpScenario) Init() {
 
 func init() {
 	scenarios.Add("http", func() models.IScenario {
-		return &HttpScenario{}
+		return &Scenario{}
 	})
 }

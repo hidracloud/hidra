@@ -8,7 +8,7 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-// Run one scenario
+// RunScenario Run one scenario
 func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 	log.Printf("[%s] Running new scenario, \"%s\"\n", name, desc)
 
@@ -24,9 +24,9 @@ func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 		smetric := models.StepResult{}
 		smetric.Step = step
 		smetric.StartDate = time.Now()
-		custom_metrics, err := srunner.RunStep(step.Type, step.Params)
+		customMetrics, err := srunner.RunStep(step.Type, step.Params)
 
-		smetric.Metrics = custom_metrics
+		smetric.Metrics = customMetrics
 		smetric.EndDate = time.Now()
 		metric.StepResults = append(metric.StepResults, &smetric)
 
@@ -47,7 +47,7 @@ func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 	return &metric
 }
 
-// Print scenario metrics
+// PrettyPrintScenarioResults Print scenario metrics
 func PrettyPrintScenarioResults(m *models.ScenarioResult, name, desc string) {
 	log.Printf("[%s] Metrics results for: %s\n", name, desc)
 	if m.Error == nil {

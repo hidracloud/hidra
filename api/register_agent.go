@@ -8,17 +8,19 @@ import (
 	"github.com/hidracloud/hidra/utils"
 )
 
+// RegisterAgentRequest is the request to register a new agent
 type RegisterAgentRequest struct {
 	Name        string
 	Description string
 	Tags        map[string]string
 }
 
+// RegisterAgentResponse is the response of RegisterAgent
 type RegisterAgentResponse struct {
 	Secret string
 }
 
-// Register a new agent, and generate a secret.
+// RegisterAgent register a new agent
 func (a *API) RegisterAgent(w http.ResponseWriter, r *http.Request) {
 	var registerAgentRequest RegisterAgentRequest
 	var registerAgentResponse RegisterAgentResponse

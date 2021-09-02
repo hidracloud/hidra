@@ -15,21 +15,21 @@ var defaultStepTimeout = 15 * time.Second
 
 type stepFn func(map[string]string) ([]Metric, error)
 
-// Define one step
+// Step definition
 type Step struct {
 	Type   string
 	Params map[string]string
 	Negate bool
 }
 
-// Step parameters
+// StepParam returns the value of a step parameter
 type StepParam struct {
 	Name        string
 	Description string
 	Optional    bool
 }
 
-// Step function definition
+// StepDefinition definition
 type StepDefinition struct {
 	Name        string
 	Description string
@@ -37,7 +37,7 @@ type StepDefinition struct {
 	Fn          stepFn `json:"-"`
 }
 
-// Define step metrics
+// StepResult is the result of a step
 type StepResult struct {
 	Step      Step
 	StartDate time.Time
@@ -45,14 +45,14 @@ type StepResult struct {
 	Metrics   []Metric
 }
 
-// Define one scenario
+// Scenario definition
 type Scenario struct {
 	Kind             string
 	Steps            []Step
 	StepsDefinitions map[string]StepDefinition
 }
 
-// Define scenario metrics
+// ScenarioResult is the result of a scenario
 type ScenarioResult struct {
 	Scenario    Scenario
 	StartDate   time.Time
@@ -62,7 +62,7 @@ type ScenarioResult struct {
 	ErrorString string
 }
 
-// Define a set of scenarios
+// Scenarios represent sample scenarios
 type Scenarios struct {
 	Name        string
 	Description string
@@ -71,7 +71,7 @@ type Scenarios struct {
 	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
 }
 
-// metric for scenarios
+// Metric definition
 type Metric struct {
 	gorm.Model
 	ID             uuid.UUID `gorm:"primaryKey;type:char(36);"`
@@ -82,20 +82,20 @@ type Metric struct {
 	Labels         map[string]string `gorm:"-"`
 	LabelsChecksum string
 	Description    string
-	SampleId       string
+	SampleID       string
 	Expires        time.Duration
 }
 
-// Metric labels
+// MetricLabel definition
 type MetricLabel struct {
 	gorm.Model
 	Key      string
 	Value    string
-	Metric   Metric `gorm:"foreignKey:MetricId" json:"-"`
-	MetricId string
+	Metric   Metric `gorm:"foreignKey:MetricID" json:"-"`
+	MetricID string
 }
 
-// Delete all expired metrics
+// DeleteExpiredMetrics Delete all expired metrics
 func DeleteExpiredMetrics() error {
 	if result := database.ORM.Where("expires < ? and expires != 0", time.Now().Unix()).Unscoped().Delete(&Metric{}); result.Error != nil {
 		return result.Error
@@ -103,7 +103,7 @@ func DeleteExpiredMetrics() error {
 	return nil
 }
 
-// Delete old metrics
+// DeleteOldMetrics Delete old metrics
 func DeleteOldMetrics(interval time.Duration) error {
 	expiretime := time.Now()
 	expiretime.Add(interval)
@@ -114,7 +114,7 @@ func DeleteOldMetrics(interval time.Duration) error {
 	return nil
 }
 
-// Get disticnt metric name
+// GetDistinctMetricName Get distinct metric name
 func GetDistinctMetricName() ([]string, error) {
 	var results []string
 
@@ -125,7 +125,7 @@ func GetDistinctMetricName() ([]string, error) {
 	return results, nil
 }
 
-// Get distint checksum by name
+// GetDistinctChecksumByName Get distinct checksum by name
 func GetDistinctChecksumByName(name string) ([]string, error) {
 	var results []string
 	if result := database.ORM.Model(&Metric{}).Where("name = ?", name).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
@@ -134,7 +134,7 @@ func GetDistinctChecksumByName(name string) ([]string, error) {
 	return results, nil
 }
 
-// Get one metric by name
+// GetMetricByName Get one metric by name
 func GetMetricByName(name string) (*Metric, error) {
 	var result Metric
 	if result := database.ORM.Model(&Metric{}).Where("name = ?", name).Last(&result); result.Error != nil {
@@ -144,7 +144,7 @@ func GetMetricByName(name string) (*Metric, error) {
 	return &result, nil
 }
 
-// Get one metric by checksum
+// GetMetricByChecksum Get one metric by checksum
 func GetMetricByChecksum(checksum, name string) (*Metric, error) {
 	var result Metric
 	if result := database.ORM.Model(&Metric{}).Where("labels_checksum = ? and name = ?", checksum, name).Last(&result); result.Error != nil {
@@ -153,7 +153,7 @@ func GetMetricByChecksum(checksum, name string) (*Metric, error) {
 	return &result, nil
 }
 
-// Get metric label by metric id
+// GetMetricLabelByMetricID Get metric label by metric id
 func GetMetricLabelByMetricID(id uuid.UUID) ([]MetricLabel, error) {
 	var results []MetricLabel
 	if result := database.ORM.Model(&MetricLabel{}).Where("metric_id = ?", id).Find(&results); result.Error != nil {
@@ -162,7 +162,7 @@ func GetMetricLabelByMetricID(id uuid.UUID) ([]MetricLabel, error) {
 	return results, nil
 }
 
-// Get distinct metrics by name and sample id
+// GetDistinctChecksumByNameAndSampleID Get distinct metrics by name and sample id
 func GetDistinctChecksumByNameAndSampleID(name, sampleID string) ([]string, error) {
 	var results []string
 	if result := database.ORM.Model(&Metric{}).Where("name = ? and sample_id = ?", name, sampleID).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
@@ -171,7 +171,7 @@ func GetDistinctChecksumByNameAndSampleID(name, sampleID string) ([]string, erro
 	return results, nil
 }
 
-// Get metrics by name and sample id
+// GetMetricsByNameAndSampleID Get metrics by name and sample id
 func GetMetricsByNameAndSampleID(name, sampleID, checksum string, limit int) ([]Metric, error) {
 	var results []Metric
 	if result := database.ORM.Model(&Metric{}).Where("name = ? and sample_id = ? and labels_checksum = ?", name, sampleID, checksum).Order("created_at desc").Limit(limit).Find(&results); result.Error != nil {
@@ -180,7 +180,7 @@ func GetMetricsByNameAndSampleID(name, sampleID, checksum string, limit int) ([]
 	return results, nil
 }
 
-// Define scenario interface
+// IScenario Define scenario interface
 type IScenario interface {
 	StartPrimitives()
 	Init()
@@ -190,12 +190,12 @@ type IScenario interface {
 	GetScenarioDefinitions() map[string]StepDefinition
 }
 
-// Initialize primitive variables
+// StartPrimitives Initialize primitive variables
 func (s *Scenario) StartPrimitives() {
 	s.StepsDefinitions = make(map[string]StepDefinition)
 }
 
-// Push new metric to db
+// PushToDB Push new metric to db
 func (m *Metric) PushToDB(labels map[string]string) error {
 	if result := database.ORM.Create(m); result.Error != nil {
 		return result.Error
@@ -205,7 +205,7 @@ func (m *Metric) PushToDB(labels map[string]string) error {
 		label := MetricLabel{
 			Key:      k,
 			Value:    v,
-			MetricId: m.ID.String(),
+			MetricID: m.ID.String(),
 		}
 
 		if result := database.ORM.Create(&label); result.Error != nil {
@@ -215,7 +215,7 @@ func (m *Metric) PushToDB(labels map[string]string) error {
 	return nil
 }
 
-// Run an step
+// RunStep Run an step
 func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 	if _, ok := s.StepsDefinitions[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
@@ -245,17 +245,17 @@ func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 	}
 }
 
-// Register step default method
+// RegisterStep Register step default method
 func (s *Scenario) RegisterStep(name string, step StepDefinition) {
 	s.StepsDefinitions[name] = step
 }
 
-// Get scenario definitions
+// GetScenarioDefinitions Get scenario definitions
 func (s *Scenario) GetScenarioDefinitions() map[string]StepDefinition {
 	return s.StepsDefinitions
 }
 
-// Calculate labels checksum
+// CalculateLabelsChecksum Calculate labels checksum
 func CalculateLabelsChecksum(labels map[string]string) string {
 	var checksum string
 
@@ -272,11 +272,12 @@ func CalculateLabelsChecksum(labels map[string]string) string {
 	return checksum
 }
 
+// Description Get scenario description
 func (s *Scenario) Description() string {
 	return ""
 }
 
-// Read scenarios pointer from yaml
+// ReadScenariosYAML Read scenarios pointer from yaml
 func ReadScenariosYAML(data []byte) (*Scenarios, error) {
 	scenarios := Scenarios{}
 

@@ -7,11 +7,12 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-// Response for ping req
+// SetupStatusResponse is the response of the setup status
 type SetupStatusResponse struct {
 	Status bool
 }
 
+// SetupStatus returns the status of the setup
 func (a *API) SetupStatus(w http.ResponseWriter, r *http.Request) {
 	usersCount := models.GetUserCount()
 

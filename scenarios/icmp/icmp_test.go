@@ -9,7 +9,7 @@ import (
 
 func TestPing(t *testing.T) {
 	// Initialize scenario
-	h := &icmp.IcmpScenario{}
+	h := &icmp.Scenario{}
 	h.Init()
 
 	params := make(map[string]string)
@@ -24,7 +24,7 @@ func TestPing(t *testing.T) {
 
 func TestTraceroute(t *testing.T) {
 	// Initialize scenario
-	h := &icmp.IcmpScenario{}
+	h := &icmp.Scenario{}
 	h.Init()
 
 	params := make(map[string]string)

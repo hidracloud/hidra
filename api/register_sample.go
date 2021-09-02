@@ -9,7 +9,7 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-// Generate a new sample
+// RegisterSample is a function to register a sample
 func (a *API) RegisterSample(w http.ResponseWriter, r *http.Request) {
 	user := models.GetLoggedUser(r)
 

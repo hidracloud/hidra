@@ -1,4 +1,4 @@
-// Monitoring webapp
+// Package browser run tests in real browser
 package browser
 
 import (
@@ -11,13 +11,13 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-// Represent an browser scenario
-type BrowserScenario struct {
+// Scenario Represent an browser scenario
+type Scenario struct {
 	models.Scenario
 	ctx context.Context
 }
 
-func (b *BrowserScenario) urlShouldBe(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) urlShouldBe(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["url"]; !ok {
 		return nil, fmt.Errorf("url parameter missing")
 	}
@@ -37,7 +37,7 @@ func (b *BrowserScenario) urlShouldBe(c map[string]string) ([]models.Metric, err
 	return nil, nil
 }
 
-func (b *BrowserScenario) textShouldBe(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) textShouldBe(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["text"]; !ok {
 		return nil, fmt.Errorf("text parameter missing")
 	}
@@ -61,7 +61,7 @@ func (b *BrowserScenario) textShouldBe(c map[string]string) ([]models.Metric, er
 	return nil, nil
 }
 
-func (b *BrowserScenario) sendKeys(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) sendKeys(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["keys"]; !ok {
 		return nil, fmt.Errorf("keys parameter missing")
 	}
@@ -81,7 +81,7 @@ func (b *BrowserScenario) sendKeys(c map[string]string) ([]models.Metric, error)
 	return nil, nil
 }
 
-func (b *BrowserScenario) waitVisible(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) waitVisible(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["selector"]; !ok {
 		return nil, fmt.Errorf("selector parameter missing")
 	}
@@ -97,7 +97,7 @@ func (b *BrowserScenario) waitVisible(c map[string]string) ([]models.Metric, err
 	return nil, nil
 }
 
-func (b *BrowserScenario) click(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) click(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["selector"]; !ok {
 		return nil, fmt.Errorf("selector parameter missing")
 	}
@@ -113,7 +113,7 @@ func (b *BrowserScenario) click(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (b *BrowserScenario) navigateTo(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) navigateTo(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["url"]; !ok {
 		return nil, fmt.Errorf("url parameter missing")
 	}
@@ -129,11 +129,13 @@ func (b *BrowserScenario) navigateTo(c map[string]string) ([]models.Metric, erro
 	return nil, nil
 }
 
-func (b *BrowserScenario) Description() string {
+// Description return scenario description
+func (b *Scenario) Description() string {
 	return "Run scenario in real browser"
 }
 
-func (b *BrowserScenario) Init() {
+// Init initialize scenario
+func (b *Scenario) Init() {
 	b.StartPrimitives()
 
 	// Initialize chrome context
@@ -194,6 +196,6 @@ func (b *BrowserScenario) Init() {
 
 func init() {
 	scenarios.Add("browser", func() models.IScenario {
-		return &BrowserScenario{}
+		return &Scenario{}
 	})
 }

@@ -12,42 +12,42 @@ import (
 	"gorm.io/gorm"
 )
 
-// Represent push metric queue
+// MetricQueue represent a metric queue
 type MetricQueue struct {
-	AgentId        string
+	AgentID        string
 	Sample         Sample
 	ScenarioResult ScenarioResult
 }
 
 var metricsQueue []MetricQueue
 
-// Represent a sample, that could be saved on database.
+// Sample represent a sample
 type Sample struct {
 	gorm.Model  `json:"-"`
 	ID          uuid.UUID `gorm:"primaryKey;type:char(36);"`
 	Name        string    `json:"-"`
-	OwnerId     uuid.UUID `json:"-"`
-	Owner       User      `gorm:"foreignKey:OwnerId" json:"-"`
+	OwnerID     uuid.UUID `json:"-"`
+	Owner       User      `gorm:"foreignKey:OwnerID" json:"-"`
 	SampleData  []byte    `json:"-"`
 	Checksum    string
 	Description string `json:"-"`
 	Kind        string `json:"-"`
 }
 
-// Represent sample metric
+// SampleResult represent a sample result
 type SampleResult struct {
 	gorm.Model `json:"-"`
 	ID         uuid.UUID `gorm:"primaryKey;type:char(36);"`
-	SampleId   uuid.UUID `json:"-"`
-	Sample     Sample    `gorm:"foreignKey:SampleId" json:"-"`
+	SampleID   uuid.UUID `json:"-"`
+	Sample     Sample    `gorm:"foreignKey:SampleID" json:"-"`
 	StartDate  time.Time
 	EndDate    time.Time
 	Error      string
-	Agent      Agent `gorm:"foreignKey:AgentId"`
-	AgentId    uuid.UUID
+	Agent      Agent `gorm:"foreignKey:AgentID"`
+	AgentID    uuid.UUID
 }
 
-// Search samples by name with pagination
+// SearchSamplesWithPagination search samples with pagination
 func SearchSamplesWithPagination(name string, page, limit int) ([]Sample, error) {
 	samples := []Sample{}
 	if result := database.ORM.Where("name LIKE ?", "%"+name+"%").Order("updated_at desc").Offset(page * limit).Limit(limit).Find(&samples); result.Error != nil {
@@ -56,23 +56,23 @@ func SearchSamplesWithPagination(name string, page, limit int) ([]Sample, error)
 	return samples, nil
 }
 
-// Get total samples
+// GetTotalSamples return total samples
 func GetTotalSamples() int64 {
 	var count int64
 	database.ORM.Model(&Sample{}).Count(&count)
 	return count
 }
 
-// Get last sample result by sample id
-func GetLastSampleResultBySampleId(sampleId string) (*SampleResult, error) {
+// GetLastSampleResultBySampleID return last sample result by sample id
+func GetLastSampleResultBySampleID(sampleID string) (*SampleResult, error) {
 	sampleResult := SampleResult{}
-	if result := database.ORM.Where("sample_id = ?", sampleId).Order("created_at desc").First(&sampleResult); result.Error != nil {
+	if result := database.ORM.Where("sample_id = ?", sampleID).Order("created_at desc").First(&sampleResult); result.Error != nil {
 		return nil, result.Error
 	}
 	return &sampleResult, nil
 }
 
-// Search samples by name
+// SearchSamples search samples
 func SearchSamples(name string) ([]Sample, error) {
 	samples := []Sample{}
 	if result := database.ORM.Order("updated_at desc").Where("name LIKE ?", "%"+name+"%").Find(&samples); result.Error != nil {
@@ -81,7 +81,7 @@ func SearchSamples(name string) ([]Sample, error) {
 	return samples, nil
 }
 
-// Return a list of samples with pagination
+// GetSamplesWithPagination return samples with pagination
 func GetSamplesWithPagination(page, limit int) ([]Sample, error) {
 	samples := []Sample{}
 	if result := database.ORM.Order("updated_at desc").Offset(page * limit).Limit(limit).Find(&samples); result.Error != nil {
@@ -90,7 +90,7 @@ func GetSamplesWithPagination(page, limit int) ([]Sample, error) {
 	return samples, nil
 }
 
-// Return a list of samples
+// GetSamples return samples
 func GetSamples() ([]Sample, error) {
 	samples := make([]Sample, 0)
 
@@ -101,22 +101,22 @@ func GetSamples() ([]Sample, error) {
 	return samples, nil
 }
 
-// Get sample results by sample id
-func GetSampleResults(sampleId string, limit int) ([]SampleResult, error) {
+// GetSampleResults return sample results by sample id
+func GetSampleResults(sampleID string, limit int) ([]SampleResult, error) {
 	sampleResults := []SampleResult{}
-	if result := database.ORM.Where("sample_id = ?", sampleId).Order("created_at desc").Limit(limit).Preload("Agent").Find(&sampleResults); result.Error != nil {
+	if result := database.ORM.Where("sample_id = ?", sampleID).Order("created_at desc").Limit(limit).Preload("Agent").Find(&sampleResults); result.Error != nil {
 		return nil, result.Error
 	}
 	return sampleResults, nil
 }
 
-// Get common sample query
+// GetSampleQuery return sample query
 func GetSampleQuery() *gorm.DB {
 	return database.ORM.Order("updated_at desc")
 }
 
-// Get one sample by id
-func GetSampleById(id string) (*Sample, error) {
+// GetSampleByID return sample by id
+func GetSampleByID(id string) (*Sample, error) {
 	sample := Sample{}
 
 	if result := database.ORM.First(&sample, "id = ?", id); result.Error != nil {
@@ -125,76 +125,77 @@ func GetSampleById(id string) (*Sample, error) {
 	return &sample, nil
 }
 
-// Get metrics by sample id
-func GetMetricsBySampleId(sampleId string) ([]Metric, error) {
+// GetMetricsBySampleID return metrics by sample id
+func GetMetricsBySampleID(sampleID string) ([]Metric, error) {
 	metricResult := []Metric{}
-	if result := database.ORM.Where("sample_id = ?", sampleId).Find(&metricResult); result.Error != nil {
+	if result := database.ORM.Where("sample_id = ?", sampleID).Find(&metricResult); result.Error != nil {
 		return nil, result.Error
 	}
 	return metricResult, nil
 }
 
-func GetDistinctMetricNameBySampleId(sampleId string) ([]string, error) {
+// GetDistinctMetricNameBySampleID return distinct metric name by sample id
+func GetDistinctMetricNameBySampleID(sampleID string) ([]string, error) {
 	var results []string
 
-	if result := database.ORM.Model(&Metric{}).Distinct().Where("sample_id = ?", sampleId).Pluck("name", &results); result.Error != nil {
+	if result := database.ORM.Model(&Metric{}).Distinct().Where("sample_id = ?", sampleID).Pluck("name", &results); result.Error != nil {
 		return nil, result.Error
 	}
 
 	return results, nil
 }
 
-// Process metrics queue
+// ProcessMetricsQueue process metrics queue
 func ProcessMetricsQueue() {
 	for len(metricsQueue) > 0 {
-		metricsQueue[0].Sample.PushMetrics(&metricsQueue[0].ScenarioResult, metricsQueue[0].AgentId)
+		metricsQueue[0].Sample.PushMetrics(&metricsQueue[0].ScenarioResult, metricsQueue[0].AgentID)
 		metricsQueue = metricsQueue[1:]
 	}
 }
 
-// Push metrics to queue
-func (s *Sample) PushMetricsToQueue(ScenarioResult *ScenarioResult, agentId string) {
-	metricsQueue = append(metricsQueue, MetricQueue{AgentId: agentId, Sample: *s, ScenarioResult: *ScenarioResult})
+// PushMetricsToQueue push metrics to queue
+func (s *Sample) PushMetricsToQueue(ScenarioResult *ScenarioResult, agentID string) {
+	metricsQueue = append(metricsQueue, MetricQueue{AgentID: agentID, Sample: *s, ScenarioResult: *ScenarioResult})
 }
 
-// Push metrics to db.
-func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) error {
+// PushMetrics push metrics to database
+func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentID string) error {
 
-	sample_result := SampleResult{
+	sampleResult := SampleResult{
 		ID:        uuid.NewV4(),
 		Sample:    *s,
 		StartDate: ScenarioResult.StartDate,
 		EndDate:   ScenarioResult.EndDate,
 		Error:     ScenarioResult.ErrorString,
-		AgentId:   uuid.FromStringOrNil(agentId),
+		AgentID:   uuid.FromStringOrNil(agentID),
 	}
 
-	if result := database.ORM.Create(&sample_result); result.Error != nil {
+	if result := database.ORM.Create(&sampleResult); result.Error != nil {
 		return result.Error
 	}
 
-	agent, err := GetAgent(uuid.FromStringOrNil(agentId))
+	agent, err := GetAgent(uuid.FromStringOrNil(agentID))
 	if err != nil {
 		return err
 	}
 
-	common_labels := map[string]string{
-		"agent_id":    agentId,
+	commonLabels := map[string]string{
+		"agent_id":    agentID,
 		"agent_name":  agent.Name,
 		"sample_id":   s.ID.String(),
 		"sample_name": s.Name,
 		"checksum":    s.Checksum,
 	}
 
-	sample_metric_time := Metric{
+	sampleMetricTime := Metric{
 		ID:             uuid.NewV4(),
-		SampleId:       s.ID.String(),
+		SampleID:       s.ID.String(),
 		Name:           "sample_metric_time",
-		Value:          float64(sample_result.EndDate.UnixNano() - sample_result.StartDate.UnixNano()),
-		LabelsChecksum: CalculateLabelsChecksum(common_labels),
+		Value:          float64(sampleResult.EndDate.UnixNano() - sampleResult.StartDate.UnixNano()),
+		LabelsChecksum: CalculateLabelsChecksum(commonLabels),
 	}
 
-	err = sample_metric_time.PushToDB(common_labels)
+	err = sampleMetricTime.PushToDB(commonLabels)
 
 	if err != nil {
 		return err
@@ -206,15 +207,15 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 		status = 0
 	}
 
-	sample_metric_status := Metric{
+	sampleMetricStatus := Metric{
 		ID:             uuid.NewV4(),
 		Name:           "sample_metric_status",
-		SampleId:       s.ID.String(),
+		SampleID:       s.ID.String(),
 		Value:          float64(status),
-		LabelsChecksum: CalculateLabelsChecksum(common_labels),
+		LabelsChecksum: CalculateLabelsChecksum(commonLabels),
 	}
 
-	err = sample_metric_status.PushToDB(common_labels)
+	err = sampleMetricStatus.PushToDB(commonLabels)
 
 	if err != nil {
 		return err
@@ -222,20 +223,20 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 
 	for _, step := range ScenarioResult.StepResults {
 
-		common_labels["step"] = step.Step.Type
-		common_labels["negate"] = strconv.FormatBool(step.Step.Negate)
+		commonLabels["step"] = step.Step.Type
+		commonLabels["negate"] = strconv.FormatBool(step.Step.Negate)
 		paramsStr, _ := json.Marshal(step.Step.Params)
-		common_labels["params"] = string(paramsStr)
+		commonLabels["params"] = string(paramsStr)
 
-		step_sample_metric_time := Metric{
+		stepSampleMetricTime := Metric{
 			ID:             uuid.NewV4(),
 			Name:           "sample_step_metric_time",
-			SampleId:       s.ID.String(),
+			SampleID:       s.ID.String(),
 			Value:          float64(step.EndDate.UnixNano() - step.StartDate.UnixNano()),
-			LabelsChecksum: CalculateLabelsChecksum(common_labels),
+			LabelsChecksum: CalculateLabelsChecksum(commonLabels),
 		}
 
-		err = step_sample_metric_time.PushToDB(common_labels)
+		err = stepSampleMetricTime.PushToDB(commonLabels)
 
 		if err != nil {
 			return err
@@ -243,7 +244,7 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 
 		for _, metric := range step.Metrics {
 			labels := make(map[string]string)
-			for k, v := range common_labels {
+			for k, v := range commonLabels {
 				labels[k] = v
 			}
 			for k, v := range metric.Labels {
@@ -251,7 +252,7 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 			}
 
 			metric.ID = uuid.NewV4()
-			metric.SampleId = s.ID.String()
+			metric.SampleID = s.ID.String()
 			metric.LabelsChecksum = CalculateLabelsChecksum(labels)
 			metric.PushToDB(labels)
 		}
@@ -260,7 +261,7 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentId string) err
 	return nil
 }
 
-// Update a sample
+// UpdateSample update sample
 func UpdateSample(id, name, descrption, kind string, sampleData []byte, user *User) (*Sample, error) {
 	suuid, err := uuid.FromString(id)
 
@@ -278,7 +279,7 @@ func UpdateSample(id, name, descrption, kind string, sampleData []byte, user *Us
 	return &updateSample, nil
 }
 
-// Register a new sample
+// RegisterSample 	register sample
 func RegisterSample(name, descrption, kind string, sampleData []byte, user *User) (*Sample, error) {
 	checksum := md5.Sum(sampleData)
 

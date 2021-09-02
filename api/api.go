@@ -1,4 +1,4 @@
-// Represent an API object
+// Package api Represent an API object
 package api
 
 import (
@@ -10,11 +10,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/hidracloud/hidra/models"
-	_ "github.com/hidracloud/hidra/prometheus"
 	"github.com/rs/cors"
 )
 
-// Represent API object
+// API Represent API object
 type API struct {
 	dbType string
 	router http.Handler
@@ -43,8 +42,8 @@ func getWebApp() http.FileSystem {
 	return http.FS(fsys)
 }
 
-// Start a new API process
-func StartApi(serverAddr, dbtype string) {
+// StartAPI Start a new API process
+func StartAPI(serverAddr, dbtype string) {
 	log.Printf("Starting api at %s\n", serverAddr)
 
 	api := API{}

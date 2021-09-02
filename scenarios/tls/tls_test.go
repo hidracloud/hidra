@@ -6,9 +6,9 @@ import (
 	"github.com/hidracloud/hidra/scenarios/tls"
 )
 
-func TestTLSScenario(t *testing.T) {
+func TestScenario(t *testing.T) {
 	// Initialize scenario
-	s := &tls.TLSScenario{}
+	s := &tls.Scenario{}
 	s.Init()
 
 	params := make(map[string]string)

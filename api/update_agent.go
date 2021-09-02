@@ -9,7 +9,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// Register a new agent, and generate a secret.
+// UpdateAgent update agent
 func (a *API) UpdateAgent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -24,19 +24,19 @@ func (a *API) UpdateAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	agentUuid := uuid.FromStringOrNil(params["agentid"])
+	agentUUID := uuid.FromStringOrNil(params["agentid"])
 
-	err = models.UpdateAgent(agentUuid, registerAgentRequest.Name, registerAgentRequest.Description)
+	err = models.UpdateAgent(agentUUID, registerAgentRequest.Name, registerAgentRequest.Description)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	models.DeleteAgentTags(agentUuid)
+	models.DeleteAgentTags(agentUUID)
 
 	for k, v := range registerAgentRequest.Tags {
-		models.CreateAgentTagByAgentID(agentUuid, k, v)
+		models.CreateAgentTagByAgentID(agentUUID, k, v)
 	}
 
 	json.NewEncoder(w).Encode(registerAgentResponse)

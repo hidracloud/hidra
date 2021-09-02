@@ -6,9 +6,9 @@ import (
 	"github.com/hidracloud/hidra/scenarios/http"
 )
 
-func TestHttpRequestParameters(t *testing.T) {
+func TestHTTPRequestParameters(t *testing.T) {
 	// Initialize scenario
-	h := &http.HttpScenario{}
+	h := &http.Scenario{}
 	h.Init()
 
 	// Create an invalid request, should be a fail.
@@ -27,7 +27,7 @@ func TestHttpRequestParameters(t *testing.T) {
 	}
 
 	params = make(map[string]string)
-	_, err = h.RunStep("addHttpHeader", params)
+	_, err = h.RunStep("addHTTPHeader", params)
 
 	if err == nil {
 		t.Error("url parameter missing but needed")
@@ -35,16 +35,16 @@ func TestHttpRequestParameters(t *testing.T) {
 
 	params = make(map[string]string)
 	params["key"] = "test"
-	_, err = h.RunStep("addHttpHeader", params)
+	_, err = h.RunStep("addHTTPHeader", params)
 
 	if err == nil {
 		t.Error("url parameter missing but needed")
 	}
 }
 
-func TestHttpRequestTestGoogle(t *testing.T) {
+func TestHTTPRequestTestGoogle(t *testing.T) {
 	// Initialize scenario
-	h := &http.HttpScenario{}
+	h := &http.Scenario{}
 	h.Init()
 
 	// Create an invalid request, should be a fail.
@@ -61,7 +61,7 @@ func TestHttpRequestTestGoogle(t *testing.T) {
 	params["key"] = "accept"
 	params["value"] = "text/html"
 
-	_, err = h.RunStep("addHttpHeader", params)
+	_, err = h.RunStep("addHTTPHeader", params)
 
 	if err != nil {
 		t.Error(err)

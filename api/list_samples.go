@@ -10,8 +10,8 @@ import (
 )
 
 // List sample response struct
-type ListSampleResponse struct {
-	Id          string
+type listSampleResponse struct {
+	ID          string
 	Name        string
 	Description string
 	UpdatedAt   time.Time
@@ -20,14 +20,14 @@ type ListSampleResponse struct {
 }
 
 // List sample response with pages
-type ListSampleResponseWithPages struct {
+type listSampleResponseWithPages struct {
 	Total    int64
 	Page     int
 	PageSize int
-	Items    []ListSampleResponse
+	Items    []listSampleResponse
 }
 
-// Get a list of samples by id and checksum
+// ListSamples is a method to list samples
 func (a *API) ListSamples(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var samples []models.Sample
@@ -35,7 +35,7 @@ func (a *API) ListSamples(w http.ResponseWriter, r *http.Request) {
 	search := r.URL.Query().Get("search")
 
 	page := 0
-	page_size := 20
+	pageSize := 20
 
 	if r.URL.Query().Get("page") != "" {
 		page, err = strconv.Atoi(r.URL.Query().Get("page"))
@@ -46,13 +46,13 @@ func (a *API) ListSamples(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if search == "" {
-		samples, err = models.GetSamplesWithPagination(page, page_size)
+		samples, err = models.GetSamplesWithPagination(page, pageSize)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
-		samples, err = models.SearchSamplesWithPagination(search, page, page_size)
+		samples, err = models.SearchSamplesWithPagination(search, page, pageSize)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -63,13 +63,13 @@ func (a *API) ListSamples(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	sampleResponse := make([]ListSampleResponse, len(samples))
+	sampleResponse := make([]listSampleResponse, len(samples))
 
 	for sample := range samples {
-		sampleResult, err := models.GetLastSampleResultBySampleId(samples[sample].ID.String())
+		sampleResult, err := models.GetLastSampleResultBySampleID(samples[sample].ID.String())
 
-		sampleResponse[sample] = ListSampleResponse{
-			Id:          samples[sample].ID.String(),
+		sampleResponse[sample] = listSampleResponse{
+			ID:          samples[sample].ID.String(),
 			Name:        samples[sample].Name,
 			UpdatedAt:   samples[sample].UpdatedAt,
 			Description: samples[sample].Description,
@@ -82,10 +82,10 @@ func (a *API) ListSamples(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	response := ListSampleResponseWithPages{
+	response := listSampleResponseWithPages{
 		Total:    models.GetTotalSamples(),
 		Page:     page,
-		PageSize: page_size,
+		PageSize: pageSize,
 		Items:    sampleResponse,
 	}
 

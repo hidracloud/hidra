@@ -1,12 +1,13 @@
-// Represent a data model
+// Package models contains the database models.
 package models
 
 import (
 	"github.com/hidracloud/hidra/database"
 )
 
-func SetupDB(db_type, db_path, db_uri string) {
-	database.StartDatabase(db_type, db_path, db_uri)
+// SetupDB creates the database tables.
+func SetupDB(dbType, dbPath, dbURI string) {
+	database.StartDatabase(dbType, dbPath, dbURI)
 
 	database.ORM.AutoMigrate(&User{})
 	database.ORM.AutoMigrate(&Permission{})

@@ -1,4 +1,4 @@
-// Represent a database connection
+// Package database provides a database abstraction layer.
 package database
 
 import (
@@ -10,20 +10,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// ORM is the database abstraction layer.
 var ORM *gorm.DB
 
-func StartDatabase(db_type, db_path, db_uri string) {
+// StartDatabase initializes the database abstraction layer.
+func StartDatabase(dbType, dbPath, dbURI string) {
 	var err error
 
 	log.Println("Loading database")
 
-	switch db_type {
+	switch dbType {
 	case "sqlite":
-		ORM, err = gorm.Open(sqlite.Open(db_path), &gorm.Config{})
+		ORM, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	case "mysql":
-		ORM, err = gorm.Open(mysql.Open(db_uri), &gorm.Config{})
+		ORM, err = gorm.Open(mysql.Open(dbURI), &gorm.Config{})
 	case "postgresql":
-		ORM, err = gorm.Open(postgres.Open(db_uri), &gorm.Config{})
+		ORM, err = gorm.Open(postgres.Open(dbURI), &gorm.Config{})
 	default:
 		log.Fatal("Unknown database type")
 	}

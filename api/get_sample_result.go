@@ -8,6 +8,7 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
+// GetSampleResult is a handler to get a sample result
 func (a *API) GetSampleResult(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	sampleResults, err := models.GetSampleResults(params["sampleid"], 10)

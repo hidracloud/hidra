@@ -14,9 +14,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const PASSWORD_COST int = 4
+const passwordCost int = 4
 
-// Represent user
+// User Represent user
 type User struct {
 	gorm.Model
 	ID       uuid.UUID `gorm:"primaryKey;type:char(36);"`
@@ -24,7 +24,7 @@ type User struct {
 	Password []byte    `json:"-"`
 }
 
-// Get one user given an email
+// GetUserByEmail Get one user given an email
 func GetUserByEmail(email string) *User {
 	var user User
 	database.ORM.First(&user, "email = ?", email)
@@ -32,28 +32,28 @@ func GetUserByEmail(email string) *User {
 	return &user
 }
 
-// Get count of users
+// GetUserCount Get count of users
 func GetUserCount() int64 {
 	var count int64
 	database.ORM.Model(&User{}).Count(&count)
 	return count
 }
 
-// Get user by id
-func GetUserById(id string) *User {
+// GetUserByID Get user by id
+func GetUserByID(id string) *User {
 	var user User
 	database.ORM.First(&user, "id = ?", id)
 	return &user
 }
 
-// Create a new username
+// CreateUser Create a new username
 func CreateUser(email, password string) (*User, error) {
 	err := checkmail.ValidateFormat(email)
 	if err != nil {
 		return nil, err
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), PASSWORD_COST)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), passwordCost)
 
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func CreateUser(email, password string) (*User, error) {
 	return &newUser, nil
 }
 
-// Generate a new login token
+// CreateUserToken Generate a new login token
 func CreateUserToken(user *User) (string, error) {
 	var err error
 
@@ -85,12 +85,12 @@ func CreateUserToken(user *User) (string, error) {
 	return token, nil
 }
 
-// Return user by http header
+// GetLoggedUser Return user by http header
 func GetLoggedUser(r *http.Request) *User {
-	return GetUserById(r.Header.Get("user_id"))
+	return GetUserByID(r.Header.Get("user_id"))
 }
 
-// Verify if token is correct
+// VerifyUserToken Verify if token is correct
 func VerifyUserToken(tokenString string) (jwt.Claims, error) {
 	signingKey := []byte(os.Getenv("JWT_SECRET_TOKEN"))
 
@@ -103,7 +103,7 @@ func VerifyUserToken(tokenString string) (jwt.Claims, error) {
 	return token.Claims, err
 }
 
-// Verify if user is logged
+// AuthMiddleware Verify if user is logged
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -122,7 +122,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		account_id := claims.(jwt.MapClaims)["user_id"].(string)
+		accountID := claims.(jwt.MapClaims)["user_id"].(string)
 		exp := claims.(jwt.MapClaims)["exp"].(float64)
 
 		if exp < float64(time.Now().Unix()) {
@@ -131,7 +131,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		r.Header.Set("user_id", account_id)
+		r.Header.Set("user_id", accountID)
 
 		next.ServeHTTP(w, r)
 	})

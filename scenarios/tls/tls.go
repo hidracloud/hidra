@@ -12,14 +12,14 @@ import (
 	"github.com/hidracloud/hidra/utils"
 )
 
-// Represent an ssl scenario
-type TLSScenario struct {
+// Scenario Represent an ssl scenario
+type Scenario struct {
 	models.Scenario
 
 	certificates []*x509.Certificate
 }
 
-func (s *TLSScenario) connectTo(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -36,7 +36,7 @@ func (s *TLSScenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (s *TLSScenario) dnsShouldBePresent(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) dnsShouldBePresent(c map[string]string) ([]models.Metric, error) {
 	if s.certificates == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
@@ -58,7 +58,7 @@ func (s *TLSScenario) dnsShouldBePresent(c map[string]string) ([]models.Metric, 
 	return nil, fmt.Errorf("dns missing")
 }
 
-func (s *TLSScenario) shouldBeValidFor(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) shouldBeValidFor(c map[string]string) ([]models.Metric, error) {
 	duration, err := utils.ParseDuration(c["for"])
 
 	if err != nil {
@@ -74,11 +74,13 @@ func (s *TLSScenario) shouldBeValidFor(c map[string]string) ([]models.Metric, er
 	return nil, nil
 }
 
-func (s *TLSScenario) Description() string {
+// Description return the description of the scenario
+func (s *Scenario) Description() string {
 	return "Run a TLS scenario"
 }
 
-func (s *TLSScenario) Init() {
+// Init initialize the scenario
+func (s *Scenario) Init() {
 	s.StartPrimitives()
 
 	s.RegisterStep("connectTo", models.StepDefinition{
@@ -120,6 +122,6 @@ func (s *TLSScenario) Init() {
 
 func init() {
 	scenarios.Add("tls", func() models.IScenario {
-		return &TLSScenario{}
+		return &Scenario{}
 	})
 }

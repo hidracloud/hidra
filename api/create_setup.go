@@ -7,11 +7,12 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-type CreateSetupRequest struct {
+type createSetupRequest struct {
 	Email    string
 	Password string
 }
 
+// CreateSetup is the handler to create a new setup
 func (a *API) CreateSetup(w http.ResponseWriter, r *http.Request) {
 	usersCount := models.GetUserCount()
 
@@ -20,7 +21,7 @@ func (a *API) CreateSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req CreateSetupRequest
+	var req createSetupRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {

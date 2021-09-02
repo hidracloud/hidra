@@ -8,9 +8,9 @@ import (
 	"github.com/hidracloud/hidra/models"
 )
 
-// List sample response struct
+// ListAgentsResponse is the response of the list agents
 type ListAgentsResponse struct {
-	Id          string
+	ID          string
 	Name        string
 	Description string
 	Secret      string
@@ -18,7 +18,7 @@ type ListAgentsResponse struct {
 	UpdatedAt   time.Time
 }
 
-// Get a list of samples by id and checksum
+// ListAgents returns the list of agents
 func (a *API) ListAgents(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var agents []models.Agent
@@ -49,7 +49,7 @@ func (a *API) ListAgents(w http.ResponseWriter, r *http.Request) {
 		}
 
 		newAgent := ListAgentsResponse{
-			Id:          agent.ID.String(),
+			ID:          agent.ID.String(),
 			Name:        agent.Name,
 			Description: agent.Description,
 			Tags:        make(map[string]string),

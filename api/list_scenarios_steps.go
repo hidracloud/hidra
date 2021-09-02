@@ -8,27 +8,27 @@ import (
 	"github.com/hidracloud/hidra/scenarios"
 )
 
-type ScenarioResponse struct {
+type scenarioResponse struct {
 	Description     string
 	StepDefinitions map[string]models.StepDefinition
 }
 
-// This method scenario and step lists.
+// ListScenariosSteps returns a list of all the steps of all the scenarios
 func (a *API) ListScenariosSteps(w http.ResponseWriter, r *http.Request) {
 	scenarios := scenarios.GetAll()
 
-	scenarioResponse := make(map[string]ScenarioResponse)
+	allScenarioResponse := make(map[string]scenarioResponse)
 
 	for name, scenario := range scenarios {
 		oneScenario := scenario()
 		oneScenario.Init()
 
-		scenarioResponse[name] = ScenarioResponse{
+		allScenarioResponse[name] = scenarioResponse{
 			Description:     oneScenario.Description(),
 			StepDefinitions: oneScenario.GetScenarioDefinitions(),
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(scenarioResponse)
+	json.NewEncoder(w).Encode(allScenarioResponse)
 }

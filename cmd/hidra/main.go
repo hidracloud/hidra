@@ -38,7 +38,7 @@ type flagConfig struct {
 	// Database path
 	dbPath string
 	// Database uri
-	dbUri string
+	dbURI string
 }
 
 // This mode is used for fast checking yaml
@@ -79,9 +79,9 @@ func runAgentMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func runApiMode(cfg *flagConfig, wg *sync.WaitGroup) {
+func runAPIMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	log.Println("Running hidra in api mode")
-	api.StartApi(cfg.listenAddr, cfg.dbType)
+	api.StartAPI(cfg.listenAddr, cfg.dbType)
 	wg.Done()
 }
 
@@ -113,7 +113,7 @@ func main() {
 	flag.StringVar(&cfg.listenAddr, "listen_addr", ":8080", "-listen_addr listen address")
 	flag.StringVar(&cfg.dbType, "db_type", "sqlite", "-db_type which type of database you want to use?")
 	flag.StringVar(&cfg.dbPath, "db_path", "test.db", "-db_path database path")
-	flag.StringVar(&cfg.dbUri, "db_uri", "", "-db_uri database uri")
+	flag.StringVar(&cfg.dbURI, "db_uri", "", "-db_uri database uri")
 
 	// Metric mode
 	flag.StringVar(&cfg.metricsListenAddr, "metric_listen_addr", ":9096", "-metric_listen_addr listen address")
@@ -129,7 +129,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	if apiMode || metricMode {
-		models.SetupDB(cfg.dbType, cfg.dbPath, cfg.dbUri)
+		models.SetupDB(cfg.dbType, cfg.dbPath, cfg.dbURI)
 	}
 
 	if agentMode {
@@ -139,7 +139,7 @@ func main() {
 
 	if apiMode {
 		wg.Add(1)
-		go runApiMode(&cfg, &wg)
+		go runAPIMode(&cfg, &wg)
 	}
 
 	if metricMode {

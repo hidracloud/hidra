@@ -2,17 +2,14 @@ package models
 
 import (
 	"net/http"
-	"os"
 	"strings"
-	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/hidracloud/hidra/database"
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
-// Represent one agent in db.
+// Agent model
 type Agent struct {
 	gorm.Model
 	Name        string
@@ -21,30 +18,17 @@ type Agent struct {
 	Secret      string    `json:"-" gorm:"primaryKey;type:char(36);"`
 }
 
-// Represent agent tags
+// AgentTag model
 type AgentTag struct {
 	gorm.Model
 	ID      uuid.UUID `gorm:"primaryKey;type:char(36);"`
-	AgentId uuid.UUID
-	Agent   Agent `gorm:"foreignKey:AgentId" json:"-"`
+	AgentID uuid.UUID
+	Agent   Agent `gorm:"foreignKey:AgentID" json:"-"`
 	Key     string
 	Value   string
 }
 
-// Verify that agent token is correct
-func VerifyRegisterAgentToken(tokenString string) (jwt.Claims, error) {
-	signingKey := []byte(os.Getenv("AGENT_JWT_SECRET_TOKEN"))
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return signingKey, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return token.Claims, err
-}
-
-// Create a new agent.
+// CreateAgent create a new agent
 func CreateAgent(secret, name, description string, tags map[string]string) error {
 	newAgent := Agent{ID: uuid.NewV4(), Secret: secret, Name: name, Description: description}
 
@@ -62,15 +46,16 @@ func CreateAgent(secret, name, description string, tags map[string]string) error
 	return nil
 }
 
+// CreateAgentTagByAgentID create a new agent tag
 func CreateAgentTagByAgentID(agentID uuid.UUID, key string, value string) error {
-	newAgentTag := AgentTag{ID: uuid.NewV4(), Key: key, Value: value, AgentId: agentID}
+	newAgentTag := AgentTag{ID: uuid.NewV4(), Key: key, Value: value, AgentID: agentID}
 	if result := database.ORM.Create(&newAgentTag); result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-// Get agent by id
+// GetAgent get agent by agent id
 func GetAgent(agentID uuid.UUID) (Agent, error) {
 	var agent Agent
 	if result := database.ORM.First(&agent, "id = ?", agentID); result.Error != nil {
@@ -79,7 +64,7 @@ func GetAgent(agentID uuid.UUID) (Agent, error) {
 	return agent, nil
 }
 
-// Search agent by name
+// SearchAgentByName search agent by name
 func SearchAgentByName(name string) ([]Agent, error) {
 	var agents []Agent
 	if result := GetAgentQuery().Where("name LIKE ?", "%"+name+"%").Find(&agents); result.Error != nil {
@@ -88,7 +73,7 @@ func SearchAgentByName(name string) ([]Agent, error) {
 	return agents, nil
 }
 
-// Get all agents
+// GetAgents get all agents
 func GetAgents() ([]Agent, error) {
 	var agents []Agent
 	if result := GetAgentQuery().Find(&agents); result.Error != nil {
@@ -97,12 +82,12 @@ func GetAgents() ([]Agent, error) {
 	return agents, nil
 }
 
-// Get common get agent query
+// GetAgentQuery get agent query
 func GetAgentQuery() *gorm.DB {
 	return database.ORM.Order("updated_at desc")
 }
 
-// Update agent by agent id
+// UpdateAgent update agent
 func UpdateAgent(agentID uuid.UUID, name, description string) error {
 	var agent Agent
 	if result := database.ORM.First(&agent, "id = ?", agentID); result.Error != nil {
@@ -116,7 +101,7 @@ func UpdateAgent(agentID uuid.UUID, name, description string) error {
 	return nil
 }
 
-// Delete agent tags by agent id
+// DeleteAgentTags delete agent tags
 func DeleteAgentTags(agentID uuid.UUID) error {
 	if result := database.ORM.Where("agent_id = ?", agentID).Delete(&AgentTag{}); result.Error != nil {
 		return result.Error
@@ -124,7 +109,7 @@ func DeleteAgentTags(agentID uuid.UUID) error {
 	return nil
 }
 
-// Get agent tags
+// GetAgentTags get agent tags
 func GetAgentTags(agentID uuid.UUID) ([]AgentTag, error) {
 	var agentTags []AgentTag
 	if result := database.ORM.Where("agent_id = ?", agentID).Find(&agentTags); result.Error != nil {
@@ -133,7 +118,7 @@ func GetAgentTags(agentID uuid.UUID) ([]AgentTag, error) {
 	return agentTags, nil
 }
 
-// Check if agent secret is correct
+// AuthSecretAgentMiddleware auth secret agent middleware
 func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -159,20 +144,4 @@ func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-// Generate a new temporal token
-func CreateRegisterAgentToken() (string, error) {
-	var err error
-
-	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["exp"] = time.Now().Add(time.Minute * 10).Unix()
-	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	token, err := at.SignedString([]byte(os.Getenv("AGENT_JWT_SECRET_TOKEN")))
-	if err != nil {
-		return "", err
-	}
-
-	return token, nil
 }

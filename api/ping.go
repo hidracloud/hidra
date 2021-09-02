@@ -6,13 +6,13 @@ import (
 )
 
 // Response for ping req
-type PingResponse struct {
+type pingResponse struct {
 	Pong bool
 }
 
-// This method return Pong
+// Ping is a simple ping endpoint
 func (a *API) Ping(w http.ResponseWriter, r *http.Request) {
-	pingResponse := PingResponse{Pong: true}
+	pingResponse := pingResponse{Pong: true}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(pingResponse)
 }

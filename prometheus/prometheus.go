@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// StartPrometheus starts the prometheus server
 func StartPrometheus(listenAddr string, pullTime int) {
 	go func() {
 		gaugeDict := make(map[string]*prometheus.GaugeVec)
@@ -66,13 +67,13 @@ func StartPrometheus(listenAddr string, pullTime int) {
 
 				gaugeDict[metricName].Reset()
 
-				distinct_labels, err := models.GetDistinctChecksumByName(metricName)
+				distinctLabels, err := models.GetDistinctChecksumByName(metricName)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
 
-				for _, label := range distinct_labels {
+				for _, label := range distinctLabels {
 					oneMetric, err := models.GetMetricByChecksum(label, metricName)
 					if err != nil {
 						log.Println(err)

@@ -19,19 +19,19 @@ import (
 	"github.com/hidracloud/hidra/scenarios"
 )
 
-// Represent one agent configuration
+// Agent Represent one agent configuration
 type Agent struct {
-	ApiURL  string
+	APIURL  string
 	Secret  string
 	DataDir string
 }
 
 var sampleScrapeInterval map[string]time.Time
 
-// Make a request to hidra API
-func (a *Agent) DoApiCall(endpoint, method string, body io.Reader) (*http.Response, error) {
+// DoAPICall Make a request to hidra API
+func (a *Agent) DoAPICall(endpoint, method string, body io.Reader) (*http.Response, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest(method, a.ApiURL+endpoint, body)
+	req, err := http.NewRequest(method, a.APIURL+endpoint, body)
 
 	if err != nil {
 		return nil, err
@@ -48,11 +48,11 @@ func (a *Agent) DoApiCall(endpoint, method string, body io.Reader) (*http.Respon
 	return resp, err
 }
 
-// List all samples related to current agent
+// ListSamples List all samples related to current agent
 func (a *Agent) ListSamples() []models.Sample {
 	samples := make([]models.Sample, 0)
 
-	res, err := a.DoApiCall("/agent_list_samples", "GET", nil)
+	res, err := a.DoAPICall("/agent_list_samples", "GET", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,9 +64,9 @@ func (a *Agent) ListSamples() []models.Sample {
 	return samples
 }
 
-// Get one sample
+// GetSample Get one sample
 func (a *Agent) GetSample(id string) []byte {
-	res, err := a.DoApiCall("/agent_get_sample/"+id, "GET", nil)
+	res, err := a.DoAPICall("/agent_get_sample/"+id, "GET", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,8 +82,8 @@ func (a *Agent) GetSample(id string) []byte {
 	return b
 }
 
-// Push metrics to API
-func (a *Agent) PushMetrics(sampleId string, metrics *models.ScenarioResult) error {
+// PushMetrics Push metrics to API
+func (a *Agent) PushMetrics(sampleID string, metrics *models.ScenarioResult) error {
 	if metrics.Error != nil {
 		metrics.ErrorString = metrics.Error.Error()
 	}
@@ -96,11 +96,11 @@ func (a *Agent) PushMetrics(sampleId string, metrics *models.ScenarioResult) err
 		return err
 	}
 
-	_, err = a.DoApiCall("/agent_push_metrics/"+sampleId, "POST", payloadBuf)
+	_, err = a.DoAPICall("/agent_push_metrics/"+sampleID, "POST", payloadBuf)
 	return err
 }
 
-// Clean up old samples
+// RemoveDeprecatedSamples Clean up old samples
 func (a *Agent) RemoveDeprecatedSamples(samples []models.Sample, files []fs.FileInfo) {
 	for _, file := range files {
 		found := false
@@ -135,7 +135,7 @@ func calculateLocalChecksum(filePath string) (string, error) {
 
 }
 
-// Check if current sample should be updated
+// UpdateSamplesIfNeeded Check if current sample should be updated
 func (a *Agent) UpdateSamplesIfNeeded(samples []models.Sample, files []fs.FileInfo) {
 	for _, sample := range samples {
 		needupdate := true
@@ -158,7 +158,7 @@ func (a *Agent) UpdateSamplesIfNeeded(samples []models.Sample, files []fs.FileIn
 	}
 }
 
-// Try to update local resources
+// UpdateLocalResources Try to update local resources
 func (a *Agent) UpdateLocalResources() {
 	if time.Since(sampleScrapeInterval["foobar"]) < time.Minute*5 {
 		return
@@ -182,7 +182,7 @@ func (a *Agent) UpdateLocalResources() {
 	sampleScrapeInterval["foobar"] = time.Now()
 }
 
-// Run all samples in current agent
+// RunAllSamples Run all samples in current agent
 func (a *Agent) RunAllSamples() {
 	files, err := ioutil.ReadDir(a.DataDir)
 
@@ -222,9 +222,9 @@ func (a *Agent) RunAllSamples() {
 	}
 }
 
-// Initialize an agent
-func StartAgent(apiUrl, secretToken, datadir string) {
-	agent := Agent{ApiURL: apiUrl, Secret: secretToken, DataDir: datadir}
+// StartAgent Initialize an agent
+func StartAgent(apiURL, secretToken, datadir string) {
+	agent := Agent{APIURL: apiURL, Secret: secretToken, DataDir: datadir}
 
 	sampleScrapeInterval = make(map[string]time.Time)
 	sampleScrapeInterval["foobar"] = time.Unix(0, 0)

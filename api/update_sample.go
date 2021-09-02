@@ -11,7 +11,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// Generate a new sample
+// UpdateSample is a function to update a sample
 func (a *API) UpdateSample(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -32,7 +32,7 @@ func (a *API) UpdateSample(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldSample, err := models.GetSampleById(params["sampleid"])
+	oldSample, err := models.GetSampleByID(params["sampleid"])
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusForbidden)

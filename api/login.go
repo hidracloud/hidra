@@ -11,20 +11,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type LoginRequest struct {
+type loginRequest struct {
 	Email    string
 	Password string
 }
 
-type LoginResponse struct {
+type loginResponse struct {
 	AuthToken string `json:"AuthToken,omitempty"`
 	Error     string `json:"Error,omitempty"`
 }
 
-// Generate a login session
+// Login is the handler for the login endpoint
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
-	var loginRequest LoginRequest
-	var loginResponse LoginResponse
+	var loginRequest loginRequest
+	var loginResponse loginResponse
 
 	w.Header().Set("Content-Type", "application/json")
 
