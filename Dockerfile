@@ -11,6 +11,9 @@ FROM chromedp/headless-shell:stable as runtime
 ARG DATA_DIR="/var/lib/hidra/data"
 RUN mkdir -p $DATA_DIR
 
+# Install ca-certificates for debian-based systems
+RUN apt-get update && apt-get install -y ca-certificates
+
 COPY --from=build /app/hidra /usr/local/bin/hidra
 
 ENTRYPOINT [ "/usr/local/bin/hidra" ]
