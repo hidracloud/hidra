@@ -1,7 +1,9 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"sort"
 	"time"
 
@@ -215,10 +217,25 @@ func (m *Metric) PushToDB(labels map[string]string) error {
 	return nil
 }
 
+type runStepGoTemplate struct {
+	Now time.Time
+}
+
 // RunStep Run an step
-func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
+func (s *Scenario) RunStep(name string, p map[string]string) ([]Metric, error) {
 	if _, ok := s.StepsDefinitions[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
+	}
+
+	// set runStepGoTemplate
+	runStepGoTemplate := &runStepGoTemplate{
+		Now: time.Now(),
+	}
+
+	// Make a copy of p into c
+	c := make(map[string]string)
+	for k, v := range p {
+		c[k] = v
 	}
 
 	params := s.StepsDefinitions[name].Params
@@ -227,7 +244,22 @@ func (s *Scenario) RunStep(name string, c map[string]string) ([]Metric, error) {
 		if _, ok := c[param.Name]; !ok && !param.Optional {
 			return nil, fmt.Errorf("missing parameter %s but expected", param.Name)
 		}
+
+		// Parse c[param.Name] as golang template
+		t, err := template.New("").Parse(c[param.Name])
+		if err != nil {
+			return nil, err
+		}
+
+		var buf bytes.Buffer
+		err = t.Execute(&buf, runStepGoTemplate)
+		if err != nil {
+			return nil, err
+		}
+
+		c[param.Name] = buf.String()
 	}
+
 	metricsChain := make(chan []Metric, 1)
 	errorChain := make(chan error, 1)
 
