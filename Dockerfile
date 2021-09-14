@@ -1,5 +1,7 @@
 FROM golang:1.16-alpine as build
 
+RUN apk add build-base
+
 WORKDIR /app
 COPY . .
 
