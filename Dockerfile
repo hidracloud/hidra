@@ -4,7 +4,7 @@ WORKDIR /app
 COPY . .
 
 RUN go mod vendor
-RUN  CGO_ENABLED=0 GOOS=linux go build -o hidra cmd/hidra/main.go
+RUN  CGO_ENABLED=1 GOOS=linux go build -o hidra cmd/hidra/main.go
 
 FROM chromedp/headless-shell:stable as runtime
 
