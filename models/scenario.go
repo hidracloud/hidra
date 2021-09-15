@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"log"
 	"sort"
 	"time"
 
@@ -259,6 +260,9 @@ func (s *Scenario) RunStep(name string, p map[string]string) ([]Metric, error) {
 
 		c[param.Name] = buf.String()
 	}
+
+	log.Println("Real parameters: ")
+	log.Println(c)
 
 	metricsChain := make(chan []Metric, 1)
 	errorChain := make(chan error, 1)
