@@ -14,7 +14,7 @@ ARG DATA_DIR="/var/lib/hidra/data"
 RUN mkdir -p $DATA_DIR
 
 # Install ca-certificates for debian-based systems
-RUN apt-get update && apt-get install -y ca-certificates glibc
+RUN apt-get update && apt-get install -y ca-certificates libc6
 RUN apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=build /app/hidra /usr/local/bin/hidra
