@@ -70,11 +70,13 @@ func StartAPI(serverAddr, dbtype string) {
 	r.Handle("/api/get_metrics/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.GetMetrics))).Methods(http.MethodGet)
 	r.Handle("/api/get_agent/{agentid}", models.AuthMiddleware(http.HandlerFunc(api.GetAgent))).Methods(http.MethodGet)
 	r.Handle("/api/update_agent/{agentid}", models.AuthMiddleware(http.HandlerFunc(api.UpdateAgent))).Methods(http.MethodPut)
+	r.Handle("/api/sample_runner", models.AuthMiddleware(http.HandlerFunc(api.SampleRunner))).Methods(http.MethodPost)
 
 	// Pre-register agent functions
 	r.Handle("/api/register_agent", models.AuthMiddleware(http.HandlerFunc(api.RegisterAgent))).Methods(http.MethodPost)
 
 	// Registered agent functions
+
 	r.Handle("/api/agent_list_samples", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentListSamples))).Methods(http.MethodGet)
 	r.Handle("/api/agent_push_metrics/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentPushMetrics))).Methods(http.MethodPost)
 	r.Handle("/api/agent_get_sample/{sampleid}", models.AuthSecretAgentMiddleware(http.HandlerFunc(api.AgentGetSample))).Methods(http.MethodGet)

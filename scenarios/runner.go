@@ -62,3 +62,25 @@ func PrettyPrintScenarioResults(m *models.ScenarioResult, name, desc string) {
 		log.Printf("[%s]   |_ %s duration: %d (ms)\n", name, s.Step.Type, s.EndDate.Sub(s.StartDate).Milliseconds())
 	}
 }
+
+// PrettyPrintScenarioResults2String Print scenario metrics
+func PrettyPrintScenarioResults2String(m *models.ScenarioResult, name, desc string) string {
+	out := ""
+
+	out += fmt.Sprintf("[%s] Metrics results for: %s\n", name, desc)
+	if m.Error == nil {
+		out += fmt.Sprintf("[%s] Scenario ran without issues\n", name)
+	} else {
+		out += fmt.Sprintf("[%s] Scenario ran with issues: %s\n", name, m.Error)
+
+	}
+
+	out += fmt.Sprintf("[%s] Total scenario duration: %d (ms)\n", name, m.EndDate.Sub(m.StartDate).Milliseconds())
+
+	for _, s := range m.StepResults {
+		out += fmt.Sprintf("[%s]   |_ %s duration: %d (ms)\n", name, s.Step.Type, s.EndDate.Sub(s.StartDate).Milliseconds())
+	}
+
+	out += fmt.Sprintf("[%s] Total scenario duration: %d (ms)\n", name, m.EndDate.Sub(m.StartDate).Milliseconds())
+	return out
+}
