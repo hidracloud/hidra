@@ -158,6 +158,24 @@ func (s *Sample) PushMetricsToQueue(ScenarioResult *ScenarioResult, agentID stri
 	metricsQueue = append(metricsQueue, MetricQueue{AgentID: agentID, Sample: *s, ScenarioResult: *ScenarioResult})
 }
 
+// GetSampleResultBySampleIDWithLimit return latest sample result by sample id
+func GetSampleResultBySampleIDWithLimit(sampleID string, limit int) ([]*SampleResult, error) {
+	sampleResult := []*SampleResult{}
+	if result := database.ORM.Where("sample_id = ?", sampleID).Order("created_at desc").Limit(limit).Find(&sampleResult); result.Error != nil {
+		return nil, result.Error
+	}
+	return sampleResult, nil
+}
+
+// GetMetricsBySampleResultID return metrics by sample result id
+func GetMetricsBySampleResultID(sampleResultID string) ([]Metric, error) {
+	metricResult := []Metric{}
+	if result := database.ORM.Where("sample_result_id = ?", sampleResultID).Find(&metricResult); result.Error != nil {
+		return nil, result.Error
+	}
+	return metricResult, nil
+}
+
 // PushMetrics push metrics to database
 func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentID string) error {
 
@@ -188,11 +206,11 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentID string) err
 	}
 
 	sampleMetricTime := Metric{
-		ID:             uuid.NewV4(),
-		SampleID:       s.ID.String(),
-		Name:           "sample_metric_time",
-		Value:          float64(sampleResult.EndDate.UnixNano() - sampleResult.StartDate.UnixNano()),
-		LabelsChecksum: CalculateLabelsChecksum(commonLabels),
+		ID:           uuid.NewV4(),
+		SampleID:     s.ID.String(),
+		Name:         "sample_metric_time",
+		SampleResult: &sampleResult,
+		Value:        float64(sampleResult.EndDate.UnixNano() - sampleResult.StartDate.UnixNano()),
 	}
 
 	err = sampleMetricTime.PushToDB(commonLabels)
@@ -208,11 +226,11 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentID string) err
 	}
 
 	sampleMetricStatus := Metric{
-		ID:             uuid.NewV4(),
-		Name:           "sample_metric_status",
-		SampleID:       s.ID.String(),
-		Value:          float64(status),
-		LabelsChecksum: CalculateLabelsChecksum(commonLabels),
+		ID:           uuid.NewV4(),
+		Name:         "sample_metric_status",
+		SampleID:     s.ID.String(),
+		Value:        float64(status),
+		SampleResult: &sampleResult,
 	}
 
 	err = sampleMetricStatus.PushToDB(commonLabels)
@@ -229,11 +247,11 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentID string) err
 		commonLabels["params"] = string(paramsStr)
 
 		stepSampleMetricTime := Metric{
-			ID:             uuid.NewV4(),
-			Name:           "sample_step_metric_time",
-			SampleID:       s.ID.String(),
-			Value:          float64(step.EndDate.UnixNano() - step.StartDate.UnixNano()),
-			LabelsChecksum: CalculateLabelsChecksum(commonLabels),
+			ID:           uuid.NewV4(),
+			Name:         "sample_step_metric_time",
+			SampleID:     s.ID.String(),
+			Value:        float64(step.EndDate.UnixNano() - step.StartDate.UnixNano()),
+			SampleResult: &sampleResult,
 		}
 
 		err = stepSampleMetricTime.PushToDB(commonLabels)
@@ -253,7 +271,7 @@ func (s *Sample) PushMetrics(ScenarioResult *ScenarioResult, agentID string) err
 
 			metric.ID = uuid.NewV4()
 			metric.SampleID = s.ID.String()
-			metric.LabelsChecksum = CalculateLabelsChecksum(labels)
+			metric.SampleResult = &sampleResult
 			metric.PushToDB(labels)
 		}
 	}

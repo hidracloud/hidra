@@ -17,89 +17,72 @@ func StartPrometheus(listenAddr string, pullTime int) {
 		labelSet := make(map[string][]string, 0)
 
 		for {
-			metricsNames, err := models.GetDistinctMetricName()
-
-			if err != nil {
-				log.Println(err)
-				continue
+			for _, gauge := range gaugeDict {
+				gauge.Reset()
 			}
 
-			// Search for new metrics
-			for _, metricName := range metricsNames {
-				if _, ok := gaugeDict[metricName]; !ok {
-					oneMetric, err := models.GetMetricByName(metricName)
-					if err != nil {
-						log.Println(err)
-						continue
-					}
+			samples, err := models.GetSamples()
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
 
-					metriLabels, err := models.GetMetricLabelByMetricID(oneMetric.ID)
-					if err != nil {
-						log.Println(err)
-						continue
-					}
-
-					labels := []string{}
-
-					for _, label := range metriLabels {
-						labels = append(labels, label.Key)
-					}
-
-					helpText := oneMetric.Description
-
-					if helpText == "" {
-						helpText = "Auto generated metric by hidra"
-					}
-
-					gaugeDict[metricName] = prometheus.NewGaugeVec(
-						prometheus.GaugeOpts{
-							Namespace: "hidra",
-							Name:      metricName,
-							Help:      helpText,
-						},
-						labels,
-					)
-
-					labelSet[metricName] = labels
-
-					prometheus.MustRegister(gaugeDict[metricName])
+			for _, sample := range samples {
+				tmp, err := models.GetSampleResultBySampleIDWithLimit(sample.ID.String(), 1)
+				if err != nil || len(tmp) == 0 {
+					log.Fatal(err)
+					return
 				}
 
-				gaugeDict[metricName].Reset()
+				latestSampleResult := tmp[0]
 
-				distinctLabels, err := models.GetDistinctChecksumByName(metricName)
+				metrics, err := models.GetMetricsBySampleResultID(latestSampleResult.ID.String())
+
 				if err != nil {
-					log.Println(err)
-					continue
+					log.Fatal(err)
 				}
 
-				for _, label := range distinctLabels {
-					oneMetric, err := models.GetMetricByChecksum(label, metricName)
+				for _, metric := range metrics {
+					metricLabels, err := models.GetMetricLabelByMetricID(metric.ID)
+
 					if err != nil {
-						log.Println(err)
-						continue
+						log.Fatal(err)
+					}
+
+					if _, ok := gaugeDict[metric.Name]; !ok {
+						labelsKey := make([]string, len(metricLabels))
+						for i, label := range metricLabels {
+							labelsKey[i] = label.Key
+						}
+
+						gaugeDict[metric.Name] = prometheus.NewGaugeVec(
+							prometheus.GaugeOpts{
+								Namespace: "hidra",
+								Name:      metric.Name,
+								Help:      metric.Description,
+							},
+							labelsKey,
+						)
+
+						labelSet[metric.Name] = labelsKey
+
+						prometheus.MustRegister(gaugeDict[metric.Name])
 					}
 
 					labelsDict := make(map[string]string)
-
-					metricLabels, err := models.GetMetricLabelByMetricID(oneMetric.ID)
-					if err != nil {
-						log.Println(err)
-						continue
-					}
 
 					for _, label := range metricLabels {
 						labelsDict[label.Key] = label.Value
 					}
 
-					labels := make([]string, len(labelSet[metricName]))
-					for k, v := range labelSet[metricName] {
+					labels := make([]string, len(labelSet[metric.Name]))
+					for k, v := range labelSet[metric.Name] {
 						if _, ok := labelsDict[v]; ok {
 							labels[k] = labelsDict[v]
 						}
 					}
 
-					gaugeDict[metricName].WithLabelValues(labels...).Set(oneMetric.Value)
+					gaugeDict[metric.Name].WithLabelValues(labels...).Set(metric.Value)
 				}
 			}
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"sort"
 	"time"
 
 	"github.com/hidracloud/hidra/database"
@@ -80,13 +79,12 @@ type Metric struct {
 	ID             uuid.UUID `gorm:"primaryKey;type:char(36);"`
 	Name           string
 	Value          float64
-	Step           string
-	Scenario       string
 	Labels         map[string]string `gorm:"-"`
-	LabelsChecksum string
 	Description    string
 	SampleID       string
 	Expires        time.Duration
+	SampleResultID uuid.UUID     `json:"-"`
+	SampleResult   *SampleResult `gorm:"foreignKey:SampleResultID" json:"-"`
 }
 
 // MetricLabel definition
@@ -289,23 +287,6 @@ func (s *Scenario) RegisterStep(name string, step StepDefinition) {
 // GetScenarioDefinitions Get scenario definitions
 func (s *Scenario) GetScenarioDefinitions() map[string]StepDefinition {
 	return s.StepsDefinitions
-}
-
-// CalculateLabelsChecksum Calculate labels checksum
-func CalculateLabelsChecksum(labels map[string]string) string {
-	var checksum string
-
-	keys := make([]string, 0, len(labels))
-	for k := range labels {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-
-	for _, k := range keys {
-		checksum += k + labels[k]
-	}
-	return checksum
 }
 
 // Description Get scenario description

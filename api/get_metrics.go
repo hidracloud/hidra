@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/gorilla/mux"
 	"github.com/hidracloud/hidra/models"
@@ -19,59 +20,96 @@ type metricResponse struct {
 	Values     []metricValueResponse
 }
 
+type metricWithLabels struct {
+	models.Metric
+	Labels map[string]string
+}
+
+func calculateLabelsChecksum(labels map[string]string) string {
+	checksum := ""
+
+	keys := make([]string, 0)
+	for key := range labels {
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		checksum += key + ":" + labels[key]
+	}
+	return checksum
+}
+
 // GetMetrics returns the metrics for the given namespace and name
 func (a *API) GetMetrics(w http.ResponseWriter, r *http.Request) {
 	response := make([]metricResponse, 0)
 
 	params := mux.Vars(r)
-	distinctNames, err := models.GetDistinctMetricNameBySampleID(params["sampleid"])
 
+	sampleResults, err := models.GetSampleResultBySampleIDWithLimit(params["sampleid"], 10)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	for _, name := range distinctNames {
-		oneMetricResponse := metricResponse{}
-		oneMetricResponse.MetricName = name
+	metricsByMetricName := make(map[string][]metricWithLabels)
 
-		checksums, err := models.GetDistinctChecksumByNameAndSampleID(name, params["sampleid"])
-
+	for _, sampleResult := range sampleResults {
+		// Get metrics by sample result
+		metricsBySampleResult, err := models.GetMetricsBySampleResultID(sampleResult.ID.String())
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		for _, checksum := range checksums {
-			metricValues, err := models.GetMetricsByNameAndSampleID(name, params["sampleid"], checksum, 10)
+		for _, metric := range metricsBySampleResult {
+			checksum := metric.Name
+			metricLabels, err := models.GetMetricLabelByMetricID(metric.ID)
+
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
-			labels := make(map[string]string)
+			labelsDict := make(map[string]string)
 
-			for _, metricValue := range metricValues {
-				oneMetricResponse.Values = append(oneMetricResponse.Values, metricValueResponse{
-					Value: metricValue.Value,
-					Time:  metricValue.CreatedAt.Unix(),
-				})
-
-				metriLabels, err := models.GetMetricLabelByMetricID(metricValue.ID)
-
-				if err != nil {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-
-				for _, label := range metriLabels {
-					labels[label.Key] = label.Value
-				}
+			for _, label := range metricLabels {
+				labelsDict[label.Key] = label.Value
 			}
 
-			oneMetricResponse.Labels = labels
-			response = append(response, oneMetricResponse)
+			checksum += calculateLabelsChecksum(labelsDict)
+			extendedMetric := metricWithLabels{
+				Metric: metric,
+				Labels: labelsDict,
+			}
+
+			if _, ok := metricsByMetricName[checksum]; !ok {
+				metricsByMetricName[checksum] = make([]metricWithLabels, 0)
+			}
+
+			metricsByMetricName[checksum] = append(metricsByMetricName[checksum], extendedMetric)
 		}
+	}
+
+	for _, metricsByName := range metricsByMetricName {
+		// Latest metric labels
+		latestMetric := metricsByName[0]
+
+		metricResponse := metricResponse{
+			MetricName: latestMetric.Name,
+			Values:     make([]metricValueResponse, 0),
+			Labels:     latestMetric.Labels,
+		}
+
+		for _, metric := range metricsByName {
+			metricResponse.Values = append(metricResponse.Values, metricValueResponse{
+				Value: metric.Value,
+				Time:  metric.CreatedAt.Unix(),
+			})
+		}
+
+		response = append(response, metricResponse)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
