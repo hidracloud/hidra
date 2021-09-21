@@ -29,7 +29,11 @@ func StartPrometheus(listenAddr string, pullTime int) {
 
 			for _, sample := range samples {
 				tmp, err := models.GetSampleResultBySampleIDWithLimit(sample.ID.String(), 1)
-				if err != nil || len(tmp) == 0 {
+				if len(tmp) == 0 {
+					continue
+				}
+
+				if err != nil {
 					log.Fatal(err)
 					return
 				}
