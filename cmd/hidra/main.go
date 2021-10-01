@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/namsral/flag"
 
@@ -79,6 +80,14 @@ func runAgentMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
+func runCronMode(cfg *flagConfig, wg *sync.WaitGroup) {
+	log.Println("Running hidra in cron mode")
+	for {
+		models.CleanupMetrics(time.Hour * 12)
+		time.Sleep(time.Second * 60)
+	}
+}
+
 func runAPIMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	log.Println("Running hidra in api mode")
 	api.StartAPI(cfg.listenAddr, cfg.dbType)
@@ -98,13 +107,14 @@ func main() {
 	cfg := flagConfig{}
 
 	// Initialize flags
-	var agentMode, apiMode, testMode, metricMode bool
+	var agentMode, apiMode, testMode, metricMode, cronMode bool
 
 	// Operating mode
 	flag.BoolVar(&apiMode, "api", false, "-api enable api mode in given hidra")
 	flag.BoolVar(&agentMode, "agent", false, "-agent enable agent mode in given hidra")
 	flag.BoolVar(&testMode, "test", false, "-test enable test mode in given hidra")
 	flag.BoolVar(&metricMode, "metric", false, "-metric metric mode in given hidra")
+	flag.BoolVar(&cronMode, "cron", false, "-cron cron mode in given hidra")
 
 	// Test mode
 	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
@@ -135,6 +145,11 @@ func main() {
 	if agentMode {
 		wg.Add(1)
 		go runAgentMode(&cfg, &wg)
+	}
+
+	if cronMode {
+		wg.Add(1)
+		go runCronMode(&cfg, &wg)
 	}
 
 	if apiMode {

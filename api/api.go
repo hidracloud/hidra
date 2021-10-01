@@ -19,18 +19,6 @@ type API struct {
 	router http.Handler
 }
 
-// Run a cron for API process
-func cron() {
-	log.Println("Starting cron for API")
-
-	for {
-		models.DeleteExpiredMetrics()
-		models.ProcessMetricsQueue()
-		models.DeleteOldMetrics(time.Hour * 12)
-		time.Sleep(time.Second)
-	}
-}
-
 //go:embed external/hidra-frontend/app/build
 var webapp embed.FS
 
@@ -41,6 +29,13 @@ func getWebApp() http.FileSystem {
 	}
 
 	return http.FS(fsys)
+}
+
+func processMetricsQueue() {
+	for {
+		models.ProcessMetricsQueue()
+		time.Sleep(time.Second * 5)
+	}
 }
 
 // StartAPI Start a new API process
@@ -104,8 +99,6 @@ func StartAPI(serverAddr, dbtype string) {
 	c := cors.AllowAll()
 
 	api.router = c.Handler(r)
-
-	go cron()
-
+	go processMetricsQueue()
 	log.Fatal(http.ListenAndServe(serverAddr, c.Handler(api.router)))
 }
