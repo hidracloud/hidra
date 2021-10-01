@@ -112,7 +112,7 @@ func CleanupMetrics(interval time.Duration) error {
 	if err := DeleteExpiredMetrics(); err != nil {
 		return err
 	}
-	if err := DeleteOldScenarioResults(interval); err != nil {
+	if err := DeleteOldSampleResults(interval); err != nil {
 		return err
 	}
 	if err := DeleteOldMetricsLabels(interval); err != nil {
@@ -129,9 +129,9 @@ func DeleteOldMetricsLabels(interval time.Duration) error {
 	return nil
 }
 
-// DeleteOldScenarioResults Delete old scenario results
-func DeleteOldScenarioResults(interval time.Duration) error {
-	if result := database.ORM.Where("updated_at < ?", time.Now().Add(-interval).Unix()).Unscoped().Delete(&ScenarioResult{}); result.Error != nil {
+// DeleteOldSampleResults Delete old scenario results
+func DeleteOldSampleResults(interval time.Duration) error {
+	if result := database.ORM.Where("updated_at < ?", time.Now().Add(-interval).Unix()).Unscoped().Delete(&SampleResult{}); result.Error != nil {
 		return result.Error
 	}
 	return nil
