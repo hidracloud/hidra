@@ -54,44 +54,48 @@ func StartPrometheus(listenAddr string, pullTime int) {
 						log.Fatal(err)
 					}
 
-					if _, ok := expirableGaugeDict[metric.Name]; !ok {
-						labelsKey := make([]string, len(metricLabels))
-						for i, label := range metricLabels {
-							labelsKey[i] = label.Key
+					if metric.Expires != 0 {
+
+						if _, ok := expirableGaugeDict[metric.Name]; !ok {
+							labelsKey := make([]string, len(metricLabels))
+							for i, label := range metricLabels {
+								labelsKey[i] = label.Key
+							}
+
+							expirableGaugeDict[metric.Name] = prometheus.NewGaugeVec(
+								prometheus.GaugeOpts{
+									Namespace: "hidra",
+									Name:      metric.Name,
+									Help:      metric.Description,
+								},
+								labelsKey,
+							)
+
+							labelSet[metric.Name] = labelsKey
+
+							prometheus.MustRegister(expirableGaugeDict[metric.Name])
 						}
 
-						expirableGaugeDict[metric.Name] = prometheus.NewGaugeVec(
-							prometheus.GaugeOpts{
-								Namespace: "hidra",
-								Name:      metric.Name,
-								Help:      metric.Description,
-							},
-							labelsKey,
-						)
+					} else {
+						if _, ok := gaugeDict[metric.Name]; !ok {
+							labelsKey := make([]string, len(metricLabels))
+							for i, label := range metricLabels {
+								labelsKey[i] = label.Key
+							}
 
-						labelSet[metric.Name] = labelsKey
+							gaugeDict[metric.Name] = prometheus.NewGaugeVec(
+								prometheus.GaugeOpts{
+									Namespace: "hidra",
+									Name:      metric.Name,
+									Help:      metric.Description,
+								},
+								labelsKey,
+							)
 
-						prometheus.MustRegister(expirableGaugeDict[metric.Name])
-					}
+							labelSet[metric.Name] = labelsKey
 
-					if _, ok := gaugeDict[metric.Name]; !ok {
-						labelsKey := make([]string, len(metricLabels))
-						for i, label := range metricLabels {
-							labelsKey[i] = label.Key
+							prometheus.MustRegister(gaugeDict[metric.Name])
 						}
-
-						gaugeDict[metric.Name] = prometheus.NewGaugeVec(
-							prometheus.GaugeOpts{
-								Namespace: "hidra",
-								Name:      metric.Name,
-								Help:      metric.Description,
-							},
-							labelsKey,
-						)
-
-						labelSet[metric.Name] = labelsKey
-
-						prometheus.MustRegister(gaugeDict[metric.Name])
 					}
 
 					labelsDict := make(map[string]string)
