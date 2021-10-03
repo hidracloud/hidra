@@ -124,7 +124,7 @@ func CleanupMetrics(interval time.Duration) error {
 // DeleteOldMetricsLabels Delete old metrics labels
 func DeleteOldMetricsLabels(interval time.Duration) error {
 	expiretime := time.Now()
-	expiretime.Add(-interval)
+	expiretime = expiretime.Add(-interval)
 
 	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&MetricLabel{}); result.Error != nil {
 		return result.Error
@@ -135,7 +135,7 @@ func DeleteOldMetricsLabels(interval time.Duration) error {
 // DeleteOldSampleResults Delete old scenario results
 func DeleteOldSampleResults(interval time.Duration) error {
 	expiretime := time.Now()
-	expiretime.Add(-interval)
+	expiretime = expiretime.Add(-interval)
 
 	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&SampleResult{}); result.Error != nil {
 		return result.Error
@@ -146,7 +146,7 @@ func DeleteOldSampleResults(interval time.Duration) error {
 // DeleteOldMetrics Delete old metrics
 func DeleteOldMetrics(interval time.Duration) error {
 	expiretime := time.Now()
-	expiretime.Add(-interval)
+	expiretime = expiretime.Add(-interval)
 
 	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&Metric{}); result.Error != nil {
 		return result.Error
