@@ -1,12 +1,17 @@
 FROM golang:1.16-bullseye as build
 
-RUN apt update && apt install build-essential -y
+RUN apt update && apt install build-essential git -y
 
 WORKDIR /app
+COPY go.mod go.mod
+COPY go.sum go.sum
+RUN go mod download
+
 COPY . .
 
-RUN go mod vendor
-RUN  CGO_ENABLED=1 GOOS=linux go build -o hidra cmd/hidra/main.go
+RUN VERSION=$(git describe --tags --abbrev=0) && \
+    sed -i "s/latest/${VERSION}/g" utils/version.go
+RUN CGO_ENABLED=1 GOOS=linux go build -o hidra cmd/hidra/main.go
 
 FROM chromedp/headless-shell:stable as runtime
 
