@@ -83,7 +83,10 @@ func runAgentMode(cfg *flagConfig, wg *sync.WaitGroup) {
 func runCronMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	log.Println("Running hidra in cron mode")
 	for {
-		models.CleanupMetrics(time.Hour * 12)
+		err := models.CleanupMetrics(time.Hour * 12)
+		if err != nil {
+			log.Println(err)
+		}
 		time.Sleep(time.Second * 60)
 	}
 }
@@ -138,7 +141,7 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	if apiMode || metricMode {
+	if apiMode || metricMode || cronMode {
 		models.SetupDB(cfg.dbType, cfg.dbPath, cfg.dbURI)
 	}
 
