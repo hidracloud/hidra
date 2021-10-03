@@ -9,8 +9,8 @@ RUN go mod download
 
 COPY . .
 
-RUN VERSION=$(git describe --tags --abbrev=0) && \
-    sed -i "s/latest/${VERSION}/g" utils/version.go
+ARG VERSION="latest"
+RUN sed -i "s/latest/${VERSION}/g" utils/version.go
 RUN CGO_ENABLED=1 GOOS=linux go build -o hidra cmd/hidra/main.go
 
 FROM chromedp/headless-shell:stable as runtime
