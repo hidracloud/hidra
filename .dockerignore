@@ -1,1 +1,4 @@
 api/external/hidra-frontend/app/node_modules
+test.db
+.git
+.gitignore
