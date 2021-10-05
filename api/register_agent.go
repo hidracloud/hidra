@@ -33,7 +33,7 @@ func (a *API) RegisterAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	agentSecret := utils.RandString(32)
+	agentSecret := utils.RandString(64)
 
 	err = models.CreateAgent(agentSecret, registerAgentRequest.Name, registerAgentRequest.Description, registerAgentRequest.Tags)
 	if err != nil {
