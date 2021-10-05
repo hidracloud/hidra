@@ -14,10 +14,11 @@ import (
 func StartPrometheus(listenAddr string, pullTime int) {
 	go func() {
 		gaugeDict := make(map[string]*prometheus.GaugeVec)
+		expirableGaugeDict := make(map[string]*prometheus.GaugeVec)
 		labelSet := make(map[string][]string, 0)
 
 		for {
-			for _, gauge := range gaugeDict {
+			for _, gauge := range expirableGaugeDict {
 				gauge.Reset()
 			}
 
@@ -53,24 +54,48 @@ func StartPrometheus(listenAddr string, pullTime int) {
 						log.Fatal(err)
 					}
 
-					if _, ok := gaugeDict[metric.Name]; !ok {
-						labelsKey := make([]string, len(metricLabels))
-						for i, label := range metricLabels {
-							labelsKey[i] = label.Key
+					if metric.Expires != 0 {
+
+						if _, ok := expirableGaugeDict[metric.Name]; !ok {
+							labelsKey := make([]string, len(metricLabels))
+							for i, label := range metricLabels {
+								labelsKey[i] = label.Key
+							}
+
+							expirableGaugeDict[metric.Name] = prometheus.NewGaugeVec(
+								prometheus.GaugeOpts{
+									Namespace: "hidra",
+									Name:      metric.Name,
+									Help:      metric.Description,
+								},
+								labelsKey,
+							)
+
+							labelSet[metric.Name] = labelsKey
+
+							prometheus.MustRegister(expirableGaugeDict[metric.Name])
 						}
 
-						gaugeDict[metric.Name] = prometheus.NewGaugeVec(
-							prometheus.GaugeOpts{
-								Namespace: "hidra",
-								Name:      metric.Name,
-								Help:      metric.Description,
-							},
-							labelsKey,
-						)
+					} else {
+						if _, ok := gaugeDict[metric.Name]; !ok {
+							labelsKey := make([]string, len(metricLabels))
+							for i, label := range metricLabels {
+								labelsKey[i] = label.Key
+							}
 
-						labelSet[metric.Name] = labelsKey
+							gaugeDict[metric.Name] = prometheus.NewGaugeVec(
+								prometheus.GaugeOpts{
+									Namespace: "hidra",
+									Name:      metric.Name,
+									Help:      metric.Description,
+								},
+								labelsKey,
+							)
 
-						prometheus.MustRegister(gaugeDict[metric.Name])
+							labelSet[metric.Name] = labelsKey
+
+							prometheus.MustRegister(gaugeDict[metric.Name])
+						}
 					}
 
 					labelsDict := make(map[string]string)
@@ -86,7 +111,11 @@ func StartPrometheus(listenAddr string, pullTime int) {
 						}
 					}
 
-					gaugeDict[metric.Name].WithLabelValues(labels...).Set(metric.Value)
+					if metric.Expires != 0 {
+						expirableGaugeDict[metric.Name].WithLabelValues(labels...).Set(metric.Value)
+					} else {
+						gaugeDict[metric.Name].WithLabelValues(labels...).Set(metric.Value)
+					}
 				}
 			}
 

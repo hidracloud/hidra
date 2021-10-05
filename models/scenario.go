@@ -104,12 +104,51 @@ func DeleteExpiredMetrics() error {
 	return nil
 }
 
+// CleanupMetrics Cleanup metrics
+func CleanupMetrics(interval time.Duration) error {
+	if err := DeleteOldMetrics(interval); err != nil {
+		return err
+	}
+	if err := DeleteExpiredMetrics(); err != nil {
+		return err
+	}
+	if err := DeleteOldSampleResults(interval); err != nil {
+		return err
+	}
+	if err := DeleteOldMetricsLabels(interval); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteOldMetricsLabels Delete old metrics labels
+func DeleteOldMetricsLabels(interval time.Duration) error {
+	expiretime := time.Now()
+	expiretime = expiretime.Add(-interval)
+
+	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&MetricLabel{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteOldSampleResults Delete old scenario results
+func DeleteOldSampleResults(interval time.Duration) error {
+	expiretime := time.Now()
+	expiretime = expiretime.Add(-interval)
+
+	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&SampleResult{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 // DeleteOldMetrics Delete old metrics
 func DeleteOldMetrics(interval time.Duration) error {
 	expiretime := time.Now()
-	expiretime.Add(interval)
+	expiretime = expiretime.Add(-interval)
 
-	if result := database.ORM.Where("updated_at < ?", expiretime.Unix()).Unscoped().Delete(&Metric{}); result.Error != nil {
+	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&Metric{}); result.Error != nil {
 		return result.Error
 	}
 	return nil
