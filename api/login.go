@@ -8,17 +8,20 @@ import (
 
 	"github.com/hidracloud/hidra/models"
 	uuid "github.com/satori/go.uuid"
+	"github.com/xlzd/gotp"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type loginRequest struct {
-	Email    string
-	Password string
+	Email          string
+	Password       string
+	TwoFactorToken string
 }
 
 type loginResponse struct {
-	AuthToken string `json:"AuthToken,omitempty"`
-	Error     string `json:"Error,omitempty"`
+	TwoFactorEnabled bool
+	AuthToken        string `json:"AuthToken,omitempty"`
+	Error            string `json:"Error,omitempty"`
 }
 
 // Login is the handler for the login endpoint
@@ -58,6 +61,16 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(loginResponse)
 
 		return
+	}
+
+	if user.TwoFactorToken != "" {
+		totp := gotp.NewDefaultTOTP(user.TwoFactorToken)
+
+		if !totp.Verify(loginRequest.TwoFactorToken, int(time.Now().Unix())) {
+			loginResponse.TwoFactorEnabled = true
+			json.NewEncoder(w).Encode(loginResponse)
+			return
+		}
 	}
 
 	token, err := models.CreateUserToken(user)

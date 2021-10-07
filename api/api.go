@@ -54,6 +54,7 @@ func StartAPI(serverAddr, dbtype string) {
 	r.HandleFunc("/api/login", api.Login).Methods(http.MethodPost)
 
 	// User registered functions
+	r.Handle("/api/me", models.AuthMiddleware(http.HandlerFunc(api.GetMe))).Methods(http.MethodGet)
 	r.Handle("/api/register_sample", models.AuthMiddleware(http.HandlerFunc(api.RegisterSample))).Methods(http.MethodPost)
 	r.Handle("/api/update_sample/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.UpdateSample))).Methods(http.MethodPut)
 	r.Handle("/api/list_samples", models.AuthMiddleware(http.HandlerFunc(api.ListSamples))).Methods(http.MethodGet)
@@ -67,6 +68,10 @@ func StartAPI(serverAddr, dbtype string) {
 	r.Handle("/api/get_agent/{agentid}", models.AuthMiddleware(http.HandlerFunc(api.GetAgent))).Methods(http.MethodGet)
 	r.Handle("/api/update_agent/{agentid}", models.AuthMiddleware(http.HandlerFunc(api.UpdateAgent))).Methods(http.MethodPut)
 	r.Handle("/api/sample_runner", models.AuthMiddleware(http.HandlerFunc(api.SampleRunner))).Methods(http.MethodPost)
+	r.Handle("/api/update_password", models.AuthMiddleware(http.HandlerFunc(api.UpdatePassword))).Methods(http.MethodPost)
+	r.Handle("/api/2fa_qrcode", models.AuthMiddleware(http.HandlerFunc(api.TwofactorQrcode))).Methods(http.MethodGet)
+	r.Handle("/api/configure_2fa", models.AuthMiddleware(http.HandlerFunc(api.TwoFaConfiguration))).Methods(http.MethodPost)
+	r.Handle("/api/disable_2fa", models.AuthMiddleware(http.HandlerFunc(api.DisableTwoFaConfiguration))).Methods(http.MethodPost)
 
 	// Pre-register agent functions
 	r.Handle("/api/register_agent", models.AuthMiddleware(http.HandlerFunc(api.RegisterAgent))).Methods(http.MethodPost)

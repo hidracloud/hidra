@@ -21,6 +21,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rs/cors v1.8.0
 	github.com/satori/go.uuid v1.2.0
+	github.com/xlzd/gotp v0.0.0-20181030022105-c8557ba2c119
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6 // indirect
 	golang.org/x/sys v0.0.0-20211003122950-b1ebd4e1001c // indirect

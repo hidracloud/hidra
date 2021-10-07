@@ -19,9 +19,10 @@ const passwordCost int = 4
 // User Represent user
 type User struct {
 	gorm.Model
-	ID       uuid.UUID `gorm:"primaryKey;type:char(36);"`
-	Email    string    `gorm:"unique;primaryKey"`
-	Password []byte    `json:"-"`
+	ID             uuid.UUID `gorm:"primaryKey;type:char(36);"`
+	Email          string    `gorm:"unique;primaryKey"`
+	Password       []byte    `json:"-"`
+	TwoFactorToken string    `json:"-" gorm:"type:char(32)"`
 }
 
 // GetUserByEmail Get one user given an email
@@ -66,6 +67,29 @@ func CreateUser(email, password string) (*User, error) {
 	}
 
 	return &newUser, nil
+}
+
+// Update2FAToken Update 2FA token
+func (user *User) Update2FAToken(token string) error {
+	user.TwoFactorToken = token
+	return database.ORM.Save(user).Error
+}
+
+// UpdatePassword Update user password
+func (user *User) UpdatePassword(password string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), passwordCost)
+
+	if err != nil {
+		return err
+	}
+
+	user.Password = hashedPassword
+
+	if result := database.ORM.Save(user); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
 
 // CreateUserToken Generate a new login token
