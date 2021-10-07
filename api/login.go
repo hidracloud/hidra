@@ -17,8 +17,9 @@ type loginRequest struct {
 }
 
 type loginResponse struct {
-	AuthToken string `json:"AuthToken,omitempty"`
-	Error     string `json:"Error,omitempty"`
+	TwoFactorEnabled bool
+	AuthToken        string `json:"AuthToken,omitempty"`
+	Error            string `json:"Error,omitempty"`
 }
 
 // Login is the handler for the login endpoint

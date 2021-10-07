@@ -19,9 +19,10 @@ const passwordCost int = 4
 // User Represent user
 type User struct {
 	gorm.Model
-	ID       uuid.UUID `gorm:"primaryKey;type:char(36);"`
-	Email    string    `gorm:"unique;primaryKey"`
-	Password []byte    `json:"-"`
+	ID             uuid.UUID `gorm:"primaryKey;type:char(36);"`
+	Email          string    `gorm:"unique;primaryKey"`
+	Password       []byte    `json:"-"`
+	TwoFactorToken string    `json:"-" gorm:"type:char(32)"`
 }
 
 // GetUserByEmail Get one user given an email

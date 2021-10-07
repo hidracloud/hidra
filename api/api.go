@@ -54,6 +54,7 @@ func StartAPI(serverAddr, dbtype string) {
 	r.HandleFunc("/api/login", api.Login).Methods(http.MethodPost)
 
 	// User registered functions
+	r.Handle("/api/me", models.AuthMiddleware(http.HandlerFunc(api.GetMe))).Methods(http.MethodGet)
 	r.Handle("/api/register_sample", models.AuthMiddleware(http.HandlerFunc(api.RegisterSample))).Methods(http.MethodPost)
 	r.Handle("/api/update_sample/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.UpdateSample))).Methods(http.MethodPut)
 	r.Handle("/api/list_samples", models.AuthMiddleware(http.HandlerFunc(api.ListSamples))).Methods(http.MethodGet)
