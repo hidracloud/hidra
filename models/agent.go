@@ -32,7 +32,18 @@ type AgentTag struct {
 func CreateAgent(secret, name, description string, tags map[string]string) error {
 	newAgent := Agent{ID: uuid.NewV4(), Secret: secret, Name: name, Description: description}
 
-	if result := database.ORM.Create(&newAgent); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Create(&newAgent); result.Error != nil {
 		return result.Error
 	}
 
@@ -49,25 +60,56 @@ func CreateAgent(secret, name, description string, tags map[string]string) error
 // CreateAgentTagByAgentID create a new agent tag
 func CreateAgentTagByAgentID(agentID uuid.UUID, key string, value string) error {
 	newAgentTag := AgentTag{ID: uuid.NewV4(), Key: key, Value: value, AgentID: agentID}
-	if result := database.ORM.Create(&newAgentTag); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Create(&newAgentTag); result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
 // GetAgent get agent by agent id
-func GetAgent(agentID uuid.UUID) (Agent, error) {
+func GetAgent(agentID uuid.UUID) (*Agent, error) {
 	var agent Agent
-	if result := database.ORM.First(&agent, "id = ?", agentID); result.Error != nil {
-		return agent, result.Error
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return nil, err
 	}
-	return agent, nil
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	if result := orm.First(&agent, "id = ?", agentID); result.Error != nil {
+		return &agent, result.Error
+	}
+	return &agent, nil
 }
 
 // SearchAgentByName search agent by name
 func SearchAgentByName(name string) ([]Agent, error) {
 	var agents []Agent
-	if result := GetAgentQuery().Where("name LIKE ?", "%"+name+"%").Find(&agents); result.Error != nil {
+
+	orm := GetAgentQuery()
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	if result := orm.Where("name LIKE ?", "%"+name+"%").Find(&agents); result.Error != nil {
 		return agents, result.Error
 	}
 	return agents, nil
@@ -76,7 +118,15 @@ func SearchAgentByName(name string) ([]Agent, error) {
 // GetAgents get all agents
 func GetAgents() ([]Agent, error) {
 	var agents []Agent
-	if result := GetAgentQuery().Find(&agents); result.Error != nil {
+	orm := GetAgentQuery()
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	if result := orm.Find(&agents); result.Error != nil {
 		return nil, result.Error
 	}
 	return agents, nil
@@ -84,18 +134,30 @@ func GetAgents() ([]Agent, error) {
 
 // GetAgentQuery get agent query
 func GetAgentQuery() *gorm.DB {
-	return database.ORM.Order("updated_at desc")
+	orm, _ := database.GetORM(true)
+	return orm.Order("updated_at desc")
 }
 
 // UpdateAgent update agent
 func UpdateAgent(agentID uuid.UUID, name, description string) error {
 	var agent Agent
-	if result := database.ORM.First(&agent, "id = ?", agentID); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.First(&agent, "id = ?", agentID); result.Error != nil {
 		return result.Error
 	}
 	agent.Name = name
 	agent.Description = description
-	if result := database.ORM.Save(&agent); result.Error != nil {
+	if result := orm.Save(&agent); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -103,7 +165,18 @@ func UpdateAgent(agentID uuid.UUID, name, description string) error {
 
 // DeleteAgentTags delete agent tags
 func DeleteAgentTags(agentID uuid.UUID) error {
-	if result := database.ORM.Where("agent_id = ?", agentID).Delete(&AgentTag{}); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Where("agent_id = ?", agentID).Delete(&AgentTag{}); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -112,7 +185,17 @@ func DeleteAgentTags(agentID uuid.UUID) error {
 // GetAgentTags get agent tags
 func GetAgentTags(agentID uuid.UUID) ([]AgentTag, error) {
 	var agentTags []AgentTag
-	if result := database.ORM.Where("agent_id = ?", agentID).Find(&agentTags); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	if result := orm.Where("agent_id = ?", agentID).Find(&agentTags); result.Error != nil {
 		return nil, result.Error
 	}
 	return agentTags, nil
@@ -133,7 +216,18 @@ func AuthSecretAgentMiddleware(next http.Handler) http.Handler {
 
 		newAgent := Agent{}
 
-		database.ORM.First(&newAgent, "secret = ?", secret)
+		orm, err := database.GetORM(true)
+		if err != nil {
+			return
+		}
+
+		db, err := orm.DB()
+		if err != nil {
+			return
+		}
+		defer db.Close()
+
+		orm.First(&newAgent, "secret = ?", secret)
 
 		if newAgent.ID == uuid.Nil {
 			w.WriteHeader(http.StatusUnauthorized)

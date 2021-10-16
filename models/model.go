@@ -2,6 +2,8 @@
 package models
 
 import (
+	"log"
+
 	"github.com/hidracloud/hidra/database"
 )
 
@@ -9,12 +11,23 @@ import (
 func SetupDB(dbType, dbPath, dbURI string) {
 	database.StartDatabase(dbType, dbPath, dbURI)
 
-	database.ORM.AutoMigrate(&User{})
-	database.ORM.AutoMigrate(&Permission{})
-	database.ORM.AutoMigrate(&Agent{})
-	database.ORM.AutoMigrate(&AgentTag{})
-	database.ORM.AutoMigrate(&Sample{})
-	database.ORM.AutoMigrate(&SampleResult{})
-	database.ORM.AutoMigrate(&Metric{})
-	database.ORM.AutoMigrate(&MetricLabel{})
+	orm, err := database.GetORM(false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	orm.AutoMigrate(&User{})
+	orm.AutoMigrate(&Permission{})
+	orm.AutoMigrate(&Agent{})
+	orm.AutoMigrate(&AgentTag{})
+	orm.AutoMigrate(&Sample{})
+	orm.AutoMigrate(&SampleResult{})
+	orm.AutoMigrate(&Metric{})
+	orm.AutoMigrate(&MetricLabel{})
 }

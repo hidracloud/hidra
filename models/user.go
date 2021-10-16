@@ -28,22 +28,53 @@ type User struct {
 // GetUserByEmail Get one user given an email
 func GetUserByEmail(email string) *User {
 	var user User
-	database.ORM.First(&user, "email = ?", email)
 
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil
+	}
+	defer db.Close()
+
+	orm.First(&user, "email = ?", email)
 	return &user
 }
 
 // GetUserCount Get count of users
 func GetUserCount() int64 {
 	var count int64
-	database.ORM.Model(&User{}).Count(&count)
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return -1
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return -1
+	}
+	defer db.Close()
+	orm.Model(&User{}).Count(&count)
 	return count
 }
 
 // GetUserByID Get user by id
 func GetUserByID(id string) *User {
 	var user User
-	database.ORM.First(&user, "id = ?", id)
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil
+	}
+	defer db.Close()
+	orm.First(&user, "id = ?", id)
 	return &user
 }
 
@@ -62,7 +93,18 @@ func CreateUser(email, password string) (*User, error) {
 
 	newUser := User{ID: uuid.NewV4(), Email: email, Password: hashedPassword}
 
-	if result := database.ORM.Create(&newUser); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	if result := orm.Create(&newUser); result.Error != nil {
 		return nil, result.Error
 	}
 
@@ -72,7 +114,18 @@ func CreateUser(email, password string) (*User, error) {
 // Update2FAToken Update 2FA token
 func (user *User) Update2FAToken(token string) error {
 	user.TwoFactorToken = token
-	return database.ORM.Save(user).Error
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	return orm.Save(user).Error
 }
 
 // UpdatePassword Update user password
@@ -85,7 +138,18 @@ func (user *User) UpdatePassword(password string) error {
 
 	user.Password = hashedPassword
 
-	if result := database.ORM.Save(user); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Save(user); result.Error != nil {
 		return result.Error
 	}
 

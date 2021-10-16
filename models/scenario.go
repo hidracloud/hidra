@@ -98,7 +98,17 @@ type MetricLabel struct {
 
 // DeleteExpiredMetrics Delete all expired metrics
 func DeleteExpiredMetrics() error {
-	if result := database.ORM.Where("expires < ? and expires != 0", time.Now().Unix()).Unscoped().Delete(&Metric{}); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	if result := orm.Where("expires < ? and expires != 0", time.Now().Unix()).Unscoped().Delete(&Metric{}); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -126,7 +136,18 @@ func DeleteOldMetricsLabels(interval time.Duration) error {
 	expiretime := time.Now()
 	expiretime = expiretime.Add(-interval)
 
-	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&MetricLabel{}); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Where("updated_at < ?", expiretime).Unscoped().Delete(&MetricLabel{}); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -137,7 +158,18 @@ func DeleteOldSampleResults(interval time.Duration) error {
 	expiretime := time.Now()
 	expiretime = expiretime.Add(-interval)
 
-	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&SampleResult{}); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Where("updated_at < ?", expiretime).Unscoped().Delete(&SampleResult{}); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -148,7 +180,18 @@ func DeleteOldMetrics(interval time.Duration) error {
 	expiretime := time.Now()
 	expiretime = expiretime.Add(-interval)
 
-	if result := database.ORM.Where("updated_at < ?", expiretime).Unscoped().Delete(&Metric{}); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Where("updated_at < ?", expiretime).Unscoped().Delete(&Metric{}); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -158,7 +201,18 @@ func DeleteOldMetrics(interval time.Duration) error {
 func GetDistinctMetricName() ([]string, error) {
 	var results []string
 
-	if result := database.ORM.Model(&Metric{}).Distinct().Pluck("name", &results); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	if result := orm.Model(&Metric{}).Distinct().Pluck("name", &results); result.Error != nil {
 		return nil, result.Error
 	}
 
@@ -168,7 +222,18 @@ func GetDistinctMetricName() ([]string, error) {
 // GetDistinctChecksumByName Get distinct checksum by name
 func GetDistinctChecksumByName(name string) ([]string, error) {
 	var results []string
-	if result := database.ORM.Model(&Metric{}).Where("name = ?", name).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	if result := orm.Model(&Metric{}).Where("name = ?", name).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
 		return nil, result.Error
 	}
 	return results, nil
@@ -177,7 +242,17 @@ func GetDistinctChecksumByName(name string) ([]string, error) {
 // GetMetricByName Get one metric by name
 func GetMetricByName(name string) (*Metric, error) {
 	var result Metric
-	if result := database.ORM.Model(&Metric{}).Where("name = ?", name).Last(&result); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	if result := orm.Model(&Metric{}).Where("name = ?", name).Last(&result); result.Error != nil {
 		return nil, result.Error
 	}
 
@@ -187,7 +262,17 @@ func GetMetricByName(name string) (*Metric, error) {
 // GetMetricByChecksum Get one metric by checksum
 func GetMetricByChecksum(checksum, name string) (*Metric, error) {
 	var result Metric
-	if result := database.ORM.Model(&Metric{}).Where("labels_checksum = ? and name = ?", checksum, name).Last(&result); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	if result := orm.Model(&Metric{}).Where("labels_checksum = ? and name = ?", checksum, name).Last(&result); result.Error != nil {
 		return nil, result.Error
 	}
 	return &result, nil
@@ -196,7 +281,17 @@ func GetMetricByChecksum(checksum, name string) (*Metric, error) {
 // GetMetricLabelByMetricID Get metric label by metric id
 func GetMetricLabelByMetricID(id uuid.UUID) ([]MetricLabel, error) {
 	var results []MetricLabel
-	if result := database.ORM.Model(&MetricLabel{}).Where("metric_id = ?", id).Find(&results); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	if result := orm.Model(&MetricLabel{}).Where("metric_id = ?", id).Find(&results); result.Error != nil {
 		return nil, result.Error
 	}
 	return results, nil
@@ -205,7 +300,17 @@ func GetMetricLabelByMetricID(id uuid.UUID) ([]MetricLabel, error) {
 // GetDistinctChecksumByNameAndSampleID Get distinct metrics by name and sample id
 func GetDistinctChecksumByNameAndSampleID(name, sampleID string) ([]string, error) {
 	var results []string
-	if result := database.ORM.Model(&Metric{}).Where("name = ? and sample_id = ?", name, sampleID).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	if result := orm.Model(&Metric{}).Where("name = ? and sample_id = ?", name, sampleID).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
 		return nil, result.Error
 	}
 	return results, nil
@@ -214,7 +319,18 @@ func GetDistinctChecksumByNameAndSampleID(name, sampleID string) ([]string, erro
 // GetMetricsByNameAndSampleID Get metrics by name and sample id
 func GetMetricsByNameAndSampleID(name, sampleID, checksum string, limit int) ([]Metric, error) {
 	var results []Metric
-	if result := database.ORM.Model(&Metric{}).Where("name = ? and sample_id = ? and labels_checksum = ?", name, sampleID, checksum).Order("created_at desc").Limit(limit).Find(&results); result.Error != nil {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	if result := orm.Model(&Metric{}).Where("name = ? and sample_id = ? and labels_checksum = ?", name, sampleID, checksum).Order("created_at desc").Limit(limit).Find(&results); result.Error != nil {
 		return nil, result.Error
 	}
 	return results, nil
@@ -237,7 +353,18 @@ func (s *Scenario) StartPrimitives() {
 
 // PushToDB Push new metric to db
 func (m *Metric) PushToDB(labels map[string]string) error {
-	if result := database.ORM.Create(m); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Create(m); result.Error != nil {
 		return result.Error
 	}
 
@@ -248,7 +375,7 @@ func (m *Metric) PushToDB(labels map[string]string) error {
 			MetricID: m.ID.String(),
 		}
 
-		if result := database.ORM.Create(&label); result.Error != nil {
+		if result := orm.Create(&label); result.Error != nil {
 			return result.Error
 		}
 	}

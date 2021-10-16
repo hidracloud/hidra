@@ -20,7 +20,17 @@ type Permission struct {
 // AddPermission2User add permission to user
 func AddPermission2User(user *User, allowTo string) (*Permission, error) {
 	newPermission := Permission{ID: uuid.NewV4(), AllowTo: allowTo, User: *user}
-	if result := database.ORM.Create(&newPermission); result.Error != nil {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	if result := orm.Create(&newPermission); result.Error != nil {
 		return nil, result.Error
 	}
 	return &newPermission, nil
@@ -29,7 +39,18 @@ func AddPermission2User(user *User, allowTo string) (*Permission, error) {
 // GetPermissionByUserAllowTo get permission by user and allowTo
 func GetPermissionByUserAllowTo(user *User, allowTo string) (*Permission, error) {
 	var permission Permission
-	database.ORM.First(&permission, "user_id = ? AND allow_to = ?", user.ID, allowTo)
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	orm.First(&permission, "user_id = ? AND allow_to = ?", user.ID, allowTo)
 
 	if permission.ID == uuid.Nil {
 		return nil, fmt.Errorf("user has not permission to execute")
