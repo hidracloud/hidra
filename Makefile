@@ -17,6 +17,8 @@ deps:
 compress:
 	cd ${BUILD_PATH} && \
 	tar -czf hidra-${VERSION}-linux-amd64.tar.gz hidra-${VERSION}-linux-amd64 && \
+	tar -czf hidra-${VERSION}-linux-386.tar.gz hidra-${VERSION}-linux-386 && \
+	tar -czf hidra-${VERSION}-linux-arm.tar.gz hidra-${VERSION}-linux-arm && \
 	tar -czf hidra-${VERSION}-linux-arm64.tar.gz hidra-${VERSION}-linux-arm64 && \
 	tar -czf hidra-${VERSION}-darwin-amd64.tar.gz hidra-${VERSION}-darwin-amd64 && \
 	tar -czf hidra-${VERSION}-darwin-arm64.tar.gz hidra-${VERSION}-darwin-arm64
