@@ -56,4 +56,5 @@ jobs:
             build/hidra-${{ env.GIT_TAG }}-darwin-arm64.tar.gz
             build/hidra-${{ env.GIT_TAG }}-linux-386.tar.gz
             build/hidra-${{ env.GIT_TAG }}-linux-amd64.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-linux-arm64.tar.gz
             build/hidra-${{ env.GIT_TAG }}-linux-arm.tar.gz
