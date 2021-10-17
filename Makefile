@@ -6,9 +6,7 @@ versionize:
 
 build:
 	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-amd64/hidra cmd/hidra/main.go
-	CGO_ENABLED=1 GOOS=linux GOARCH=386 go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-386/hidra cmd/hidra/main.go
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-arm64/hidra cmd/hidra/main.go
-	CGO_ENABLED=1 GOOS=linux GOARCH=arm go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-arm/hidra cmd/hidra/main.go
 	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o ${BUILD_PATH}/hidra-${VERSION}-darwin-amd64/hidra cmd/hidra/main.go
 	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o ${BUILD_PATH}/hidra-${VERSION}-darwin-arm64/hidra cmd/hidra/main.go
 deps:
