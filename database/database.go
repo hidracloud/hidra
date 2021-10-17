@@ -19,9 +19,9 @@ func GetORM(slave bool) (*gorm.DB, error) {
 	case "sqlite":
 		return gorm.Open(sqlite.Open(DB_PATH), &gorm.Config{})
 	case "mysql":
-		return gorm.Open(mysql.Open(DB_PATH), &gorm.Config{})
+		return gorm.Open(mysql.Open(DB_URI), &gorm.Config{})
 	case "postgresql":
-		return gorm.Open(postgres.Open(DB_PATH), &gorm.Config{})
+		return gorm.Open(postgres.Open(DB_URI), &gorm.Config{})
 	}
 
 	return nil, fmt.Errorf("unknow db type %s", DB_TYPE)
