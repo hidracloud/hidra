@@ -122,9 +122,6 @@ func CleanupMetrics(interval time.Duration) error {
 	if err := DeleteOldMetrics(interval); err != nil {
 		return err
 	}
-	if err := DeleteExpiredMetrics(); err != nil {
-		return err
-	}
 	if err := DeleteOldSampleResults(interval); err != nil {
 		return err
 	}
