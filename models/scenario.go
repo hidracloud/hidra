@@ -150,6 +150,26 @@ func DeleteOldMetricsLabels(interval time.Duration) error {
 	return nil
 }
 
+// DeleteMetricBySampleID Delete metric by sample id
+func DeleteMetricBySampleID(sampleID string) error {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	if result := orm.Where("sample_id = ?", sampleID).Unscoped().Delete(&Metric{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 // DeleteOldSampleResults Delete old scenario results
 func DeleteOldSampleResults(interval time.Duration) error {
 	expiretime := time.Now()

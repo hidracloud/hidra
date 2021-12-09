@@ -72,7 +72,7 @@ func StartAPI(serverAddr, dbtype string) {
 	r.Handle("/api/2fa_qrcode", models.AuthMiddleware(http.HandlerFunc(api.TwofactorQrcode))).Methods(http.MethodGet)
 	r.Handle("/api/configure_2fa", models.AuthMiddleware(http.HandlerFunc(api.TwoFaConfiguration))).Methods(http.MethodPost)
 	r.Handle("/api/disable_2fa", models.AuthMiddleware(http.HandlerFunc(api.DisableTwoFaConfiguration))).Methods(http.MethodPost)
-
+	r.Handle("/api/delete_sample/{sampleid}", models.AuthMiddleware(http.HandlerFunc(api.DeleteSample))).Methods(http.MethodDelete)
 	// Pre-register agent functions
 	r.Handle("/api/register_agent", models.AuthMiddleware(http.HandlerFunc(api.RegisterAgent))).Methods(http.MethodPost)
 
