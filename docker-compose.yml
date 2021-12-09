@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+
+  mysql:
+    image: mysql/mysql-server:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "hidra"
+      MYSQL_USER: "hidra"
+      MYSQL_PASSWORD: "hidra"
+    volumes:
+      - mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+
+volumes:
+  mysql:

@@ -103,6 +103,45 @@ func GetLastSampleResultBySampleID(sampleID string) (*SampleResult, error) {
 	return &sampleResult, nil
 }
 
+// DeleteAllSampleResults by sample id
+func DeleteAllSampleResults(sampleID string) error {
+	orm, err := database.GetORM(true)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	if result := orm.Where("sample_id = ?", sampleID).Delete(&SampleResult{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteSample delete sample by id
+func DeleteSample(sampleID string) error {
+	orm, err := database.GetORM(false)
+	if err != nil {
+		return err
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if result := orm.Where("id = ?", sampleID).Delete(&Sample{}); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 // SearchSamples search samples
 func SearchSamples(name string) ([]Sample, error) {
 	samples := []Sample{}
