@@ -10,19 +10,22 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+type MetricsToPrint struct {
+	Labels []string
+	Value  float64
+	Name   string
+}
+
 // StartPrometheus starts the prometheus server
 func StartPrometheus(listenAddr string, pullTime int) {
 	go func() {
 		gaugeDict := make(map[string]*prometheus.GaugeVec)
-		expirableGaugeDict := make(map[string]*prometheus.GaugeVec)
 		labelSet := make(map[string][]string, 0)
 
 		for {
-			for _, gauge := range expirableGaugeDict {
-				gauge.Reset()
-			}
-
 			samples, err := models.GetSamples()
+
+			metricsToPrint := make([]MetricsToPrint, 0)
 			if err != nil {
 				log.Fatal(err)
 				return
@@ -54,48 +57,24 @@ func StartPrometheus(listenAddr string, pullTime int) {
 						log.Fatal(err)
 					}
 
-					if metric.Expires != 0 {
-
-						if _, ok := expirableGaugeDict[metric.Name]; !ok {
-							labelsKey := make([]string, len(metricLabels))
-							for i, label := range metricLabels {
-								labelsKey[i] = label.Key
-							}
-
-							expirableGaugeDict[metric.Name] = prometheus.NewGaugeVec(
-								prometheus.GaugeOpts{
-									Namespace: "hidra",
-									Name:      metric.Name,
-									Help:      metric.Description,
-								},
-								labelsKey,
-							)
-
-							labelSet[metric.Name] = labelsKey
-
-							prometheus.MustRegister(expirableGaugeDict[metric.Name])
+					if _, ok := gaugeDict[metric.Name]; !ok {
+						labelsKey := make([]string, len(metricLabels))
+						for i, label := range metricLabels {
+							labelsKey[i] = label.Key
 						}
 
-					} else {
-						if _, ok := gaugeDict[metric.Name]; !ok {
-							labelsKey := make([]string, len(metricLabels))
-							for i, label := range metricLabels {
-								labelsKey[i] = label.Key
-							}
+						gaugeDict[metric.Name] = prometheus.NewGaugeVec(
+							prometheus.GaugeOpts{
+								Namespace: "hidra",
+								Name:      metric.Name,
+								Help:      metric.Description,
+							},
+							labelsKey,
+						)
 
-							gaugeDict[metric.Name] = prometheus.NewGaugeVec(
-								prometheus.GaugeOpts{
-									Namespace: "hidra",
-									Name:      metric.Name,
-									Help:      metric.Description,
-								},
-								labelsKey,
-							)
+						labelSet[metric.Name] = labelsKey
 
-							labelSet[metric.Name] = labelsKey
-
-							prometheus.MustRegister(gaugeDict[metric.Name])
-						}
+						prometheus.MustRegister(gaugeDict[metric.Name])
 					}
 
 					labelsDict := make(map[string]string)
@@ -111,12 +90,21 @@ func StartPrometheus(listenAddr string, pullTime int) {
 						}
 					}
 
-					if metric.Expires != 0 {
-						expirableGaugeDict[metric.Name].WithLabelValues(labels...).Set(metric.Value)
-					} else {
-						gaugeDict[metric.Name].WithLabelValues(labels...).Set(metric.Value)
-					}
+					metricsToPrint = append(metricsToPrint, MetricsToPrint{
+						Labels: labels,
+						Value:  metric.Value,
+						Name:   metric.Name,
+					})
 				}
+			}
+
+			// Reset all the metrics
+			for _, gauge := range gaugeDict {
+				gauge.Reset()
+			}
+
+			for _, metric := range metricsToPrint {
+				gaugeDict[metric.Name].WithLabelValues(metric.Labels...).Set(metric.Value)
 			}
 
 			time.Sleep(time.Second * time.Duration(pullTime))
