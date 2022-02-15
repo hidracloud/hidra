@@ -3,7 +3,7 @@ package tls_test
 import (
 	"testing"
 
-	"github.com/hidracloud/hidra/scenarios/tls"
+	"github.com/hidracloud/hidra/src/scenarios/tls"
 )
 
 func TestScenario(t *testing.T) {

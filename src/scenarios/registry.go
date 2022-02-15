@@ -1,9 +1,7 @@
 // Package scenarios contains all scenarios
 package scenarios
 
-import (
-	"github.com/hidracloud/hidra/models"
-)
+import "github.com/hidracloud/hidra/src/models"
 
 // ScenarioGenerator interface
 type ScenarioGenerator func() models.IScenario

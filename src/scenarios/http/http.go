@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hidracloud/hidra/models"
-	"github.com/hidracloud/hidra/scenarios"
+	"github.com/hidracloud/hidra/src/models"
+	"github.com/hidracloud/hidra/src/scenarios"
 )
 
 // Scenario Represent an http scenario

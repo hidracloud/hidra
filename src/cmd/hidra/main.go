@@ -10,11 +10,11 @@ import (
 
 	"github.com/namsral/flag"
 
-	"github.com/hidracloud/hidra/exporter"
-	"github.com/hidracloud/hidra/models"
-	"github.com/hidracloud/hidra/scenarios"
-	_ "github.com/hidracloud/hidra/scenarios/all"
-	"github.com/hidracloud/hidra/utils"
+	"github.com/hidracloud/hidra/src/exporter"
+	"github.com/hidracloud/hidra/src/models"
+	"github.com/hidracloud/hidra/src/scenarios"
+	_ "github.com/hidracloud/hidra/src/scenarios/all"
+	"github.com/hidracloud/hidra/src/utils"
 	"github.com/joho/godotenv"
 )
 

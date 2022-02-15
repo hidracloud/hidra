@@ -3,7 +3,7 @@ package http_test
 import (
 	"testing"
 
-	"github.com/hidracloud/hidra/scenarios/http"
+	"github.com/hidracloud/hidra/src/scenarios/http"
 )
 
 func TestHTTPRequestParameters(t *testing.T) {

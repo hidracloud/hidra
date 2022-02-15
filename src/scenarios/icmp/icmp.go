@@ -7,11 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hidracloud/hidra/models"
-	"github.com/hidracloud/hidra/scenarios"
-
 	"github.com/aeden/traceroute"
 	"github.com/go-ping/ping"
+	"github.com/hidracloud/hidra/src/models"
+	"github.com/hidracloud/hidra/src/scenarios"
 )
 
 // Scenario Represent an ICMP scenario

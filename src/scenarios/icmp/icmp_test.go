@@ -4,7 +4,7 @@ package icmp_test
 import (
 	"testing"
 
-	"github.com/hidracloud/hidra/scenarios/icmp"
+	"github.com/hidracloud/hidra/src/scenarios/icmp"
 )
 
 func TestPing(t *testing.T) {

@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hidracloud/hidra/models"
-	"github.com/hidracloud/hidra/scenarios"
-	"github.com/hidracloud/hidra/utils"
+	"github.com/hidracloud/hidra/src/models"
+	"github.com/hidracloud/hidra/src/scenarios"
+	"github.com/hidracloud/hidra/src/utils"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
