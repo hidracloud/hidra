@@ -1,6 +1,8 @@
 name: http_basic_example
 description: Test that example.com return HTTP 200
 scrapeInterval: 1m
+tags:
+  sla: dev
 scenario:
   kind: http
   steps:

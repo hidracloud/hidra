@@ -1,20 +1,15 @@
 version: "3.9"
 
 services:
-
-  mysql:
-    image: mysql/mysql-server:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: "root"
-      MYSQL_DATABASE: "hidra"
-      MYSQL_USER: "hidra"
-      MYSQL_PASSWORD: "hidra"
+  hidra:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: -exporter -conf ./examples -maxExecutor 10 -rca
+    #args: -exporter -conf ./examples -maxExecutor 1
     volumes:
-      - mysql:/var/lib/mysql
+      - ./examples:/examples
     ports:
-      - "3306:3306"
+      - "19090:19090"
     expose:
-      - "3306"
-
-volumes:
-  mysql:
+      - 19090

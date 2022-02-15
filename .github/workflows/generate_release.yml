@@ -15,22 +15,10 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
       - name: Install CGO_ENABLED dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential
-      - name: Download precompiled assets
-        run: |
-          get_latest_release() {
-            curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
-              grep '"tag_name":' |                                            # Get tag line
-              sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
-          }
-          LATEST_RELEASE=$(get_latest_release "hidracloud/hidra-frontend")
-          mkdir -p api/external/hidra-frontend/app/build
-          cd api/external/hidra-frontend/app
-          wget https://github.com/hidracloud/hidra-frontend/releases/download/$LATEST_RELEASE/hidra-frontend.tar.gz
-          tar -xvzf hidra-frontend.tar.gz
       - name: 'Generate version and dependencies'
         run: |
           make versionize
@@ -43,6 +31,7 @@ jobs:
       - name: 'compresss'
         run: |
           make compress
+          
       - name: Set git-tag
         run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
