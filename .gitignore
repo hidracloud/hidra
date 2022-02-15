@@ -18,3 +18,5 @@ vendor/
 # Don't store test.db
 test.db
 *.env
+rca/
+.DS_Store

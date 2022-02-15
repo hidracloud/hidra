@@ -10,7 +10,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.16.x]
+        go-version: [1.17.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -20,18 +20,6 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Download precompiled assets
-        run: |
-          get_latest_release() {
-            curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
-              grep '"tag_name":' |                                            # Get tag line
-              sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
-          }
-          LATEST_RELEASE=$(get_latest_release "hidracloud/hidra-frontend")
-          mkdir -p api/external/hidra-frontend/app/build
-          cd api/external/hidra-frontend/app
-          wget https://github.com/hidracloud/hidra-frontend/releases/download/$LATEST_RELEASE/hidra-frontend.tar.gz
-          tar -xvzf hidra-frontend.tar.gz
       - name: Test
         run: go test ./...
       - name: Test cmd execution

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"log"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -102,7 +101,6 @@ type IScenario interface {
 	RunStep(string, map[string]string) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string
-	RCA(*ScenarioResult) error
 	GetScenarioDefinitions() map[string]StepDefinition
 }
 
@@ -184,12 +182,6 @@ func (s *Scenario) GetScenarioDefinitions() map[string]StepDefinition {
 // Description Get scenario description
 func (s *Scenario) Description() string {
 	return ""
-}
-
-// RCA
-func (s *Scenario) RCA(scenarioResult *ScenarioResult) error {
-	log.Println("Generic RCA")
-	return nil
 }
 
 // ReadScenariosYAML Read scenarios pointer from yaml

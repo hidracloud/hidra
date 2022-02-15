@@ -33,20 +33,14 @@ func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 		if step.Negate && err == nil {
 			metric.Error = fmt.Errorf("expected fail")
 			metric.EndDate = time.Now()
-			s.RCA(&metric)
 			return &metric
 		}
 
 		if err != nil && !step.Negate {
 			metric.Error = err
 			metric.EndDate = time.Now()
-			s.RCA(&metric)
 			return &metric
 		}
-	}
-
-	if metric.Error != nil {
-		s.RCA(&metric)
 	}
 
 	metric.EndDate = time.Now()
