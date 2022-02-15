@@ -14,7 +14,7 @@ scenario:
         statusCode: "200"
     - type: bodyShouldContain
       params:
-        search: example1
+        search: example
     - type: bodyShouldContain
       params:
         search: aebfou3rfbro3b3oon
