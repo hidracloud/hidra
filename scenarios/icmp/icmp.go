@@ -3,6 +3,7 @@ package icmp
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -83,6 +84,12 @@ func (h *Scenario) traceroute(c map[string]string) ([]models.Metric, error) {
 	return customMetrics, nil
 }
 
+// RCA generate RCAs for scenario
+func (h *Scenario) RCA(result *models.ScenarioResult) error {
+	log.Println("ICMP RCA")
+	return nil
+}
+
 func (h *Scenario) ping(c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["hostname"]; !ok {
 		return nil, fmt.Errorf("hostname parameter missing")
@@ -92,7 +99,7 @@ func (h *Scenario) ping(c map[string]string) ([]models.Metric, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// this allows pings when running hidra as root
 	pinger.SetPrivileged(true)
 

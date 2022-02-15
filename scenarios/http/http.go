@@ -4,6 +4,7 @@ package http
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"strconv"
@@ -166,6 +167,12 @@ func (h *Scenario) Description() string {
 	return "Run a HTTP scenario"
 }
 
+// RCA generate RCAs for scenario
+func (h *Scenario) RCA(result *models.ScenarioResult) error {
+	log.Println("HTTP RCA")
+	return nil
+}
+
 // Init initialize scenario
 func (h *Scenario) Init() {
 	h.StartPrimitives()
@@ -235,7 +242,6 @@ func (h *Scenario) Init() {
 		},
 		Fn: h.setUserAgent,
 	})
-
 }
 
 func init() {

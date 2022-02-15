@@ -7,7 +7,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/hidracloud/hidra/database"
 	uuid "github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"gorm.io/gorm"
@@ -68,6 +67,7 @@ type ScenarioResult struct {
 type Scenarios struct {
 	Name        string
 	Description string
+	Tags        map[string]string
 
 	Scenario       Scenario
 	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
@@ -83,8 +83,7 @@ type Metric struct {
 	Description    string
 	SampleID       string
 	Expires        time.Duration
-	SampleResultID uuid.UUID     `json:"-"`
-	SampleResult   *SampleResult `gorm:"foreignKey:SampleResultID" json:"-"`
+	SampleResultID uuid.UUID `json:"-"`
 }
 
 // MetricLabel definition
@@ -96,263 +95,6 @@ type MetricLabel struct {
 	MetricID string
 }
 
-// DeleteExpiredMetrics Delete all expired metrics
-func DeleteExpiredMetrics() error {
-	orm, err := database.GetORM(false)
-	if err != nil {
-		return err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	if result := orm.Where("expires < ? and expires != 0", time.Now().Unix()).Unscoped().Delete(&Metric{}); result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-// CleanupMetrics Cleanup metrics
-func CleanupMetrics(interval time.Duration) error {
-	if err := DeleteOldMetricsLabels(interval); err != nil {
-		return err
-	}
-	if err := DeleteOldMetrics(interval); err != nil {
-		return err
-	}
-	if err := DeleteOldSampleResults(interval); err != nil {
-		return err
-	}
-	return nil
-}
-
-// DeleteOldMetricsLabels Delete old metrics labels
-func DeleteOldMetricsLabels(interval time.Duration) error {
-	expiretime := time.Now()
-	expiretime = expiretime.Add(-interval)
-
-	orm, err := database.GetORM(false)
-	if err != nil {
-		return err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	if result := orm.Where("updated_at < ?", expiretime).Unscoped().Delete(&MetricLabel{}); result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-// DeleteMetricBySampleID Delete metric by sample id
-func DeleteMetricBySampleID(sampleID string) error {
-	orm, err := database.GetORM(false)
-	if err != nil {
-		return err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return err
-	}
-
-	defer db.Close()
-
-	if result := orm.Where("sample_id = ?", sampleID).Unscoped().Delete(&Metric{}); result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-// DeleteOldSampleResults Delete old scenario results
-func DeleteOldSampleResults(interval time.Duration) error {
-	expiretime := time.Now()
-	expiretime = expiretime.Add(-interval)
-
-	orm, err := database.GetORM(false)
-	if err != nil {
-		return err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	if result := orm.Where("updated_at < ?", expiretime).Unscoped().Delete(&SampleResult{}); result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-// DeleteOldMetrics Delete old metrics
-func DeleteOldMetrics(interval time.Duration) error {
-	expiretime := time.Now()
-	expiretime = expiretime.Add(-interval)
-
-	orm, err := database.GetORM(false)
-	if err != nil {
-		return err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	if result := orm.Where("updated_at < ?", expiretime).Unscoped().Delete(&Metric{}); result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-// GetDistinctMetricName Get distinct metric name
-func GetDistinctMetricName() ([]string, error) {
-	var results []string
-
-	orm, err := database.GetORM(true)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
-	if result := orm.Model(&Metric{}).Distinct().Pluck("name", &results); result.Error != nil {
-		return nil, result.Error
-	}
-
-	return results, nil
-}
-
-// GetDistinctChecksumByName Get distinct checksum by name
-func GetDistinctChecksumByName(name string) ([]string, error) {
-	var results []string
-	orm, err := database.GetORM(true)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
-	if result := orm.Model(&Metric{}).Where("name = ?", name).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
-		return nil, result.Error
-	}
-	return results, nil
-}
-
-// GetMetricByName Get one metric by name
-func GetMetricByName(name string) (*Metric, error) {
-	var result Metric
-	orm, err := database.GetORM(true)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-	if result := orm.Model(&Metric{}).Where("name = ?", name).Last(&result); result.Error != nil {
-		return nil, result.Error
-	}
-
-	return &result, nil
-}
-
-// GetMetricByChecksum Get one metric by checksum
-func GetMetricByChecksum(checksum, name string) (*Metric, error) {
-	var result Metric
-	orm, err := database.GetORM(true)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-	if result := orm.Model(&Metric{}).Where("labels_checksum = ? and name = ?", checksum, name).Last(&result); result.Error != nil {
-		return nil, result.Error
-	}
-	return &result, nil
-}
-
-// GetMetricLabelByMetricID Get metric label by metric id
-func GetMetricLabelByMetricID(id uuid.UUID) ([]MetricLabel, error) {
-	var results []MetricLabel
-	orm, err := database.GetORM(true)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-	if result := orm.Model(&MetricLabel{}).Where("metric_id = ?", id).Find(&results); result.Error != nil {
-		return nil, result.Error
-	}
-	return results, nil
-}
-
-// GetDistinctChecksumByNameAndSampleID Get distinct metrics by name and sample id
-func GetDistinctChecksumByNameAndSampleID(name, sampleID string) ([]string, error) {
-	var results []string
-	orm, err := database.GetORM(true)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-	if result := orm.Model(&Metric{}).Where("name = ? and sample_id = ?", name, sampleID).Distinct().Pluck("labels_checksum", &results); result.Error != nil {
-		return nil, result.Error
-	}
-	return results, nil
-}
-
-// GetMetricsByNameAndSampleID Get metrics by name and sample id
-func GetMetricsByNameAndSampleID(name, sampleID, checksum string, limit int) ([]Metric, error) {
-	var results []Metric
-	orm, err := database.GetORM(true)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
-	if result := orm.Model(&Metric{}).Where("name = ? and sample_id = ? and labels_checksum = ?", name, sampleID, checksum).Order("created_at desc").Limit(limit).Find(&results); result.Error != nil {
-		return nil, result.Error
-	}
-	return results, nil
-}
-
 // IScenario Define scenario interface
 type IScenario interface {
 	StartPrimitives()
@@ -360,43 +102,13 @@ type IScenario interface {
 	RunStep(string, map[string]string) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string
+	RCA(*ScenarioResult) error
 	GetScenarioDefinitions() map[string]StepDefinition
 }
 
 // StartPrimitives Initialize primitive variables
 func (s *Scenario) StartPrimitives() {
 	s.StepsDefinitions = make(map[string]StepDefinition)
-}
-
-// PushToDB Push new metric to db
-func (m *Metric) PushToDB(labels map[string]string) error {
-	orm, err := database.GetORM(false)
-	if err != nil {
-		return err
-	}
-
-	db, err := orm.DB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	if result := orm.Create(m); result.Error != nil {
-		return result.Error
-	}
-
-	for k, v := range labels {
-		label := MetricLabel{
-			Key:      k,
-			Value:    v,
-			MetricID: m.ID.String(),
-		}
-
-		if result := orm.Create(&label); result.Error != nil {
-			return result.Error
-		}
-	}
-	return nil
 }
 
 type runStepGoTemplate struct {
@@ -442,9 +154,6 @@ func (s *Scenario) RunStep(name string, p map[string]string) ([]Metric, error) {
 		c[param.Name] = buf.String()
 	}
 
-	log.Println("Real parameters: ")
-	log.Println(c)
-
 	metricsChain := make(chan []Metric, 1)
 	errorChain := make(chan error, 1)
 
@@ -475,6 +184,12 @@ func (s *Scenario) GetScenarioDefinitions() map[string]StepDefinition {
 // Description Get scenario description
 func (s *Scenario) Description() string {
 	return ""
+}
+
+// RCA
+func (s *Scenario) RCA(scenarioResult *ScenarioResult) error {
+	log.Println("Generic RCA")
+	return nil
 }
 
 // ReadScenariosYAML Read scenarios pointer from yaml

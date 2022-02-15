@@ -4,6 +4,7 @@ package browser
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hidracloud/hidra/models"
 	"github.com/hidracloud/hidra/scenarios"
@@ -15,6 +16,12 @@ import (
 type Scenario struct {
 	models.Scenario
 	ctx context.Context
+}
+
+// RCA generate RCAs for scenario
+func (h *Scenario) RCA(result *models.ScenarioResult) error {
+	log.Println("Chrome RCA")
+	return nil
 }
 
 func (b *Scenario) urlShouldBe(c map[string]string) ([]models.Metric, error) {

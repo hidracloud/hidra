@@ -13,3 +13,4 @@ scenario:
     - type: shouldBeValidFor
       params:
         for: 7d
+    - type: dumpMetrics

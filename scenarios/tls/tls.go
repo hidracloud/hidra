@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"log"
 	"path/filepath"
 	"time"
 
@@ -34,6 +35,12 @@ func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	s.certificates = conn.ConnectionState().PeerCertificates
 
 	return nil, nil
+}
+
+// RCA generate RCAs for scenario
+func (h *Scenario) RCA(result *models.ScenarioResult) error {
+	log.Println("TLS RCA")
+	return nil
 }
 
 func (s *Scenario) dnsShouldBePresent(c map[string]string) ([]models.Metric, error) {
@@ -74,6 +81,29 @@ func (s *Scenario) shouldBeValidFor(c map[string]string) ([]models.Metric, error
 	return nil, nil
 }
 
+func (s *Scenario) dumpMetrics(c map[string]string) ([]models.Metric, error) {
+	customMetrics := make([]models.Metric, 0)
+
+	for _, cert := range s.certificates {
+		customMetrics = append(customMetrics, models.Metric{
+			Name:  "certificate_not_after",
+			Value: float64(cert.NotAfter.Unix()),
+		})
+
+		customMetrics = append(customMetrics, models.Metric{
+			Name:  "certificate_not_before",
+			Value: float64(cert.NotBefore.Unix()),
+		})
+
+		customMetrics = append(customMetrics, models.Metric{
+			Name:  "certificate_serial_number",
+			Value: float64(cert.SerialNumber.Int64()),
+		})
+	}
+
+	return customMetrics, nil
+}
+
 // Description return the description of the scenario
 func (s *Scenario) Description() string {
 	return "Run a TLS scenario"
@@ -105,6 +135,12 @@ func (s *Scenario) Init() {
 			},
 		},
 		Fn: s.dnsShouldBePresent,
+	})
+
+	s.RegisterStep("dumpMetrics", models.StepDefinition{
+		Description: "Dump metrics",
+		Params:      []models.StepParam{},
+		Fn:          s.dumpMetrics,
 	})
 
 	s.RegisterStep("shouldBeValidFor", models.StepDefinition{

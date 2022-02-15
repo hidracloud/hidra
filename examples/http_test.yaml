@@ -1,6 +1,8 @@
 name: http_basic_example
 description: Test that example.com return HTTP 200
 scrapeInterval: 1m
+tags:
+  sla: dev
 scenario:
   kind: http
   steps:
@@ -12,7 +14,7 @@ scenario:
         statusCode: "200"
     - type: bodyShouldContain
       params:
-        search: example
+        search: example1
     - type: bodyShouldContain
       params:
         search: aebfou3rfbro3b3oon

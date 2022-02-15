@@ -3,6 +3,7 @@ package utils
 
 import (
 	"errors"
+	"io/ioutil"
 	"math/rand"
 	"time"
 )
@@ -209,4 +210,28 @@ func leadingFraction(s string) (x int64, scale float64, rem string) {
 		scale *= 10
 	}
 	return x, scale, s[i:]
+}
+
+func AutoDiscoverYML(path string) ([]string, error) {
+	filesPath := []string{}
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, f := range files {
+		if f.IsDir() {
+			dirFiles, err := AutoDiscoverYML(path + "/" + f.Name())
+			if err != nil {
+				return nil, err
+			}
+
+			filesPath = append(filesPath, dirFiles...)
+		}
+		if f.Name()[len(f.Name())-4:] == ".yml" || f.Name()[len(f.Name())-5:] == ".yaml" {
+			filesPath = append(filesPath, path+"/"+f.Name())
+		}
+	}
+
+	return filesPath, nil
 }

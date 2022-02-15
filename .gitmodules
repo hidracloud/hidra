@@ -1,3 +1,0 @@
-[submodule "api/external/hidra-frontend"]
-	path = api/external/hidra-frontend
-	url = git@github.com:hidracloud/hidra-frontend.git
