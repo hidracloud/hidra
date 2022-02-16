@@ -67,8 +67,9 @@ func refreshPrometheusMetrics(configFiles []string, buckets []float64) error {
 	}, prometheusLabels)
 
 	hidraScenarioElapsedVec = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "hidra_sample_metric_elapsed",
-		Help: "Elapsed time of hidra samples",
+		Name:    "hidra_sample_metric_elapsed",
+		Help:    "Elapsed time of hidra samples",
+		Buckets: buckets,
 	}, prometheusLabels)
 
 	stepLabels := []string{}
@@ -81,8 +82,9 @@ func refreshPrometheusMetrics(configFiles []string, buckets []float64) error {
 	}, stepLabels)
 
 	hidraStepElapsedVec = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "hidra_step_metric_elapsed",
-		Help: "Elapsed time of hidra steps",
+		Name:    "hidra_step_metric_elapsed",
+		Help:    "Elapsed time of hidra steps",
+		Buckets: buckets,
 	}, stepLabels)
 
 	hidraScenarioLastRunVec = prometheus.NewGaugeVec(prometheus.GaugeOpts{

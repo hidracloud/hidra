@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -94,6 +95,8 @@ func runExporter(cfg *flagConfig, wg *sync.WaitGroup) {
 		}
 		buckets = append(buckets, bucket)
 	}
+
+	fmt.Println(buckets)
 
 	exporter.Run(wg, cfg.confPath, cfg.maxExecutor, cfg.port, buckets)
 }
