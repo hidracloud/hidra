@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -228,7 +229,7 @@ func AutoDiscoverYML(path string) ([]string, error) {
 
 			filesPath = append(filesPath, dirFiles...)
 		}
-		if f.Name()[len(f.Name())-4:] == ".yml" || f.Name()[len(f.Name())-5:] == ".yaml" {
+		if strings.HasSuffix(f.Name(), ".yml") || strings.HasSuffix(f.Name(), ".yaml") {
 			filesPath = append(filesPath, path+"/"+f.Name())
 		}
 	}
