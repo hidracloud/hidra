@@ -13,7 +13,7 @@ func TestScenario(t *testing.T) {
 
 	params := make(map[string]string)
 	params["to"] = "google.com:443"
-	_, err := s.RunStep("connectTo", params)
+	_, err := s.RunStep("connectTo", params, 0)
 
 	if err != nil {
 		t.Error(err)
@@ -22,7 +22,7 @@ func TestScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["dns"] = "google.com"
 
-	_, err = s.RunStep("dnsShouldBePresent", params)
+	_, err = s.RunStep("dnsShouldBePresent", params, 0)
 
 	if err != nil {
 		t.Error(err)
@@ -31,7 +31,7 @@ func TestScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["for"] = "7d"
 
-	_, err = s.RunStep("shouldBeValidFor", params)
+	_, err = s.RunStep("shouldBeValidFor", params, 0)
 
 	if err != nil {
 		t.Error(err)

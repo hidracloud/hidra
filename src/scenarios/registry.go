@@ -6,15 +6,15 @@ import "github.com/hidracloud/hidra/src/models"
 // ScenarioGenerator interface
 type ScenarioGenerator func() models.IScenario
 
-// Scenarios contains all scenarios
-var Scenarios = map[string]ScenarioGenerator{}
+// Sample contains all scenarios
+var Sample = map[string]ScenarioGenerator{}
 
 // Add new scenario
 func Add(name string, scenario ScenarioGenerator) {
-	Scenarios[name] = scenario
+	Sample[name] = scenario
 }
 
 // GetAll scenarios
 func GetAll() map[string]ScenarioGenerator {
-	return Scenarios
+	return Sample
 }

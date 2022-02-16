@@ -35,7 +35,6 @@ var hidraScenarioIntervalVec *prometheus.GaugeVec
 var hidraCustomMetrics map[string]*prometheus.GaugeVec
 
 func refreshPrometheusMetrics(configFiles []string) error {
-	// hidraScenarioStatusVec := prometheus.NewGaugeVec()
 	prometheusLabels = []string{"name", "description", "kind", "config_file"}
 	for _, configFile := range configFiles {
 		data, err := ioutil.ReadFile(configFile)
@@ -43,7 +42,7 @@ func refreshPrometheusMetrics(configFiles []string) error {
 			return err
 		}
 
-		sample, err := models.ReadScenariosYAML(data)
+		sample, err := models.ReadSampleYAML(data)
 		if err != nil {
 			return err
 		}
@@ -109,7 +108,7 @@ func refreshPrometheusMetrics(configFiles []string) error {
 	return nil
 }
 
-func readLabels(sample *models.Scenarios, configFile string) []string {
+func readLabels(sample *models.Sample, configFile string) []string {
 	labels := []string{}
 
 	labels = append(labels, sample.Name)
@@ -151,7 +150,7 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 	}
 }
 
-func runOneScenario(sample *models.Scenarios, configFile string) {
+func runOneScenario(sample *models.Sample, configFile string) {
 	m := scenarios.RunScenario(sample.Scenario, sample.Name, sample.Description)
 
 	status := 0
@@ -188,12 +187,14 @@ func runOneScenario(sample *models.Scenarios, configFile string) {
 	hidraScenarioIntervalVec.WithLabelValues(labels...).Set(float64(sample.ScrapeInterval))
 }
 
-func runScenarios(configFiles []string, maxExecutors int) {
+func runSample(configFiles []string, maxExecutors int) {
 	toRun := make([]func(), 0)
+
+	log.Println("Calculating samples to run")
 
 	for _, configFile := range configFiles {
 		data, _ := ioutil.ReadFile(configFile)
-		sample, _ := models.ReadScenariosYAML(data)
+		sample, _ := models.ReadSampleYAML(data)
 
 		// Check last run
 		lastRunTime, ok := lastRun[sample.Name]
@@ -204,7 +205,7 @@ func runScenarios(configFiles []string, maxExecutors int) {
 
 		// Check if it's time to run
 		if time.Since(lastRunTime) < sample.ScrapeInterval {
-			return
+			continue
 		}
 
 		toRun = append(toRun, func() {
@@ -216,9 +217,13 @@ func runScenarios(configFiles []string, maxExecutors int) {
 	log.Println("We have to run", len(toRun), "scenarios")
 
 	// Create a pool of workers to run the scenarios
-	pool := make(chan struct{}, maxExecutors)
+	executors := len(toRun)
+	if executors > maxExecutors {
+		executors = maxExecutors
+	}
+	pool := make(chan struct{}, executors)
 
-	for i := 0; i < maxExecutors; i++ {
+	for i := 0; i < executors; i++ {
 		pool <- struct{}{}
 	}
 
@@ -248,7 +253,7 @@ func metricsRecord(confPath string, maxExecutor int) {
 
 	go func() {
 		for {
-			runScenarios(configFiles, maxExecutor)
+			runSample(configFiles, maxExecutor)
 			time.Sleep(2 * time.Second)
 		}
 	}()

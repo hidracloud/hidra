@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: -exporter -conf ./examples -maxExecutor 10 -rca
+    command: -exporter -conf ./examples -maxExecutor 1
     #args: -exporter -conf ./examples -maxExecutor 1
     volumes:
       - ./examples:/examples

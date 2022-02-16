@@ -1,12 +1,14 @@
 name: browser_test
 description: test browser
 scrapeInterval: 1m
+timeout: 1s
 tags:
   sla: dev
 scenario:
   kind: browser
   steps:
     - type: navigateTo
+      timeout: 1m
       params:
         url: "https://hidra.cloud/"
     - type: waitVisible

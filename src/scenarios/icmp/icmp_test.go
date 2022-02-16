@@ -15,7 +15,7 @@ func TestPing(t *testing.T) {
 	params := make(map[string]string)
 	params["hostname"] = "8.8.8.8"
 
-	_, err := h.RunStep("ping", params)
+	_, err := h.RunStep("ping", params, 0)
 
 	if err != nil {
 		t.Errorf("TestPing failed: %s", err)
@@ -30,7 +30,7 @@ func TestTraceroute(t *testing.T) {
 	params := make(map[string]string)
 	params["hostname"] = "8.8.8.8"
 
-	_, err := h.RunStep("traceroute", params)
+	_, err := h.RunStep("traceroute", params, 0)
 
 	if err != nil {
 		t.Errorf("TestPing failed: %s", err)

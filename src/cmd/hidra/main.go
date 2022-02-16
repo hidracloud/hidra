@@ -57,7 +57,7 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 
-		slist, err := models.ReadScenariosYAML(data)
+		slist, err := models.ReadSampleYAML(data)
 		if err != nil {
 			log.Fatal(err)
 		}

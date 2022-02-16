@@ -12,7 +12,7 @@ import (
 func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 	log.Printf("[%s] Running new scenario, \"%s\"\n", name, desc)
 
-	srunner := Scenarios[s.Kind]()
+	srunner := Sample[s.Kind]()
 	srunner.Init()
 
 	metric := models.ScenarioResult{}
@@ -24,7 +24,7 @@ func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 		smetric := models.StepResult{}
 		smetric.Step = step
 		smetric.StartDate = time.Now()
-		customMetrics, err := srunner.RunStep(step.Type, step.Params)
+		customMetrics, err := srunner.RunStep(step.Type, step.Params, step.Timeout)
 
 		smetric.Metrics = customMetrics
 		smetric.EndDate = time.Now()

@@ -1,11 +1,16 @@
 name: http_basic_example
 description: Test that example.com return HTTP 200
-scrapeInterval: 1m
+scrapeInterval: 1s
+timeout: 1s
 tags:
   sla: dev
 scenario:
   kind: http
   steps:
+    - type: addHTTPHeader
+      params:
+        key: Hidra-Token
+        value: asd
     - type: request
       params:
         url: "https://example.org/?{{ .Now.Unix }}"

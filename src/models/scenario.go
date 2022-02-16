@@ -11,15 +11,16 @@ import (
 	"gorm.io/gorm"
 )
 
-var defaultStepTimeout = 15 * time.Second
+var minStepTimeout = 10 * time.Second
 
 type stepFn func(map[string]string) ([]Metric, error)
 
 // Step definition
 type Step struct {
-	Type   string
-	Params map[string]string
-	Negate bool
+	Type    string
+	Params  map[string]string
+	Negate  bool
+	Timeout time.Duration
 }
 
 // StepParam returns the value of a step parameter
@@ -62,12 +63,11 @@ type ScenarioResult struct {
 	ErrorString string
 }
 
-// Scenarios represent sample scenarios
-type Scenarios struct {
-	Name        string
-	Description string
-	Tags        map[string]string
-
+// Sample represent sample scenarios
+type Sample struct {
+	Name           string
+	Description    string
+	Tags           map[string]string
 	Scenario       Scenario
 	ScrapeInterval time.Duration `yaml:"scrapeInterval"`
 }
@@ -98,7 +98,7 @@ type MetricLabel struct {
 type IScenario interface {
 	StartPrimitives()
 	Init()
-	RunStep(string, map[string]string) ([]Metric, error)
+	RunStep(string, map[string]string, time.Duration) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string
 	GetScenarioDefinitions() map[string]StepDefinition
@@ -114,7 +114,7 @@ type runStepGoTemplate struct {
 }
 
 // RunStep Run an step
-func (s *Scenario) RunStep(name string, p map[string]string) ([]Metric, error) {
+func (s *Scenario) RunStep(name string, p map[string]string, timeout time.Duration) ([]Metric, error) {
 	if _, ok := s.StepsDefinitions[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
 	}
@@ -161,10 +161,14 @@ func (s *Scenario) RunStep(name string, p map[string]string) ([]Metric, error) {
 		errorChain <- err
 	}()
 
+	if timeout < minStepTimeout {
+		timeout = minStepTimeout
+	}
+
 	select {
 	case err := <-errorChain:
 		return <-metricsChain, err
-	case <-time.After(defaultStepTimeout):
+	case <-time.After(timeout):
 		return nil, fmt.Errorf("your step generated a timeout")
 	}
 }
@@ -184,9 +188,9 @@ func (s *Scenario) Description() string {
 	return ""
 }
 
-// ReadScenariosYAML Read scenarios pointer from yaml
-func ReadScenariosYAML(data []byte) (*Scenarios, error) {
-	scenarios := Scenarios{}
+// ReadSampleYAML Read scenarios pointer from yaml
+func ReadSampleYAML(data []byte) (*Sample, error) {
+	scenarios := Sample{}
 
 	err := yaml.Unmarshal([]byte(data), &scenarios)
 
