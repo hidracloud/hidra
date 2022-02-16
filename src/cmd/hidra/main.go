@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -24,6 +25,9 @@ type flagConfig struct {
 
 	// Which conf path to use
 	confPath string
+
+	// Buckets
+	buckets string
 
 	// maxExecutor is the maximum number of executor to run in parallel
 	maxExecutor int
@@ -79,7 +83,19 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 }
 
 func runExporter(cfg *flagConfig, wg *sync.WaitGroup) {
-	exporter.Run(wg, cfg.confPath, cfg.maxExecutor, cfg.port)
+	buckets := make([]float64, 0)
+
+	bucketStrArray := strings.Split(cfg.buckets, ",")
+
+	for _, bucketStr := range bucketStrArray {
+		bucket, err := strconv.ParseFloat(bucketStr, 64)
+		if err != nil {
+			panic(err)
+		}
+		buckets = append(buckets, bucket)
+	}
+
+	exporter.Run(wg, cfg.confPath, cfg.maxExecutor, cfg.port, buckets)
 }
 
 func runRCA(cfg *flagConfig, wg *sync.WaitGroup) {
@@ -107,6 +123,7 @@ func main() {
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
 	flag.IntVar(&cfg.port, "port", 19090, "-port your_port")
+	flag.StringVar(&cfg.buckets, "buckets", "100,200,500,1000,2000,5000", "-buckets your_buckets")
 	flag.Parse()
 
 	var wg sync.WaitGroup

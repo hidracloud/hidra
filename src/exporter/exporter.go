@@ -26,15 +26,15 @@ var hidraScenarioStatusVec *prometheus.GaugeVec
 var hidraStepStatusVec *prometheus.GaugeVec
 
 // hidraScenarioElapsedVec is a metric vector type which holds hidra elapsed time
-var hidraScenarioElapsedVec *prometheus.GaugeVec
-var hidraStepElapsedVec *prometheus.GaugeVec
+var hidraScenarioElapsedVec *prometheus.HistogramVec
+var hidraStepElapsedVec *prometheus.HistogramVec
 
 var hidraScenarioLastRunVec *prometheus.GaugeVec
 var hidraScenarioIntervalVec *prometheus.GaugeVec
 
 var hidraCustomMetrics map[string]*prometheus.GaugeVec
 
-func refreshPrometheusMetrics(configFiles []string) error {
+func refreshPrometheusMetrics(configFiles []string, buckets []float64) error {
 	prometheusLabels = []string{"name", "description", "kind", "config_file"}
 	for _, configFile := range configFiles {
 		data, err := ioutil.ReadFile(configFile)
@@ -66,7 +66,7 @@ func refreshPrometheusMetrics(configFiles []string) error {
 		Help: "Status of hidra samples",
 	}, prometheusLabels)
 
-	hidraScenarioElapsedVec = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	hidraScenarioElapsedVec = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "hidra_sample_metric_elapsed",
 		Help: "Elapsed time of hidra samples",
 	}, prometheusLabels)
@@ -80,7 +80,7 @@ func refreshPrometheusMetrics(configFiles []string) error {
 		Help: "Status of hidra steps",
 	}, stepLabels)
 
-	hidraStepElapsedVec = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	hidraStepElapsedVec = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "hidra_step_metric_elapsed",
 		Help: "Elapsed time of hidra steps",
 	}, stepLabels)
@@ -161,7 +161,7 @@ func runOneScenario(sample *models.Sample, configFile string) {
 
 	labels := readLabels(sample, configFile)
 	hidraScenarioStatusVec.WithLabelValues(labels...).Set(float64(status))
-	hidraScenarioElapsedVec.WithLabelValues(labels...).Set(float64(m.EndDate.UnixMilli() - m.StartDate.UnixMilli()))
+	hidraScenarioElapsedVec.WithLabelValues(labels...).Observe(float64(m.EndDate.UnixMilli() - m.StartDate.UnixMilli()))
 
 	for _, step := range m.StepResults {
 		stepLabels := append(labels, step.Step.Type)
@@ -180,7 +180,7 @@ func runOneScenario(sample *models.Sample, configFile string) {
 			hidraCustomMetrics[metric.Name].WithLabelValues(metricLabels...).Set(float64(metric.Value))
 		}
 
-		hidraStepElapsedVec.WithLabelValues(stepLabels...).Set(float64(step.EndDate.UnixMilli() - step.StartDate.UnixMilli()))
+		hidraStepElapsedVec.WithLabelValues(stepLabels...).Observe(float64(step.EndDate.UnixMilli() - step.StartDate.UnixMilli()))
 	}
 
 	hidraScenarioLastRunVec.WithLabelValues(labels...).Set(float64(time.Now().UnixMilli()))
@@ -236,14 +236,14 @@ func runSample(configFiles []string, maxExecutors int) {
 	}
 }
 
-func metricsRecord(confPath string, maxExecutor int) {
+func metricsRecord(confPath string, maxExecutor int, buckets []float64) {
 	configFiles, err := utils.AutoDiscoverYML(confPath)
 	if err != nil {
 		panic(err)
 	}
 
 	log.Println("Reloading prometheus metrics")
-	err = refreshPrometheusMetrics(configFiles)
+	err = refreshPrometheusMetrics(configFiles, buckets)
 	if err != nil {
 		panic(err)
 	}
@@ -259,11 +259,11 @@ func metricsRecord(confPath string, maxExecutor int) {
 	}()
 }
 
-func Run(wg *sync.WaitGroup, confPath string, maxExecutor, port int) {
+func Run(wg *sync.WaitGroup, confPath string, maxExecutor, port int, buckets []float64) {
 	log.Println("Starting hidra in exporter mode")
 
 	// Start fetching metrics
-	metricsRecord(confPath, maxExecutor)
+	metricsRecord(confPath, maxExecutor, buckets)
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
