@@ -51,6 +51,7 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		}
 
 		log.Println("Running hidra in test mode")
+		log.Println("Running ", configFile)
 		data, err := ioutil.ReadFile(configFile)
 
 		if err != nil {

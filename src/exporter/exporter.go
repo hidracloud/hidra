@@ -35,7 +35,7 @@ var hidraScenarioIntervalVec *prometheus.GaugeVec
 var hidraCustomMetrics map[string]*prometheus.GaugeVec
 
 func refreshPrometheusMetrics(configFiles []string) error {
-	prometheusLabels = []string{"name", "description", "kind", "config_file"}
+	prometheusLabels = []string{"name", "description", "kind"}
 	for _, configFile := range configFiles {
 		data, err := ioutil.ReadFile(configFile)
 		if err != nil {
@@ -114,7 +114,7 @@ func readLabels(sample *models.Sample, configFile string) []string {
 	labels = append(labels, sample.Name)
 	labels = append(labels, sample.Description)
 	labels = append(labels, sample.Scenario.Kind)
-	labels = append(labels, configFile)
+	//labels = append(labels, configFile)
 
 	for _, label := range prometheusLabels[4:] {
 		foundVal := ""
