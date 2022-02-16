@@ -88,16 +88,25 @@ func (s *Scenario) dumpMetrics(c map[string]string) ([]models.Metric, error) {
 		customMetrics = append(customMetrics, models.Metric{
 			Name:  "certificate_not_after",
 			Value: float64(cert.NotAfter.Unix()),
+			Labels: map[string]string{
+				"subject": cert.Subject.CommonName,
+			},
 		})
 
 		customMetrics = append(customMetrics, models.Metric{
 			Name:  "certificate_not_before",
 			Value: float64(cert.NotBefore.Unix()),
+			Labels: map[string]string{
+				"subject": cert.Subject.CommonName,
+			},
 		})
 
 		customMetrics = append(customMetrics, models.Metric{
 			Name:  "certificate_serial_number",
 			Value: float64(cert.SerialNumber.Int64()),
+			Labels: map[string]string{
+				"subject": cert.Subject.CommonName,
+			},
 		})
 	}
 
