@@ -72,10 +72,6 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 
 		m := scenarios.RunScenario(slist.Scenario, slist.Name, slist.Description)
 
-		if m.Error != nil {
-			log.Fatal(m.Error)
-		}
-
 		scenarios.PrettyPrintScenarioResults(m, slist.Name, slist.Description)
 	}
 	wg.Done()
