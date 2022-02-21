@@ -101,8 +101,32 @@ func runExporter(cfg *flagConfig, wg *sync.WaitGroup) {
 	exporter.Run(wg, cfg.confPath, cfg.maxExecutor, cfg.port, buckets)
 }
 
-func runRCA(cfg *flagConfig, wg *sync.WaitGroup) {
-	//rca.Run()
+func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
+	var configFiles = []string{cfg.testFile}
+
+	// Check if test file ends with .yaml or .yml
+	if !strings.Contains(cfg.testFile, ".yaml") && !strings.Contains(cfg.testFile, ".yml") {
+		configFiles, _ = utils.AutoDiscoverYML(cfg.testFile)
+	}
+
+	for _, configFile := range configFiles {
+		if _, err := os.Stat(configFile); os.IsNotExist(err) {
+			log.Fatal("testFile does not exists")
+		}
+
+		data, err := ioutil.ReadFile(configFile)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = models.ReadSampleYAML(data)
+		if err != nil {
+			log.Println("Syntax error: ", err, " in ", configFile)
+		}
+	}
+
+	wg.Done()
 }
 
 func main() {
@@ -112,12 +136,12 @@ func main() {
 	cfg := flagConfig{}
 
 	// Initialize flags
-	var testMode, exporter, rca bool
+	var testMode, exporter, syntaxMode bool
 
 	// Operating mode
 	flag.BoolVar(&testMode, "test", false, "-test enable test mode in given hidra")
 	flag.BoolVar(&exporter, "exporter", false, "-exporter enable exporter mode in given hidra")
-	flag.BoolVar(&rca, "rca", false, "-rca enable rca mode in given hidra")
+	flag.BoolVar(&syntaxMode, "syntax", false, "-syntax enable syntax mode in given hidra")
 
 	// Test mode
 	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
@@ -141,9 +165,9 @@ func main() {
 		go runExporter(&cfg, &wg)
 	}
 
-	if rca {
+	if syntaxMode {
 		wg.Add(1)
-		go runRCA(&cfg, &wg)
+		go runSyntaxMode(&cfg, &wg)
 	}
 
 	wg.Wait()
