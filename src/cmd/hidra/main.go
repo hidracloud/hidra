@@ -109,6 +109,8 @@ func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		configFiles, _ = utils.AutoDiscoverYML(cfg.testFile)
 	}
 
+	hasError := false
+
 	for _, configFile := range configFiles {
 		if _, err := os.Stat(configFile); os.IsNotExist(err) {
 			log.Fatal("testFile does not exists")
@@ -117,13 +119,19 @@ func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		data, err := ioutil.ReadFile(configFile)
 
 		if err != nil {
+			hasError = true
 			log.Fatal(err)
 		}
 
 		_, err = models.ReadSampleYAML(data)
 		if err != nil {
+			hasError = true
 			log.Println("Syntax error: ", err, " in ", configFile)
 		}
+	}
+
+	if hasError {
+		os.Exit(1)
 	}
 
 	wg.Done()
