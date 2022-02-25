@@ -10,4 +10,6 @@ import (
 	_ "github.com/hidracloud/hidra/src/scenarios/icmp"
 	// Run tls initialization
 	_ "github.com/hidracloud/hidra/src/scenarios/tls"
+	// Run whois initialization
+	_ "github.com/hidracloud/hidra/src/scenarios/whois"
 )

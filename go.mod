@@ -15,6 +15,11 @@ require (
 )
 
 require (
+	github.com/likexian/gokit v0.25.6 // indirect
+	golang.org/x/text v0.3.7 // indirect
+)
+
+require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chromedp/cdproto v0.0.0-20220212213330-2a526947c808 // indirect
@@ -27,6 +32,8 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/likexian/whois v1.12.4
+	github.com/likexian/whois-parser v1.22.0
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
