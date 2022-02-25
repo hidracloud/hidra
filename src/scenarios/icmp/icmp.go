@@ -99,9 +99,6 @@ func (h *Scenario) ping(c map[string]string) ([]models.Metric, error) {
 		return nil, err
 	}
 
-	// this allows pings when running hidra as root
-	pinger.SetPrivileged(true)
-
 	pinger.Count = 3
 	if _, ok := c["times"]; ok {
 		tmp, err := strconv.ParseInt(c["times"], 10, 64)
