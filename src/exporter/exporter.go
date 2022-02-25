@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -201,7 +202,10 @@ func runSample(configFiles []string, maxExecutors int) {
 		// Check last run
 		lastRunTime, ok := lastRun[sample.Name]
 		if !ok {
-			lastRunTime = time.UnixMilli(0)
+			lastRunTime = time.Now()
+			lastRunTime = lastRunTime.Add(-sample.ScrapeInterval)
+			lastRunTime = lastRunTime.Add(time.Duration(rand.Intn(120)) * time.Second)
+
 			lastRun[sample.Name] = lastRunTime
 		}
 
