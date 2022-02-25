@@ -11,7 +11,7 @@ func TestScenario(t *testing.T) {
 	s.Init()
 
 	params := map[string]string{
-		"domain": "latostadora.com",
+		"domain": "google.com",
 	}
 
 	_, err := s.RunStep("whoisFrom", params, 0)
