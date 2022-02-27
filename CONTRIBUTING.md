@@ -1,5 +1,6 @@
 # Contributing
-_based on prometheus 
+*based on prometheus contributing guidelines*
+
 Hidra uses GitHub to manage reviews of pull requests.
 
 * If you are a new contributor see: [Steps to Contribute](#steps-to-contribute)
