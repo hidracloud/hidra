@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/src/models"
+	"github.com/hidracloud/hidra/src/utils"
 )
 
 // RunScenario Run one scenario
 func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
-	log.Printf("[%s] Running new scenario, \"%s\"\n", name, desc)
+	utils.LogDebug("[%s] Running new scenario, \"%s\"\n", name, desc)
 
 	srunner := Sample[s.Kind]()
 	srunner.Init()

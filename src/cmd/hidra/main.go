@@ -55,8 +55,8 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 			log.Fatal("testFile does not exists")
 		}
 
-		log.Println("Running hidra in test mode")
-		log.Println("Running ", configFile)
+		utils.LogDebug("Running hidra in test mode")
+		utils.LogDebug("Running " + configFile)
 		data, err := ioutil.ReadFile(configFile)
 
 		if err != nil {
@@ -69,9 +69,9 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		}
 
 		if len(slist.Tags) > 0 {
-			log.Println("Tags:")
+			utils.LogDebug("Tags:")
 			for key, val := range slist.Tags {
-				log.Println(" ", key, "=", val)
+				utils.LogDebug(" " + key + "=" + val)
 			}
 		}
 
