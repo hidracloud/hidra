@@ -10,8 +10,6 @@ import (
 
 // RunScenario Run one scenario
 func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
-	log.Printf("[%s] Running new scenario, \"%s\"\n", name, desc)
-
 	srunner := Sample[s.Kind]()
 	srunner.Init()
 

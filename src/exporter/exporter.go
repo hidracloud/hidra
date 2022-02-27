@@ -154,6 +154,7 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 }
 
 func runOneScenario(sample *models.Sample, configFile string) {
+	log.Println("Running scenario:", sample.Name, "with description:", sample.Description)
 	m := scenarios.RunScenario(sample.Scenario, sample.Name, sample.Description)
 
 	status := 0

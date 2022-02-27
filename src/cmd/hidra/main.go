@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/namsral/flag"
 
@@ -35,6 +36,12 @@ type flagConfig struct {
 
 	// port is the port to listen on
 	port int
+
+	// duration is the duration of the attack
+	duration int
+
+	// workers is the number of workers to use
+	workers int
 }
 
 // This mode is used for fast checking yaml
@@ -137,6 +144,56 @@ func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
+func runAttackMode(cfg *flagConfig, wg *sync.WaitGroup) {
+	data, err := ioutil.ReadFile(cfg.testFile)
+	if err != nil {
+		panic(err)
+	}
+
+	sample, err := models.ReadSampleYAML(data)
+	if err != nil {
+		panic(err)
+	}
+
+	requestCounter := make([]int, cfg.workers+1)
+
+	tchan := make(chan int)
+	go func(c chan<- int) {
+		for ti := 1; ti <= cfg.workers; ti++ {
+			log.Printf("Thread Count %d", ti)
+			requestCounter[ti] = 0
+			c <- ti
+		}
+	}(tchan)
+
+	timeout := time.After(time.Duration(cfg.duration) * time.Second)
+	for {
+		select { //Select blocks the flow until one of the channels receives a message
+		case <-timeout: //receives a msg when execution duration is over
+			log.Printf("Execution completed")
+
+			// sum all request counter
+			totalRequest := 0
+			for _, request := range requestCounter {
+				totalRequest += request
+			}
+
+			log.Println("Scenarios executed: ", totalRequest, "rate ", float64(totalRequest)/float64(cfg.duration))
+			wg.Done()
+			return
+		case ts := <-tchan: //receives a message when a new user thread has to be initiated
+			log.Printf("Thread No %d started", ts)
+			go func(t int) {
+				for {
+					scenarios.RunScenario(sample.Scenario, sample.Name, sample.Description)
+
+					requestCounter[t] = requestCounter[t] + 1
+				}
+			}(ts)
+		}
+	}
+}
+
 func main() {
 	godotenv.Load()
 
@@ -144,21 +201,26 @@ func main() {
 	cfg := flagConfig{}
 
 	// Initialize flags
-	var testMode, exporter, syntaxMode bool
+	var testMode, exporter, syntaxMode, attackMode bool
 
 	// Operating mode
 	flag.BoolVar(&testMode, "test", false, "-test enable test mode in given hidra")
 	flag.BoolVar(&exporter, "exporter", false, "-exporter enable exporter mode in given hidra")
 	flag.BoolVar(&syntaxMode, "syntax", false, "-syntax enable syntax mode in given hidra")
+	flag.BoolVar(&attackMode, "attack", false, "-attack enable attack mode in given hidra")
 
 	// Test mode
 	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
-	flag.StringVar(&cfg.confPath, "conf", "", "-conf your_conf_path")
 
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
 	flag.IntVar(&cfg.port, "port", 19090, "-port your_port")
 	flag.StringVar(&cfg.buckets, "buckets", "100,200,500,1000,2000,5000", "-buckets your_buckets")
+	flag.StringVar(&cfg.confPath, "conf", "", "-conf your_conf_path")
+	flag.IntVar(&cfg.duration, "duration", 10, "-duration your_duration")
+	flag.IntVar(&cfg.workers, "workers", 10, "-workers your_workers")
+
+	// Attack mode
 	flag.Parse()
 
 	var wg sync.WaitGroup
@@ -176,6 +238,11 @@ func main() {
 	if syntaxMode {
 		wg.Add(1)
 		go runSyntaxMode(&cfg, &wg)
+	}
+
+	if attackMode {
+		wg.Add(1)
+		go runAttackMode(&cfg, &wg)
 	}
 
 	wg.Wait()
