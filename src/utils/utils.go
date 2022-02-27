@@ -4,7 +4,9 @@ package utils
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 )
@@ -15,6 +17,25 @@ const (
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
+
+// LogDebug log println if debug mode
+func LogDebug(s string, v ...interface{}) {
+	if os.Getenv("DEBUG") == "true" {
+		log.Printf("[DEBUG] "+s, v...)
+	}
+}
+
+// EnvToMap
+func EnvToMap() (map[string]string, error) {
+	envMap := make(map[string]string)
+	var err error
+
+	for _, v := range os.Environ() {
+		split_v := strings.SplitN(v, "=", 2)
+		envMap[split_v[0]] = strings.Join(split_v[1:], "=")
+	}
+	return envMap, err
+}
 
 // RandString generate a random string of lenght "n"
 func RandString(n int) string {

@@ -14,6 +14,9 @@ build:
 deps:
 	go mod vendor
 
+tests:
+	go test -v ./...
+	
 compress:
 	cd ${BUILD_PATH} && \
 	tar -czf hidra-${VERSION}-linux-amd64.tar.gz hidra-${VERSION}-linux-amd64 && \

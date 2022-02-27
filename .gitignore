@@ -19,3 +19,4 @@ vendor/
 test.db
 *.env
 .DS_Store
+results.csv

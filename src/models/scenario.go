@@ -6,10 +6,13 @@ import (
 	"html/template"
 	"time"
 
+	"github.com/hidracloud/hidra/src/utils"
 	uuid "github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"gorm.io/gorm"
 )
+
+var ENV_MAP map[string]string
 
 var minStepTimeout = 10 * time.Second
 
@@ -111,6 +114,7 @@ func (s *Scenario) StartPrimitives() {
 
 type runStepGoTemplate struct {
 	Now time.Time
+	Env map[string]string
 }
 
 // RunStep Run an step
@@ -122,6 +126,7 @@ func (s *Scenario) RunStep(name string, p map[string]string, timeout time.Durati
 	// set runStepGoTemplate
 	runStepGoTemplate := &runStepGoTemplate{
 		Now: time.Now(),
+		Env: ENV_MAP,
 	}
 
 	// Make a copy of p into c
@@ -151,6 +156,8 @@ func (s *Scenario) RunStep(name string, p map[string]string, timeout time.Durati
 
 		c[param.Name] = buf.String()
 	}
+
+	utils.LogDebug("Running step %s with params %v\n", name, c)
 
 	metricsChain := make(chan []Metric, 1)
 	errorChain := make(chan error, 1)
@@ -199,4 +206,14 @@ func ReadSampleYAML(data []byte) (*Sample, error) {
 	}
 
 	return &scenarios, nil
+}
+
+func init() {
+	var err error
+
+	ENV_MAP, err = utils.EnvToMap()
+
+	if err != nil {
+		panic(err)
+	}
 }

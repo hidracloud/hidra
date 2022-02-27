@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/namsral/flag"
 
+	"github.com/hidracloud/hidra/src/attack"
 	"github.com/hidracloud/hidra/src/exporter"
 	"github.com/hidracloud/hidra/src/models"
 	"github.com/hidracloud/hidra/src/scenarios"
@@ -42,6 +42,9 @@ type flagConfig struct {
 
 	// workers is the number of workers to use
 	workers int
+
+	// resultFile is the file to write the results to
+	resultFile string
 }
 
 // This mode is used for fast checking yaml
@@ -62,8 +65,8 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 			log.Fatal("testFile does not exists")
 		}
 
-		log.Println("Running hidra in test mode")
-		log.Println("Running ", configFile)
+		utils.LogDebug("Running hidra in test mode")
+		utils.LogDebug("Running " + configFile)
 		data, err := ioutil.ReadFile(configFile)
 
 		if err != nil {
@@ -76,9 +79,9 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		}
 
 		if len(slist.Tags) > 0 {
-			log.Println("Tags:")
+			utils.LogDebug("Tags:")
 			for key, val := range slist.Tags {
-				log.Println(" ", key, "=", val)
+				utils.LogDebug(" " + key + "=" + val)
 			}
 		}
 
@@ -145,53 +148,8 @@ func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
 }
 
 func runAttackMode(cfg *flagConfig, wg *sync.WaitGroup) {
-	data, err := ioutil.ReadFile(cfg.testFile)
-	if err != nil {
-		panic(err)
-	}
-
-	sample, err := models.ReadSampleYAML(data)
-	if err != nil {
-		panic(err)
-	}
-
-	requestCounter := make([]int, cfg.workers+1)
-
-	tchan := make(chan int)
-	go func(c chan<- int) {
-		for ti := 1; ti <= cfg.workers; ti++ {
-			log.Printf("Thread Count %d", ti)
-			requestCounter[ti] = 0
-			c <- ti
-		}
-	}(tchan)
-
-	timeout := time.After(time.Duration(cfg.duration) * time.Second)
-	for {
-		select { //Select blocks the flow until one of the channels receives a message
-		case <-timeout: //receives a msg when execution duration is over
-			log.Printf("Execution completed")
-
-			// sum all request counter
-			totalRequest := 0
-			for _, request := range requestCounter {
-				totalRequest += request
-			}
-
-			log.Println("Scenarios executed: ", totalRequest, "rate ", float64(totalRequest)/float64(cfg.duration))
-			wg.Done()
-			return
-		case ts := <-tchan: //receives a message when a new user thread has to be initiated
-			log.Printf("Thread No %d started", ts)
-			go func(t int) {
-				for {
-					scenarios.RunScenario(sample.Scenario, sample.Name, sample.Description)
-
-					requestCounter[t] = requestCounter[t] + 1
-				}
-			}(ts)
-		}
-	}
+	attack.RunAttackMode(cfg.testFile, cfg.resultFile, cfg.workers, cfg.duration)
+	wg.Done()
 }
 
 func main() {
@@ -217,8 +175,11 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 19090, "-port your_port")
 	flag.StringVar(&cfg.buckets, "buckets", "100,200,500,1000,2000,5000", "-buckets your_buckets")
 	flag.StringVar(&cfg.confPath, "conf", "", "-conf your_conf_path")
+
+	// Attack mode
 	flag.IntVar(&cfg.duration, "duration", 10, "-duration your_duration")
 	flag.IntVar(&cfg.workers, "workers", 10, "-workers your_workers")
+	flag.StringVar(&cfg.resultFile, "result", "", "-result your_result_file")
 
 	// Attack mode
 	flag.Parse()

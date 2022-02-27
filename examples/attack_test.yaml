@@ -1,7 +1,7 @@
 name: http_basic_example
 description: Test that example.com return HTTP 200
 scrapeInterval: 1s
-timeout: 10s
+timeout: 1s
 tags:
   sla: dev
 scenario:
@@ -9,7 +9,7 @@ scenario:
   steps:
     - type: request
       params:
-        url: "http//localhost:8080"
+        url: "http://localhost:8080"
     - type: statusCodeShouldBe
       params:
         statusCode: "200"
