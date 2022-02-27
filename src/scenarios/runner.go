@@ -9,13 +9,16 @@ import (
 	"github.com/hidracloud/hidra/src/utils"
 )
 
-// RunScenario Run one scenario
-func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
-	utils.LogDebug("[%s] Running new scenario, \"%s\"\n", name, desc)
-
+// InitializeScenario initialize a new scenario
+func InitializeScenario(s models.Scenario) models.IScenario {
 	srunner := Sample[s.Kind]()
 	srunner.Init()
 
+	return srunner
+}
+
+// RunIScenario run already initialize scenario
+func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
 	metric := models.ScenarioResult{}
 	metric.Scenario = s
 	metric.StepResults = make([]*models.StepResult, 0)
@@ -46,6 +49,13 @@ func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 
 	metric.EndDate = time.Now()
 	return &metric
+}
+
+// RunScenario Run one scenario
+func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
+	utils.LogDebug("[%s] Running new scenario, \"%s\"\n", name, desc)
+	srunner := InitializeScenario(s)
+	return RunIScenario(s, srunner)
 }
 
 // PrettyPrintScenarioResults Print scenario metrics

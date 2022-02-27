@@ -82,7 +82,7 @@ func (h *Scenario) requestByMethod(c map[string]string) ([]models.Metric, error)
 	}
 
 	h.Body = strings.ToLower(string(b))
-	h.Response.Body.Close()
+	defer h.Response.Body.Close()
 
 	return nil, err
 }

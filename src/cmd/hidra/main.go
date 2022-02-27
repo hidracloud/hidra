@@ -12,6 +12,7 @@ import (
 
 	"github.com/namsral/flag"
 
+	"github.com/hidracloud/hidra/src/attack"
 	"github.com/hidracloud/hidra/src/exporter"
 	"github.com/hidracloud/hidra/src/models"
 	"github.com/hidracloud/hidra/src/scenarios"
@@ -35,6 +36,15 @@ type flagConfig struct {
 
 	// port is the port to listen on
 	port int
+
+	// duration is the duration of the attack
+	duration int
+
+	// workers is the number of workers to use
+	workers int
+
+	// resultFile is the file to write the results to
+	resultFile string
 }
 
 // This mode is used for fast checking yaml
@@ -137,6 +147,11 @@ func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
+func runAttackMode(cfg *flagConfig, wg *sync.WaitGroup) {
+	attack.RunAttackMode(cfg.testFile, cfg.resultFile, cfg.workers, cfg.duration)
+	wg.Done()
+}
+
 func main() {
 	godotenv.Load()
 
@@ -144,21 +159,29 @@ func main() {
 	cfg := flagConfig{}
 
 	// Initialize flags
-	var testMode, exporter, syntaxMode bool
+	var testMode, exporter, syntaxMode, attackMode bool
 
 	// Operating mode
 	flag.BoolVar(&testMode, "test", false, "-test enable test mode in given hidra")
 	flag.BoolVar(&exporter, "exporter", false, "-exporter enable exporter mode in given hidra")
 	flag.BoolVar(&syntaxMode, "syntax", false, "-syntax enable syntax mode in given hidra")
+	flag.BoolVar(&attackMode, "attack", false, "-attack enable attack mode in given hidra")
 
 	// Test mode
 	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
-	flag.StringVar(&cfg.confPath, "conf", "", "-conf your_conf_path")
 
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
 	flag.IntVar(&cfg.port, "port", 19090, "-port your_port")
 	flag.StringVar(&cfg.buckets, "buckets", "100,200,500,1000,2000,5000", "-buckets your_buckets")
+	flag.StringVar(&cfg.confPath, "conf", "", "-conf your_conf_path")
+
+	// Attack mode
+	flag.IntVar(&cfg.duration, "duration", 10, "-duration your_duration")
+	flag.IntVar(&cfg.workers, "workers", 10, "-workers your_workers")
+	flag.StringVar(&cfg.resultFile, "result", "", "-result your_result_file")
+
+	// Attack mode
 	flag.Parse()
 
 	var wg sync.WaitGroup
@@ -176,6 +199,11 @@ func main() {
 	if syntaxMode {
 		wg.Add(1)
 		go runSyntaxMode(&cfg, &wg)
+	}
+
+	if attackMode {
+		wg.Add(1)
+		go runAttackMode(&cfg, &wg)
 	}
 
 	wg.Wait()
