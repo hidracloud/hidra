@@ -102,13 +102,13 @@ func (h *Scenario) ping(c map[string]string) ([]models.Metric, error) {
 
 	pinger.Count = 3
 	if _, ok := c["times"]; ok {
-		tmp, err := strconv.ParseInt(c["times"], 10, 64)
+		tmp, err := strconv.Atoi(c["times"])
 
 		if err != nil {
 			return nil, err
 		}
 
-		pinger.Count = int(tmp)
+		pinger.Count = tmp
 	}
 
 	currentUser, err := user.Current()
