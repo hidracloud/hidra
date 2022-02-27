@@ -27,8 +27,6 @@ Hidra uses GitHub to manage reviews of pull requests.
 
 Should you wish to work on an issue, please claim it first by commenting on the GitHub issue that you want to work on it. This is to prevent duplicated efforts from contributors on the same issue.
 
-You can [spin up a prebuilt dev environment](https://gitpod.io/#https://github.com/Hidra/Hidra) using Gitpod.io.
-
 For quickly compiling and testing your changes do:
 ```
 # For building.
