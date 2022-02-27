@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s 
+scrape_configs:
+  - job_name: 'hidra-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['hidra:19090']

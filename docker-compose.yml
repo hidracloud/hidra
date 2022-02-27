@@ -5,11 +5,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: -exporter -conf ./examples -maxExecutor 1
-    #args: -exporter -conf ./examples -maxExecutor 1
+    command: -exporter -conf ./examples -maxExecutor 8
     volumes:
       - ./examples:/examples
     ports:
       - "19090:19090"
     expose:
       - 19090
+  prometheus:
+    image: prom/prometheus:v2.33.4
+    command: --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./etc/prometheus:/etc/prometheus
+    links:
+      - hidra
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090

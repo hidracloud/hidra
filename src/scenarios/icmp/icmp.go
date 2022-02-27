@@ -4,6 +4,7 @@ package icmp
 import (
 	"fmt"
 	"log"
+	"os/user"
 	"strconv"
 	"time"
 
@@ -108,6 +109,16 @@ func (h *Scenario) ping(c map[string]string) ([]models.Metric, error) {
 		}
 
 		pinger.Count = int(tmp)
+	}
+
+	currentUser, err := user.Current()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if currentUser.Uid == "0" {
+		pinger.SetPrivileged(true)
 	}
 
 	err = pinger.Run() // Blocks until finished.
