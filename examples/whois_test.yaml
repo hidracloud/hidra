@@ -12,4 +12,4 @@ scenario:
         domain: google.com
     - type: shouldBeValidFor
       params:
-        for: 1d
+        period: 1d
