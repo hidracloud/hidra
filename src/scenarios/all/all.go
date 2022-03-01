@@ -12,4 +12,6 @@ import (
 	_ "github.com/hidracloud/hidra/src/scenarios/tls"
 	// Run whois initialization
 	_ "github.com/hidracloud/hidra/src/scenarios/whois"
+	// Run ftp initialization
+	_ "github.com/hidracloud/hidra/src/scenarios/ftp"
 )

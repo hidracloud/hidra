@@ -173,6 +173,10 @@ func (h *Scenario) RCA(result *models.ScenarioResult) error {
 	return nil
 }
 
+// Close closes the scenario
+func (s *Scenario) Close() {
+}
+
 // Init initialize scenario
 func (h *Scenario) Init() {
 	h.StartPrimitives()

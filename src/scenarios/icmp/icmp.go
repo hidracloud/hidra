@@ -180,6 +180,11 @@ func (h *Scenario) Description() string {
 	return "Run a ICMP scenario"
 }
 
+// Close closes the scenario
+func (s *Scenario) Close() {
+
+}
+
 // Init initializes the scenario
 func (h *Scenario) Init() {
 	h.StartPrimitives()
