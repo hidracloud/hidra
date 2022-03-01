@@ -24,6 +24,8 @@ func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioR
 	metric.StepResults = make([]*models.StepResult, 0)
 	metric.StartDate = time.Now()
 
+	defer srunner.Close()
+
 	for _, step := range s.Steps {
 		smetric := models.StepResult{}
 		smetric.Step = step
