@@ -101,6 +101,7 @@ type MetricLabel struct {
 type IScenario interface {
 	StartPrimitives()
 	Init()
+	Close()
 	RunStep(string, map[string]string, time.Duration) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string

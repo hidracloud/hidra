@@ -118,6 +118,11 @@ func (s *Scenario) Description() string {
 	return "Run a TLS scenario"
 }
 
+// Close closes the scenario
+func (s *Scenario) Close() {
+
+}
+
 // Init initialize the scenario
 func (s *Scenario) Init() {
 	s.StartPrimitives()

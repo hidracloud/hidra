@@ -140,6 +140,11 @@ func (b *Scenario) Description() string {
 	return "Run scenario in real browser"
 }
 
+// Close closes the scenario
+func (s *Scenario) Close() {
+
+}
+
 // Init initialize scenario
 func (b *Scenario) Init() {
 	b.StartPrimitives()

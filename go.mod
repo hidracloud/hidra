@@ -15,6 +15,8 @@ require (
 )
 
 require (
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/likexian/gokit v0.25.6 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
@@ -31,6 +33,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
+	github.com/jlaffaye/ftp v0.0.0-20220301181425-a81b090061fa
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/likexian/whois v1.12.4
 	github.com/likexian/whois-parser v1.22.0
