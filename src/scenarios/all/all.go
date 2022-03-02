@@ -14,4 +14,8 @@ import (
 	_ "github.com/hidracloud/hidra/src/scenarios/whois"
 	// Run ftp initialization
 	_ "github.com/hidracloud/hidra/src/scenarios/ftp"
+	// Run tcp initialization
+	_ "github.com/hidracloud/hidra/src/scenarios/tcp"
+	// Run udp initialization
+	_ "github.com/hidracloud/hidra/src/scenarios/udp"
 )
