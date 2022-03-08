@@ -69,6 +69,12 @@ type flagConfig struct {
 
 	// screenshotS3SecretKey is the s3 secret key to save the screenshot
 	screenshotS3SecretKey string
+
+	// screenshotS3Prefix is the s3 prefix to save the screenshot
+	screenshotS3Prefix string
+
+	// screenshotS3TLS is the s3 tls to save the screenshot
+	screenshotS3TLS bool
 }
 
 // This mode is used for fast checking yaml
@@ -204,6 +210,8 @@ func main() {
 	flag.StringVar(&cfg.screenshotS3Region, "screenshot-s3-region", "", "-screenshot-s3-region s3 region to save the screenshot")
 	flag.StringVar(&cfg.screenshotS3AccessKey, "screenshot-s3-access-key", "", "-screenshot-s3-access-key s3 access key to save the screenshot")
 	flag.StringVar(&cfg.screenshotS3SecretKey, "screenshot-s3-secret-key", "", "-screenshot-s3-secret-key s3 secret key to save the screenshot")
+	flag.StringVar(&cfg.screenshotS3Prefix, "screenshot-s3-prefix", "", "-screenshot-s3-prefix s3 prefix to save the screenshot")
+	flag.BoolVar(&cfg.screenshotS3TLS, "screenshot-s3-tls", true, "-screenshot-s3-tls s3 tls to save the screenshot")
 
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
@@ -234,6 +242,7 @@ func main() {
 	scenarios.SCREENSHOT_S3_REGION = cfg.screenshotS3Region
 	scenarios.SCREENSHOT_S3_ACCESS_KEY = cfg.screenshotS3AccessKey
 	scenarios.SCREENSHOT_S3_SECRET_KEY = cfg.screenshotS3SecretKey
+	scenarios.SCREENSHOT_S3_PREFIX = cfg.screenshotS3Prefix
 
 	if testMode {
 		wg.Add(1)
