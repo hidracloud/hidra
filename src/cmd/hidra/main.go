@@ -45,6 +45,9 @@ type flagConfig struct {
 
 	// resultFile is the file to write the results to
 	resultFile string
+
+	// exitOnError is a flag to exit on error
+	exitOnError bool
 }
 
 // This mode is used for fast checking yaml
@@ -86,8 +89,11 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 		}
 
 		m := scenarios.RunScenario(slist.Scenario, slist.Name, slist.Description)
-
 		scenarios.PrettyPrintScenarioResults(m, slist.Name, slist.Description)
+		if m.Error != nil && cfg.exitOnError {
+			log.Fatal(m.Error)
+			os.Exit(1)
+		}
 	}
 	wg.Done()
 
@@ -169,6 +175,7 @@ func main() {
 
 	// Test mode
 	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
+	flag.BoolVar(&cfg.exitOnError, "exit-on-error", false, "-exit-on-error exit on error")
 
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
