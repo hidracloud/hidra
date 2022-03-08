@@ -48,6 +48,27 @@ type flagConfig struct {
 
 	// exitOnError is a flag to exit on error
 	exitOnError bool
+
+	// screenshotOnError is a flag to take a screenshot on error
+	screenshotOnError bool
+
+	// screenshotPath is the path to save the screenshot
+	screenshotPath string
+
+	// screenshotS3Bucket is the s3 bucket to save the screenshot
+	screenshotS3Bucket string
+
+	// screenshotS3Endpoint is the s3 endpoint to save the screenshot
+	screenshotS3Endpoint string
+
+	// screenshotS3Region is the s3 region to save the screenshot
+	screenshotS3Region string
+
+	// screenshotS3AccessKey is the s3 access key to save the screenshot
+	screenshotS3AccessKey string
+
+	// screenshotS3SecretKey is the s3 secret key to save the screenshot
+	screenshotS3SecretKey string
 }
 
 // This mode is used for fast checking yaml
@@ -176,6 +197,13 @@ func main() {
 	// Test mode
 	flag.StringVar(&cfg.testFile, "file", "", "-file your_test_file_yaml")
 	flag.BoolVar(&cfg.exitOnError, "exit-on-error", false, "-exit-on-error exit on error")
+	flag.BoolVar(&cfg.screenshotOnError, "screenshot-on-error", false, "-screenshot-on-error take a screenshot on error")
+	flag.StringVar(&cfg.screenshotPath, "screenshot-path", "", "-screenshot-path path to save the screenshot")
+	flag.StringVar(&cfg.screenshotS3Bucket, "screenshot-s3-bucket", "", "-screenshot-s3-bucket s3 bucket to save the screenshot")
+	flag.StringVar(&cfg.screenshotS3Endpoint, "screenshot-s3-endpoint", "", "-screenshot-s3-endpoint s3 endpoint to save the screenshot")
+	flag.StringVar(&cfg.screenshotS3Region, "screenshot-s3-region", "", "-screenshot-s3-region s3 region to save the screenshot")
+	flag.StringVar(&cfg.screenshotS3AccessKey, "screenshot-s3-access-key", "", "-screenshot-s3-access-key s3 access key to save the screenshot")
+	flag.StringVar(&cfg.screenshotS3SecretKey, "screenshot-s3-secret-key", "", "-screenshot-s3-secret-key s3 secret key to save the screenshot")
 
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
@@ -192,6 +220,20 @@ func main() {
 	flag.Parse()
 
 	var wg sync.WaitGroup
+
+	if cfg.screenshotOnError {
+		scenarios.SCREENSHOT_ON_ERROR = true
+	}
+
+	if cfg.screenshotPath != "" {
+		scenarios.SCREENSHOT_PATH = cfg.screenshotPath
+	}
+
+	scenarios.SCREENSHOT_S3_BUCKET = cfg.screenshotS3Bucket
+	scenarios.SCREENSHOT_S3_ENDPOINT = cfg.screenshotS3Endpoint
+	scenarios.SCREENSHOT_S3_REGION = cfg.screenshotS3Region
+	scenarios.SCREENSHOT_S3_ACCESS_KEY = cfg.screenshotS3AccessKey
+	scenarios.SCREENSHOT_S3_SECRET_KEY = cfg.screenshotS3SecretKey
 
 	if testMode {
 		wg.Add(1)

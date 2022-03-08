@@ -2,6 +2,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/chromedp/chromedp"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -256,4 +259,40 @@ func AutoDiscoverYML(path string) ([]string, error) {
 	}
 
 	return filesPath, nil
+}
+
+// fullScreenshot takes a screenshot of the entire browser viewport.
+//
+// Note: chromedp.FullScreenshot overrides the device's emulation settings. Use
+// device.Reset to reset the emulation and viewport settings.
+func fullScreenshot(urlstr string, quality int, res *[]byte) chromedp.Tasks {
+	return chromedp.Tasks{
+		chromedp.Navigate(urlstr),
+		chromedp.Sleep(time.Second),
+		chromedp.FullScreenshot(res, quality),
+	}
+}
+
+// TakeScreenshotWithChromedp takes a screenshot of the current browser window.
+func TakeScreenshotWithChromedp(url, file string) error {
+	// create context
+	ctx, _ := chromedp.NewContext(
+		context.Background(),
+	)
+
+	// add a timeout
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	var buf []byte
+
+	// capture entire browser viewport, returning png with quality=90
+	if err := chromedp.Run(ctx, fullScreenshot(url, 90, &buf)); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(file, buf, 0o644); err != nil {
+		return err
+	}
+
+	return nil
 }

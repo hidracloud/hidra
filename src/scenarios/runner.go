@@ -9,6 +9,27 @@ import (
 	"github.com/hidracloud/hidra/src/utils"
 )
 
+// SCREENSHOT_ON_ERROR if true, generate screenshot on error
+var SCREENSHOT_ON_ERROR = false
+
+// SCREENSHOT_PATH path to save screenshots
+var SCREENSHOT_PATH = "./screenshots"
+
+// SCREENSHOT_BUCKET bucket name to save screenshots
+var SCREENSHOT_S3_BUCKET = ""
+
+// SCREENSHOT_S3_ENDPOINT_URL endpoint url to save screenshots
+var SCREENSHOT_S3_ENDPOINT = ""
+
+// SCREENSHOT_S3_REGION region to save screenshots
+var SCREENSHOT_S3_REGION = ""
+
+// SCREENSHOT_S3_ACCESS_KEY access key id to save screenshots
+var SCREENSHOT_S3_ACCESS_KEY = ""
+
+// SCREENSHOT_S3_SECRET_KEY secret access key id to save screenshots
+var SCREENSHOT_S3_SECRET_KEY = ""
+
 // InitializeScenario initialize a new scenario
 func InitializeScenario(s models.Scenario) models.IScenario {
 	srunner := Sample[s.Kind]()
@@ -17,8 +38,36 @@ func InitializeScenario(s models.Scenario) models.IScenario {
 	return srunner
 }
 
+// GenerateScreenshots generate screenshots for scenario
+func generateScreenshots(m *models.ScenarioResult, s models.Scenario, name, desc string) error {
+	if !SCREENSHOT_ON_ERROR || m.Error == nil || (s.Kind != "http") {
+		return nil
+	}
+
+	// Calculate request step
+	url := ""
+	for _, step := range s.Steps {
+		if step.Type == "request" {
+			url = step.Params["url"]
+			break
+		}
+	}
+
+	if url == "" {
+		return fmt.Errorf("no request step found")
+	}
+
+	path := fmt.Sprintf("%s/hidra-screenshot-%s.png", SCREENSHOT_PATH, name)
+	err := utils.TakeScreenshotWithChromedp(url, path)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RunIScenario run already initialize scenario
-func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
+func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
 	metric := models.ScenarioResult{}
 	metric.Scenario = s
 	metric.StepResults = make([]*models.StepResult, 0)
@@ -39,12 +88,16 @@ func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioR
 		if step.Negate && err == nil {
 			metric.Error = fmt.Errorf("expected fail")
 			metric.EndDate = time.Now()
+			generateScreenshots(&metric, s, name, desc)
+
 			return &metric
 		}
 
 		if err != nil && !step.Negate {
 			metric.Error = err
 			metric.EndDate = time.Now()
+			generateScreenshots(&metric, s, name, desc)
+
 			return &metric
 		}
 	}
@@ -57,7 +110,7 @@ func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioR
 func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 	utils.LogDebug("[%s] Running new scenario, \"%s\"\n", name, desc)
 	srunner := InitializeScenario(s)
-	return RunIScenario(s, srunner)
+	return RunIScenario(name, desc, s, srunner)
 }
 
 // PrettyPrintScenarioResults Print scenario metrics

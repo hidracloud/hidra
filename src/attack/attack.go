@@ -138,7 +138,7 @@ func spawnWorker(workerID, duration int, sample *models.Sample, runner models.IS
 			return
 		default:
 			start := time.Now()
-			sresult := scenarios.RunIScenario(sample.Scenario, runner)
+			sresult := scenarios.RunIScenario("", "", sample.Scenario, runner)
 
 			result := &IterationResult{
 				Time: time.Since(start).Milliseconds(),
