@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html/template"
 	"time"
@@ -54,6 +55,7 @@ type Scenario struct {
 	Kind             string
 	Steps            []Step
 	StepsDefinitions map[string]StepDefinition
+	Context          context.Context
 }
 
 // ScenarioResult is the result of a scenario

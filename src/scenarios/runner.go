@@ -18,7 +18,7 @@ func InitializeScenario(s models.Scenario) models.IScenario {
 }
 
 // RunIScenario run already initialize scenario
-func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
+func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
 	metric := models.ScenarioResult{}
 	metric.Scenario = s
 	metric.StepResults = make([]*models.StepResult, 0)
@@ -39,12 +39,16 @@ func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioR
 		if step.Negate && err == nil {
 			metric.Error = fmt.Errorf("expected fail")
 			metric.EndDate = time.Now()
+			GenerateScreenshots(&metric, s, name, desc)
+
 			return &metric
 		}
 
 		if err != nil && !step.Negate {
 			metric.Error = err
 			metric.EndDate = time.Now()
+			GenerateScreenshots(&metric, s, name, desc)
+
 			return &metric
 		}
 	}
@@ -57,7 +61,7 @@ func RunIScenario(s models.Scenario, srunner models.IScenario) *models.ScenarioR
 func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
 	utils.LogDebug("[%s] Running new scenario, \"%s\"\n", name, desc)
 	srunner := InitializeScenario(s)
-	return RunIScenario(s, srunner)
+	return RunIScenario(name, desc, s, srunner)
 }
 
 // PrettyPrintScenarioResults Print scenario metrics
