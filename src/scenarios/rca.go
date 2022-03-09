@@ -3,7 +3,6 @@ package scenarios
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hidracloud/hidra/src/models"
 	"github.com/hidracloud/hidra/src/utils"
@@ -50,7 +49,7 @@ func uploadScreenshots(src, dest string) error {
 		Secure: SCREENSHOT_S3_TLS,
 	})
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	_, err = minioClient.FPutObject(context.Background(), SCREENSHOT_S3_BUCKET, dest, src, minio.PutObjectOptions{

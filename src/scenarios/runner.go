@@ -39,7 +39,10 @@ func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario
 		if step.Negate && err == nil {
 			metric.Error = fmt.Errorf("expected fail")
 			metric.EndDate = time.Now()
-			GenerateScreenshots(&metric, s, name, desc)
+			err = GenerateScreenshots(&metric, s, name, desc)
+			if err != nil {
+				log.Printf("[%s] Error generating screenshot: %s", name, err)
+			}
 
 			return &metric
 		}
@@ -47,7 +50,10 @@ func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario
 		if err != nil && !step.Negate {
 			metric.Error = err
 			metric.EndDate = time.Now()
-			GenerateScreenshots(&metric, s, name, desc)
+			err = GenerateScreenshots(&metric, s, name, desc)
+			if err != nil {
+				log.Printf("[%s] Error generating screenshot: %s", name, err)
+			}
 
 			return &metric
 		}
