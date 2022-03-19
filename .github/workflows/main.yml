@@ -30,7 +30,7 @@ jobs:
         run: go test ./...
 
   security-metrics:
-    if: github.ref == "refs/heads/main"
+    if: ${{ github.ref == 'refs/heads/main' }}
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
