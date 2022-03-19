@@ -20,7 +20,7 @@ type Scenario struct {
 }
 
 // RCA generate RCAs for scenario
-func (h *Scenario) RCA(result *models.ScenarioResult) error {
+func (s *Scenario) RCA(result *models.ScenarioResult) error {
 	log.Println("UDP RCA")
 	return nil
 }

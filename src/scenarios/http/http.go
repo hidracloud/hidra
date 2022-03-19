@@ -174,7 +174,7 @@ func (h *Scenario) RCA(result *models.ScenarioResult) error {
 }
 
 // Close closes the scenario
-func (s *Scenario) Close() {
+func (h *Scenario) Close() {
 }
 
 // Init initialize scenario

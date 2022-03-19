@@ -81,7 +81,7 @@ func printResultResume(results [][]*IterationResult, duration int) {
 		time := int64(0)
 		for j := 0; j < len(results[i]); j++ {
 			if results[i][j].Error {
-				errors += 1
+				errors++
 			}
 			time += results[i][j].Time
 		}
@@ -114,12 +114,18 @@ func dumpResults2CSV(results [][]*IterationResult, file string) error {
 	defer f.Close()
 
 	// write header
-	f.WriteString("worker,iteration,error,time\n")
+	_, err = f.WriteString("worker,iteration,error,time\n")
+	if err != nil {
+		return err
+	}
 
 	// write results
 	for i := 0; i < len(results); i++ {
 		for j := 0; j < len(results[i]); j++ {
-			f.WriteString(fmt.Sprintf("%d,%d,%t,%d\n", i, j, results[i][j].Error, results[i][j].Time))
+			_, err := f.WriteString(fmt.Sprintf("%d,%d,%t,%d\n", i, j, results[i][j].Error, results[i][j].Time))
+			if err != nil {
+				return err
+			}
 		}
 	}
 

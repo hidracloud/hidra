@@ -28,14 +28,14 @@ func LogDebug(s string, v ...interface{}) {
 	}
 }
 
-// EnvToMap
+// EnvToMap convert env to map
 func EnvToMap() (map[string]string, error) {
 	envMap := make(map[string]string)
 	var err error
 
 	for _, v := range os.Environ() {
-		split_v := strings.SplitN(v, "=", 2)
-		envMap[split_v[0]] = strings.Join(split_v[1:], "=")
+		splitV := strings.SplitN(v, "=", 2)
+		envMap[splitV[0]] = strings.Join(splitV[1:], "=")
 	}
 	return envMap, err
 }
@@ -237,6 +237,7 @@ func leadingFraction(s string) (x int64, scale float64, rem string) {
 	return x, scale, s[i:]
 }
 
+// AutoDiscoverYML find yaml in given path
 func AutoDiscoverYML(path string) ([]string, error) {
 	filesPath := []string{}
 	files, err := ioutil.ReadDir(path)

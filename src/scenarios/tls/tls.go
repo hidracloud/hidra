@@ -38,7 +38,7 @@ func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 }
 
 // RCA generate RCAs for scenario
-func (h *Scenario) RCA(result *models.ScenarioResult) error {
+func (s *Scenario) RCA(result *models.ScenarioResult) error {
 	log.Println("TLS RCA")
 	return nil
 }

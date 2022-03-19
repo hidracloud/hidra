@@ -10,49 +10,49 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-// SCREENSHOT_ON_ERROR if true, generate screenshot on error
-var SCREENSHOT_ON_ERROR = false
+// ScreenshotOnError if true, generate screenshot on error
+var ScreenshotOnError = false
 
-// SCREENSHOT_PATH path to save screenshots
-var SCREENSHOT_PATH = "./screenshots"
+// ScreenshotPath path to save screenshots
+var ScreenshotPath = "./screenshots"
 
-// SCREENSHOT_BUCKET bucket name to save screenshots
-var SCREENSHOT_S3_BUCKET = ""
+// ScreenshotS3Bucket bucket name to save screenshots
+var ScreenshotS3Bucket = ""
 
-// SCREENSHOT_S3_ENDPOINT_URL endpoint url to save screenshots
-var SCREENSHOT_S3_ENDPOINT = ""
+// ScreenshotS3Endpoint endpoint url to save screenshots
+var ScreenshotS3Endpoint = ""
 
-// SCREENSHOT_S3_REGION region to save screenshots
-var SCREENSHOT_S3_REGION = ""
+// ScreenshotS3Region region to save screenshots
+var ScreenshotS3Region = ""
 
-// SCREENSHOT_S3_ACCESS_KEY access key id to save screenshots
-var SCREENSHOT_S3_ACCESS_KEY = ""
+// ScreenshotS3AccessKey access key id to save screenshots
+var ScreenshotS3AccessKey = ""
 
-// SCREENSHOT_S3_SECRET_KEY secret access key id to save screenshots
-var SCREENSHOT_S3_SECRET_KEY = ""
+// ScreenshotS3SecretKey secret access key id to save screenshots
+var ScreenshotS3SecretKey = ""
 
-// SCREENSHOT_S3_PREFIX prefix to save screenshots
-var SCREENSHOT_S3_PREFIX = ""
+// ScreenshotS3Prefix prefix to save screenshots
+var ScreenshotS3Prefix = ""
 
-// SCREENSHOT_S3_TLS
-var SCREENSHOT_S3_TLS = true
+// ScreenshotS3TLS if true, use TLS to connect to S3
+var ScreenshotS3TLS = true
 
 // uploadScreenshots upload screenshots to S3
 func uploadScreenshots(src, dest string) error {
-	if SCREENSHOT_S3_BUCKET == "" {
+	if ScreenshotS3Bucket == "" {
 		return nil
 	}
 
 	// Initialize minio client object.
-	minioClient, err := minio.New(SCREENSHOT_S3_ENDPOINT, &minio.Options{
-		Creds:  credentials.NewStaticV4(SCREENSHOT_S3_ACCESS_KEY, SCREENSHOT_S3_SECRET_KEY, ""),
-		Secure: SCREENSHOT_S3_TLS,
+	minioClient, err := minio.New(ScreenshotS3Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(ScreenshotS3AccessKey, ScreenshotS3SecretKey, ""),
+		Secure: ScreenshotS3TLS,
 	})
 	if err != nil {
 		return err
 	}
 
-	_, err = minioClient.FPutObject(context.Background(), SCREENSHOT_S3_BUCKET, dest, src, minio.PutObjectOptions{
+	_, err = minioClient.FPutObject(context.Background(), ScreenshotS3Bucket, dest, src, minio.PutObjectOptions{
 		ContentType: "image/png",
 	})
 
@@ -65,7 +65,7 @@ func uploadScreenshots(src, dest string) error {
 
 // GenerateScreenshots generate screenshots for scenario
 func GenerateScreenshots(m *models.ScenarioResult, s models.Scenario, name, desc string) error {
-	if !SCREENSHOT_ON_ERROR || m.Error == nil || (s.Kind != "http") {
+	if !ScreenshotOnError || m.Error == nil || (s.Kind != "http") {
 		return nil
 	}
 
@@ -82,13 +82,13 @@ func GenerateScreenshots(m *models.ScenarioResult, s models.Scenario, name, desc
 		return fmt.Errorf("no request step found")
 	}
 
-	path := fmt.Sprintf("%s/hidra-screenshot-%s.png", SCREENSHOT_PATH, name)
+	path := fmt.Sprintf("%s/hidra-screenshot-%s.png", ScreenshotPath, name)
 	err := utils.TakeScreenshotWithChromedp(url, path)
 	if err != nil {
 		return err
 	}
 
-	err = uploadScreenshots(path, fmt.Sprintf("%s%s.png", SCREENSHOT_S3_PREFIX, name))
+	err = uploadScreenshots(path, fmt.Sprintf("%s%s.png", ScreenshotS3Prefix, name))
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,6 @@ import (
 	"github.com/hidracloud/hidra/src/scenarios"
 	_ "github.com/hidracloud/hidra/src/scenarios/all"
 	"github.com/hidracloud/hidra/src/utils"
-	"github.com/joho/godotenv"
 )
 
 type flagConfig struct {
@@ -190,8 +189,6 @@ func runAttackMode(cfg *flagConfig, wg *sync.WaitGroup) {
 }
 
 func main() {
-	godotenv.Load()
-
 	// Start default configuration
 	cfg := flagConfig{}
 
@@ -234,19 +231,19 @@ func main() {
 	var wg sync.WaitGroup
 
 	if cfg.screenshotOnError {
-		scenarios.SCREENSHOT_ON_ERROR = true
+		scenarios.ScreenshotOnError = true
 	}
 
 	if cfg.screenshotPath != "" {
-		scenarios.SCREENSHOT_PATH = cfg.screenshotPath
+		scenarios.ScreenshotPath = cfg.screenshotPath
 	}
 
-	scenarios.SCREENSHOT_S3_BUCKET = cfg.screenshotS3Bucket
-	scenarios.SCREENSHOT_S3_ENDPOINT = cfg.screenshotS3Endpoint
-	scenarios.SCREENSHOT_S3_REGION = cfg.screenshotS3Region
-	scenarios.SCREENSHOT_S3_ACCESS_KEY = cfg.screenshotS3AccessKey
-	scenarios.SCREENSHOT_S3_SECRET_KEY = cfg.screenshotS3SecretKey
-	scenarios.SCREENSHOT_S3_PREFIX = cfg.screenshotS3Prefix
+	scenarios.ScreenshotS3Bucket = cfg.screenshotS3Bucket
+	scenarios.ScreenshotS3Endpoint = cfg.screenshotS3Endpoint
+	scenarios.ScreenshotS3Region = cfg.screenshotS3Region
+	scenarios.ScreenshotS3AccessKey = cfg.screenshotS3AccessKey
+	scenarios.ScreenshotS3SecretKey = cfg.screenshotS3SecretKey
+	scenarios.ScreenshotS3Prefix = cfg.screenshotS3Prefix
 
 	if testMode {
 		wg.Add(1)

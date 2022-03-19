@@ -25,11 +25,11 @@ func (h *Scenario) RCA(result *models.ScenarioResult) error {
 }
 
 // Description return the description of the scenario
-func (s *Scenario) Description() string {
+func (h *Scenario) Description() string {
 	return "Run a TCP scenario"
 }
 
-func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", c["to"])
 	if err != nil {
 		return nil, err
@@ -40,13 +40,13 @@ func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 		return nil, err
 	}
 
-	s.conn = conn
+	h.conn = conn
 
 	return nil, nil
 }
 
-func (s *Scenario) write(c map[string]string) ([]models.Metric, error) {
-	if s.conn == nil {
+func (h *Scenario) write(c map[string]string) ([]models.Metric, error) {
+	if h.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
 
@@ -56,7 +56,7 @@ func (s *Scenario) write(c map[string]string) ([]models.Metric, error) {
 		return nil, err
 	}
 
-	_, err = s.conn.Write(data)
+	_, err = h.conn.Write(data)
 	if err != nil {
 		return nil, err
 	}
@@ -64,10 +64,10 @@ func (s *Scenario) write(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (s *Scenario) read(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) read(c map[string]string) ([]models.Metric, error) {
 	var err error
 
-	if s.conn == nil {
+	if h.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
 
@@ -81,7 +81,7 @@ func (s *Scenario) read(c map[string]string) ([]models.Metric, error) {
 	}
 
 	rcvData := make([]byte, bytesToRead)
-	n, err := s.conn.Read(rcvData)
+	n, err := h.conn.Read(rcvData)
 	if err != nil {
 		return nil, err
 	}
@@ -103,17 +103,17 @@ func (s *Scenario) read(c map[string]string) ([]models.Metric, error) {
 }
 
 // Close closes the scenario
-func (s *Scenario) Close() {
-	if s.conn != nil {
-		s.conn.Close()
+func (h *Scenario) Close() {
+	if h.conn != nil {
+		h.conn.Close()
 	}
 }
 
 // Init initialize the scenario
-func (s *Scenario) Init() {
-	s.StartPrimitives()
+func (h *Scenario) Init() {
+	h.StartPrimitives()
 
-	s.RegisterStep("connectTo", models.StepDefinition{
+	h.RegisterStep("connectTo", models.StepDefinition{
 		Description: "Connect to a host",
 		Params: []models.StepParam{
 			{
@@ -122,10 +122,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.connectTo,
+		Fn: h.connectTo,
 	})
 
-	s.RegisterStep("write", models.StepDefinition{
+	h.RegisterStep("write", models.StepDefinition{
 		Description: "Write data to the connection",
 		Params: []models.StepParam{
 			{
@@ -134,10 +134,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.write,
+		Fn: h.write,
 	})
 
-	s.RegisterStep("read", models.StepDefinition{
+	h.RegisterStep("read", models.StepDefinition{
 		Description: "Read data from the connection",
 		Params: []models.StepParam{
 			{
@@ -151,7 +151,7 @@ func (s *Scenario) Init() {
 				Optional:    true,
 			},
 		},
-		Fn: s.read,
+		Fn: h.read,
 	})
 }
 
