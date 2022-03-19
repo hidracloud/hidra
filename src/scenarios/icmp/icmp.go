@@ -181,7 +181,7 @@ func (h *Scenario) Description() string {
 }
 
 // Close closes the scenario
-func (s *Scenario) Close() {
+func (h *Scenario) Close() {
 
 }
 

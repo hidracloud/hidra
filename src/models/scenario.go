@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var ENV_MAP map[string]string
+var envMap map[string]string
 
 var minStepTimeout = 10 * time.Second
 
@@ -129,7 +129,7 @@ func (s *Scenario) RunStep(name string, p map[string]string, timeout time.Durati
 	// set runStepGoTemplate
 	runStepGoTemplate := &runStepGoTemplate{
 		Now: time.Now(),
-		Env: ENV_MAP,
+		Env: envMap,
 	}
 
 	// Make a copy of p into c
@@ -214,7 +214,7 @@ func ReadSampleYAML(data []byte) (*Sample, error) {
 func init() {
 	var err error
 
-	ENV_MAP, err = utils.EnvToMap()
+	envMap, err = utils.EnvToMap()
 
 	if err != nil {
 		panic(err)

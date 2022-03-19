@@ -99,7 +99,11 @@ func TestHTTPRequestTestGoogle(t *testing.T) {
 		t.Error(err)
 	}
 
-	h.RunStep("clear", params, 0)
+	_, err = h.RunStep("clear", params, 0)
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	params = make(map[string]string)
 	params["url"] = "http://google.com/"

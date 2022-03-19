@@ -82,22 +82,25 @@ func (h *Scenario) delete(c map[string]string) ([]models.Metric, error) {
 }
 
 // Description return the description of the scenario
-func (s *Scenario) Description() string {
+func (h *Scenario) Description() string {
 	return "Run a ftp scenario"
 }
 
 // Close closes the scenario
-func (s *Scenario) Close() {
-	if s.ftpConn != nil {
-		s.ftpConn.Quit()
+func (h *Scenario) Close() {
+	if h.ftpConn != nil {
+		err := h.ftpConn.Quit()
+		if err != nil {
+			log.Println("Error closing ftp connection", err)
+		}
 	}
 }
 
 // Init initialize the scenario
-func (s *Scenario) Init() {
-	s.StartPrimitives()
+func (h *Scenario) Init() {
+	h.StartPrimitives()
 
-	s.RegisterStep("connectTo", models.StepDefinition{
+	h.RegisterStep("connectTo", models.StepDefinition{
 		Description: "Connect to a host",
 		Params: []models.StepParam{
 			{
@@ -106,10 +109,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.connectTo,
+		Fn: h.connectTo,
 	})
 
-	s.RegisterStep("login", models.StepDefinition{
+	h.RegisterStep("login", models.StepDefinition{
 		Description: "Login to a host",
 		Params: []models.StepParam{
 			{
@@ -123,10 +126,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.login,
+		Fn: h.login,
 	})
 
-	s.RegisterStep("write", models.StepDefinition{
+	h.RegisterStep("write", models.StepDefinition{
 		Description: "Write a file",
 		Params: []models.StepParam{
 			{
@@ -140,10 +143,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.write,
+		Fn: h.write,
 	})
 
-	s.RegisterStep("read", models.StepDefinition{
+	h.RegisterStep("read", models.StepDefinition{
 		Description: "Read a file",
 		Params: []models.StepParam{
 			{
@@ -157,10 +160,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.read,
+		Fn: h.read,
 	})
 
-	s.RegisterStep("delete", models.StepDefinition{
+	h.RegisterStep("delete", models.StepDefinition{
 		Description: "Delete a file",
 		Params: []models.StepParam{
 			{
@@ -169,7 +172,7 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.delete,
+		Fn: h.delete,
 	})
 
 }

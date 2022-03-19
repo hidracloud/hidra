@@ -18,7 +18,7 @@ type Scenario struct {
 }
 
 // RCA generate RCAs for scenario
-func (h *Scenario) RCA(result *models.ScenarioResult) error {
+func (b *Scenario) RCA(result *models.ScenarioResult) error {
 	log.Println("Chrome RCA")
 	return nil
 }
@@ -141,7 +141,7 @@ func (b *Scenario) Description() string {
 }
 
 // Close closes the scenario
-func (s *Scenario) Close() {
+func (b *Scenario) Close() {
 
 }
 

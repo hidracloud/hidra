@@ -52,7 +52,7 @@ func refreshPrometheusMetrics(configFiles []string, buckets []float64) error {
 		if err != nil {
 			return err
 		}
-		for key, _ := range sample.Tags {
+		for key := range sample.Tags {
 			found := false
 			for _, label := range prometheusLabels {
 				if label == key {
@@ -147,7 +147,7 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 		metricLabels = append(metricLabels, prometheusLabels...)
 		metricLabels = append(metricLabels, "step")
 
-		for label, _ := range metric.Labels {
+		for label := range metric.Labels {
 			metricLabels = append(metricLabels, label)
 		}
 
@@ -303,6 +303,7 @@ func createWorkers(maxExecutor, possibleJobs int) {
 	}
 }
 
+// Run starts the metrics recorder
 func Run(wg *sync.WaitGroup, confPath string, maxExecutor, port int, buckets []float64) {
 	log.Println("Starting hidra in exporter mode")
 
@@ -310,6 +311,9 @@ func Run(wg *sync.WaitGroup, confPath string, maxExecutor, port int, buckets []f
 	metricsRecord(confPath, maxExecutor, buckets)
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if err != nil {
+		panic(err)
+	}
 	wg.Done()
 }
