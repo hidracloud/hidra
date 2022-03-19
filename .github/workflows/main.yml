@@ -107,6 +107,10 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.18.x
+      - name: Install dpkg-deb
+        run: |
+          apt-get update
+          apt-get install -y dpkg-deb
       - name: Install CGO_ENABLED dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential
@@ -138,3 +142,5 @@ jobs:
             build/hidra-${{ env.GIT_TAG }}-linux-amd64.tar.gz
             build/hidra-${{ env.GIT_TAG }}-linux-arm64.tar.gz
             build/hidra-${{ env.GIT_TAG }}-linux-arm.tar.gz
+            build/hidra-${{ env.GIT_TAG }}-amd64.deb
+            build/hidra-${{ env.GIT_TAG }}-arm64.deb

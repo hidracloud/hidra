@@ -11,6 +11,12 @@ build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o ${BUILD_PATH}/hidra-${VERSION}-linux-arm/hidra src/cmd/hidra/main.go
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o ${BUILD_PATH}/hidra-${VERSION}-darwin-amd64/hidra src/cmd/hidra/main.go
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o ${BUILD_PATH}/hidra-${VERSION}-darwin-arm64/hidra src/cmd/hidra/main.go
+	bash deb/DEBIAN/control.sh amd64
+	cp ${BUILD_PATH}/hidra-${VERSION}-linux-amd64/hidra deb/usr/local/bin/hidra
+	dpkg-deb --build deb build/hidra-${VERSION}-amd64.deb
+	bash deb/DEBIAN/control.sh arm64
+	cp ${BUILD_PATH}/hidra-${VERSION}-linux-arm64/hidra deb/usr/local/bin/hidra
+	dpkg-deb --build deb build/hidra-${VERSION}-arm64.deb
 deps:
 	go mod vendor
 
