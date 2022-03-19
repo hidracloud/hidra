@@ -109,8 +109,8 @@ jobs:
           go-version: 1.18.x
       - name: Install dpkg-deb
         run: |
-          apt-get update
-          apt-get install -y dpkg-deb
+          sudo apt-get update
+          sudo apt-get install -y dpkg-deb
       - name: Install CGO_ENABLED dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential
