@@ -1,6 +1,6 @@
 name: whois_basic_example
 description: Test that google.com dns are ok
-scrapeInterval: 1s
+scrapeInterval: 1m
 timeout: 1s
 tags:
   sla: dev

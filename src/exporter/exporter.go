@@ -15,6 +15,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// mapMutex is a mutex that protects the map
+var mapMutex *sync.Mutex
+
+// jobsQueue represent
+var jobsQueue chan func()
+
 // prometheusLabels contains the labels of the metrics
 var prometheusLabels []string
 
@@ -134,6 +140,8 @@ func readLabels(sample *models.Sample, configFile string) []string {
 }
 
 func createCustomMetricIfDontExists(metric *models.Metric) {
+	mapMutex.Lock()
+	defer mapMutex.Unlock()
 	if _, ok := hidraCustomMetrics[metric.Name]; !ok {
 		metricLabels := []string{}
 		metricLabels = append(metricLabels, prometheusLabels...)
@@ -154,7 +162,12 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 
 func runOneScenario(sample *models.Sample, configFile string) {
 	log.Println("Running scenario:", sample.Name, "with description:", sample.Description)
-	m := scenarios.RunScenario(sample.Scenario, sample.Name, sample.Description)
+	m, err := scenarios.RunScenario(sample.Scenario, sample.Name, sample.Description)
+
+	if err != nil {
+		log.Println("Error running scenario:", err)
+		return
+	}
 
 	status := 0
 
@@ -180,7 +193,9 @@ func runOneScenario(sample *models.Sample, configFile string) {
 				metricLabels = append(metricLabels, label)
 			}
 
+			mapMutex.Lock()
 			hidraCustomMetrics[metric.Name].WithLabelValues(metricLabels...).Set(float64(metric.Value))
+			mapMutex.Unlock()
 		}
 
 		hidraStepElapsedVec.WithLabelValues(stepLabels...).Observe(float64(step.EndDate.UnixMilli() - step.StartDate.UnixMilli()))
@@ -191,10 +206,9 @@ func runOneScenario(sample *models.Sample, configFile string) {
 }
 
 func runSample(configFiles []string, maxExecutors int) {
-	toRun := make([]func(), 0)
-
 	log.Println("Calculating samples to run")
 
+	newSamples := 0
 	for _, configFile := range configFiles {
 		data, _ := ioutil.ReadFile(configFile)
 		sample, _ := models.ReadSampleYAML(data)
@@ -211,31 +225,38 @@ func runSample(configFiles []string, maxExecutors int) {
 			continue
 		}
 
-		toRun = append(toRun, func() {
+		newSamples++
+
+		lastRun[sample.Name] = time.Now()
+
+		jobsQueue <- func() {
 			runOneScenario(sample, configFile)
-			lastRun[sample.Name] = time.Now()
-		})
+		}
 	}
 
-	log.Println("We have to run", len(toRun), "scenarios")
+	log.Println("Running", newSamples, "samples")
+}
 
-	// Create a pool of workers to run the scenarios
-	executors := len(toRun)
-	if executors > maxExecutors {
-		executors = maxExecutors
+func checkDuplicatedSamples(configFiles []string) {
+	log.Println("Checking duplicated samples")
+
+	errors := 0
+	processedSample := make(map[string]bool)
+	for _, configFile := range configFiles {
+		data, _ := ioutil.ReadFile(configFile)
+		sample, _ := models.ReadSampleYAML(data)
+
+		if _, ok := processedSample[sample.Name]; ok {
+			log.Println("Duplicated sample:", sample.Name, "in", configFile)
+
+			errors++
+		}
+
+		processedSample[sample.Name] = true
 	}
-	pool := make(chan struct{}, executors)
 
-	for i := 0; i < executors; i++ {
-		pool <- struct{}{}
-	}
-
-	for _, run := range toRun {
-		<-pool
-		go func(run func()) {
-			run()
-			pool <- struct{}{}
-		}(run)
+	if errors > 0 {
+		log.Fatal("Found duplicated samples")
 	}
 }
 
@@ -244,6 +265,8 @@ func metricsRecord(confPath string, maxExecutor int, buckets []float64) {
 	if err != nil {
 		panic(err)
 	}
+
+	checkDuplicatedSamples(configFiles)
 
 	log.Println("Reloading prometheus metrics")
 	err = refreshPrometheusMetrics(configFiles, buckets)
@@ -254,12 +277,30 @@ func metricsRecord(confPath string, maxExecutor int, buckets []float64) {
 
 	lastRun = make(map[string]time.Time)
 
+	createWorkers(maxExecutor, len(configFiles))
+
 	go func() {
 		for {
 			runSample(configFiles, maxExecutor)
 			time.Sleep(2 * time.Second)
 		}
 	}()
+}
+
+func createWorkers(maxExecutor, possibleJobs int) {
+	log.Printf("Creating %d workers", maxExecutor)
+	jobsQueue = make(chan func(), possibleJobs)
+	mapMutex = &sync.Mutex{}
+
+	for i := 0; i < maxExecutor; i++ {
+		go func(workerID int) {
+			log.Println("Initializing worker", workerID)
+			for {
+				job := <-jobsQueue
+				job()
+			}
+		}(i)
+	}
 }
 
 func Run(wg *sync.WaitGroup, confPath string, maxExecutor, port int, buckets []float64) {
