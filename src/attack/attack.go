@@ -40,7 +40,12 @@ func spawnWorkers(workers, duration int, sample *models.Sample, resultsCSV strin
 	results := make([][]*IterationResult, workers)
 	runners := make([]models.IScenario, workers)
 	for i := 0; i < workers; i++ {
-		runners[i] = scenarios.InitializeScenario(sample.Scenario)
+		tmpRunner, err := scenarios.InitializeScenario(sample.Scenario)
+
+		if err != nil {
+			panic(err)
+		}
+		runners[i] = tmpRunner
 		results[i] = make([]*IterationResult, 0)
 	}
 

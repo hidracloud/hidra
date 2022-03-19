@@ -10,11 +10,19 @@ import (
 )
 
 // InitializeScenario initialize a new scenario
-func InitializeScenario(s models.Scenario) models.IScenario {
+func InitializeScenario(s models.Scenario) (models.IScenario, error) {
+	if len(s.Kind) == 0 {
+		return nil, fmt.Errorf("Scenario kind \"%s\" is not supported", s.Kind)
+	}
+
+	if _, ok := Sample[s.Kind]; !ok {
+		return nil, fmt.Errorf("Scenario kind \"%s\" is not supported", s.Kind)
+	}
+
 	srunner := Sample[s.Kind]()
 	srunner.Init()
 
-	return srunner
+	return srunner, nil
 }
 
 // RunIScenario run already initialize scenario
@@ -64,10 +72,13 @@ func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario
 }
 
 // RunScenario Run one scenario
-func RunScenario(s models.Scenario, name, desc string) *models.ScenarioResult {
+func RunScenario(s models.Scenario, name, desc string) (*models.ScenarioResult, error) {
 	utils.LogDebug("[%s] Running new scenario, \"%s\"\n", name, desc)
-	srunner := InitializeScenario(s)
-	return RunIScenario(name, desc, s, srunner)
+	srunner, err := InitializeScenario(s)
+	if err != nil {
+		return nil, err
+	}
+	return RunIScenario(name, desc, s, srunner), nil
 }
 
 // PrettyPrintScenarioResults Print scenario metrics
