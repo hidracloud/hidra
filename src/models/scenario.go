@@ -10,7 +10,6 @@ import (
 	"github.com/hidracloud/hidra/src/utils"
 	uuid "github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
-	"gorm.io/gorm"
 )
 
 var envMap map[string]string
@@ -79,7 +78,6 @@ type Sample struct {
 
 // Metric definition
 type Metric struct {
-	gorm.Model
 	ID             uuid.UUID `gorm:"primaryKey;type:char(36);"`
 	Name           string
 	Value          float64
@@ -92,7 +90,6 @@ type Metric struct {
 
 // MetricLabel definition
 type MetricLabel struct {
-	gorm.Model
 	Key      string
 	Value    string
 	Metric   Metric `gorm:"foreignKey:MetricID" json:"-"`
