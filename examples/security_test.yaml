@@ -1,0 +1,11 @@
+name: security_basic_example
+description: Test that scanme.nmap.org is reachable from the internet
+scrapeInterval: 1m
+timeout: 1s
+scenario:
+  kind: security
+  steps:
+    - type: portScanner
+      timeout: 60s
+      params:
+        hostname: scanme.nmap.org

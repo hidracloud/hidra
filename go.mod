@@ -3,6 +3,7 @@ module github.com/hidracloud/hidra
 go 1.18
 
 require (
+	github.com/JoseCarlosGarcia95/go-port-scanner v0.0.0-20220320103816-c16a37d0aa75
 	github.com/aeden/traceroute v0.0.0-20210211061815-03f5f7cb7908
 	github.com/chromedp/chromedp v0.7.8
 	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534
@@ -29,6 +30,7 @@ require (
 	github.com/rs/xid v1.3.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/thediveo/netdb v0.9.1 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect

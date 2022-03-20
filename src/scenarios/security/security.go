@@ -2,11 +2,9 @@ package security
 
 import (
 	"log"
-	"net"
 	"strconv"
-	"sync"
-	"time"
 
+	"github.com/JoseCarlosGarcia95/go-port-scanner/portscanner"
 	"github.com/hidracloud/hidra/src/models"
 	"github.com/hidracloud/hidra/src/scenarios"
 )
@@ -28,47 +26,50 @@ func (s *Scenario) Description() string {
 }
 
 func (s *Scenario) portScanner(c map[string]string) ([]models.Metric, error) {
-	wg := sync.WaitGroup{}
-
 	hostname := c["hostname"]
 	protocol := "tcp"
 
-	mutex := sync.Mutex{}
-	openedPorts := make(map[int]bool)
-
-	for port := 1; port <= 65535; port++ {
-		wg.Add(1)
-		go func(port int) {
-			defer wg.Done()
-			address := hostname + ":" + strconv.Itoa(port)
-
-			conn, err := net.DialTimeout(protocol, address, 5*time.Second)
-
-			if err != nil {
-				return
-			}
-
-			mutex.Lock()
-			openedPorts[port] = true
-			mutex.Unlock()
-
-			defer conn.Close()
-
-		}(port)
+	if _, ok := c["protocol"]; ok && len(c["protocol"]) > 0 {
+		protocol = c["protocol"]
 	}
 
-	wg.Wait()
+	startPort := 1
+	endPort := 65535
+
+	if _, ok := c["port_start"]; ok && len(c["port_start"]) > 0 {
+		startPort, _ = strconv.Atoi(c["port_start"])
+	}
+
+	if _, ok := c["port_end"]; ok && len(c["port_end"]) > 0 {
+		endPort, _ = strconv.Atoi(c["port_end"])
+	}
+
+	workers := 1000
+
+	if _, ok := c["workers"]; ok && len(c["workers"]) > 0 {
+		workers, _ = strconv.Atoi(c["workers"])
+	}
+
+	openedPorts := portscanner.PortRange(hostname, protocol, uint32(startPort), uint32(endPort), uint32(workers))
+
+	fingerprint := true
+
+	if _, ok := c["fingerprint"]; ok && len(c["fingerprint"]) > 0 {
+		fingerprint, _ = strconv.ParseBool(c["fingerprint"])
+	}
 
 	metrics := make([]models.Metric, 0)
+	for _, port := range openedPorts {
+		serviceName := portscanner.Port2Service(hostname, protocol, port, fingerprint)
 
-	for port := range openedPorts {
 		metric := models.Metric{
 			Name:        "oepened_port",
 			Value:       1,
 			Description: "Opened port",
 			Labels: map[string]string{
-				"hostname": hostname,
-				"port":     strconv.Itoa(port),
+				"hostname":     hostname,
+				"port":         strconv.Itoa(int(port)),
+				"service_name": serviceName,
 			},
 		}
 
@@ -91,6 +92,11 @@ func (s *Scenario) Init() {
 		Description: "Run a port scanner",
 		Params: []models.StepParam{
 			{Name: "hostname", Description: "Hostname to make a port scanner", Optional: false},
+			{Name: "protocol", Description: "Protocol to make a port scanner", Optional: true},
+			{Name: "port_start", Description: "Port start to make a port scanner", Optional: true},
+			{Name: "port_end", Description: "Port end to make a port scanner", Optional: true},
+			{Name: "fingerprint", Description: "Fingerprint to make a port scanner", Optional: true},
+			{Name: "workers", Description: "Workers to make a port scanner", Optional: true},
 		},
 		Fn: s.portScanner,
 	})
