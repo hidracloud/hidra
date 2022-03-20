@@ -74,6 +74,8 @@ func (h *Scenario) traceroute(c map[string]string) ([]models.Metric, error) {
 		})
 	}
 
+	close(zz)
+
 	customMetrics = append(customMetrics, models.Metric{
 		Name:        "hops",
 		Value:       float64(len(tcrresult.Hops)),

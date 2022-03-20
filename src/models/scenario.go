@@ -174,7 +174,10 @@ func (s *Scenario) RunStep(name string, p map[string]string, timeout time.Durati
 
 	select {
 	case err := <-errorChain:
-		return <-metricsChain, err
+		metrics := <-metricsChain
+		close(metricsChain)
+		close(errorChain)
+		return metrics, err
 	case <-time.After(timeout):
 		return nil, fmt.Errorf("your step generated a timeout")
 	}
