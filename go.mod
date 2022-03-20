@@ -1,24 +1,25 @@
 module github.com/hidracloud/hidra
 
-go 1.17
+go 1.18
 
 require (
 	github.com/aeden/traceroute v0.0.0-20210211061815-03f5f7cb7908
 	github.com/chromedp/chromedp v0.7.7
 	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534
-	github.com/joho/godotenv v1.4.0
 	github.com/namsral/flag v1.7.4-pre
 	github.com/prometheus/client_golang v1.12.1
 	github.com/satori/go.uuid v1.2.0
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/gorm v1.22.5
 )
 
 require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20220221023154-0b2280d3ff96 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.13.5 // indirect
 	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/likexian/gokit v0.25.6 // indirect
@@ -29,7 +30,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/rs/xid v1.2.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	golang.org/x/crypto v0.0.0-20201216223049-8b5274cf687f // indirect
+	github.com/smartystreets/assertions v1.2.1 // indirect
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 )
@@ -44,8 +46,6 @@ require (
 	github.com/gobwas/ws v1.1.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/jlaffaye/ftp v0.0.0-20220301181425-a81b090061fa
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/likexian/whois v1.12.4
