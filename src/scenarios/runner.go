@@ -1,6 +1,7 @@
 package scenarios
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -26,7 +27,7 @@ func InitializeScenario(s models.Scenario) (models.IScenario, error) {
 }
 
 // RunIScenario run already initialize scenario
-func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
+func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
 	metric := models.ScenarioResult{}
 	metric.Scenario = s
 	metric.StepResults = make([]*models.StepResult, 0)
@@ -38,7 +39,7 @@ func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario
 		smetric := models.StepResult{}
 		smetric.Step = step
 		smetric.StartDate = time.Now()
-		customMetrics, err := srunner.RunStep(step.Type, step.Params, step.Timeout)
+		customMetrics, err := srunner.RunStep(ctx, step.Type, step.Params, step.Timeout)
 
 		smetric.Metrics = customMetrics
 		smetric.EndDate = time.Now()
@@ -72,13 +73,13 @@ func RunIScenario(name, desc string, s models.Scenario, srunner models.IScenario
 }
 
 // RunScenario Run one scenario
-func RunScenario(s models.Scenario, name, desc string) (*models.ScenarioResult, error) {
+func RunScenario(ctx context.Context, s models.Scenario, name, desc string) (*models.ScenarioResult, error) {
 	utils.LogDebug("[%s] Running new scenario, \"%s\"\n", name, desc)
 	srunner, err := InitializeScenario(s)
 	if err != nil {
 		return nil, err
 	}
-	return RunIScenario(name, desc, s, srunner), nil
+	return RunIScenario(ctx, name, desc, s, srunner), nil
 }
 
 // PrettyPrintScenarioResults Print scenario metrics

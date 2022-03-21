@@ -16,7 +16,7 @@ var envMap map[string]string
 
 var minStepTimeout = 10 * time.Second
 
-type stepFn func(map[string]string) ([]Metric, error)
+type stepFn func(context.Context, map[string]string) ([]Metric, error)
 
 // Step definition
 type Step struct {
@@ -101,7 +101,7 @@ type IScenario interface {
 	StartPrimitives()
 	Init()
 	Close()
-	RunStep(string, map[string]string, time.Duration) ([]Metric, error)
+	RunStep(context.Context, string, map[string]string, time.Duration) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string
 	GetScenarioDefinitions() map[string]StepDefinition
@@ -118,7 +118,7 @@ type runStepGoTemplate struct {
 }
 
 // RunStep Run an step
-func (s *Scenario) RunStep(name string, p map[string]string, timeout time.Duration) ([]Metric, error) {
+func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string, timeout time.Duration) ([]Metric, error) {
 	if _, ok := s.StepsDefinitions[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
 	}
@@ -163,7 +163,7 @@ func (s *Scenario) RunStep(name string, p map[string]string, timeout time.Durati
 	errorChain := make(chan error, 1)
 
 	go func() {
-		metrics, err := s.StepsDefinitions[name].Fn(c)
+		metrics, err := s.StepsDefinitions[name].Fn(ctx, c)
 		metricsChain <- metrics
 		errorChain <- err
 	}()

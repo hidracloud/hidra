@@ -1,6 +1,7 @@
 package attack
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,7 @@ type IterationResult struct {
 }
 
 // RunAttackMode runs the attack mode
-func RunAttackMode(testFile, results string, workers, duration int) {
+func RunAttackMode(ctx context.Context, testFile, results string, workers, duration int) {
 	log.Println("Running attack mode")
 
 	data, err := ioutil.ReadFile(testFile)
@@ -32,11 +33,11 @@ func RunAttackMode(testFile, results string, workers, duration int) {
 		panic(err)
 	}
 
-	spawnWorkers(workers, duration, sample, results)
+	spawnWorkers(ctx, workers, duration, sample, results)
 }
 
 // spawnWorkers spawns the workers
-func spawnWorkers(workers, duration int, sample *models.Sample, resultsCSV string) {
+func spawnWorkers(ctx context.Context, workers, duration int, sample *models.Sample, resultsCSV string) {
 	results := make([][]*IterationResult, workers)
 	runners := make([]models.IScenario, workers)
 	for i := 0; i < workers; i++ {
@@ -53,7 +54,7 @@ func spawnWorkers(workers, duration int, sample *models.Sample, resultsCSV strin
 	wg.Add(workers)
 
 	for i := 0; i < workers; i++ {
-		go spawnWorker(i, duration, sample, runners[i], &wg, results)
+		go spawnWorker(ctx, i, duration, sample, runners[i], &wg, results)
 	}
 
 	wg.Wait()
@@ -133,7 +134,7 @@ func dumpResults2CSV(results [][]*IterationResult, file string) error {
 }
 
 // spawnWorker spawns a worker
-func spawnWorker(workerID, duration int, sample *models.Sample, runner models.IScenario, wg *sync.WaitGroup, results [][]*IterationResult) {
+func spawnWorker(ctx context.Context, workerID, duration int, sample *models.Sample, runner models.IScenario, wg *sync.WaitGroup, results [][]*IterationResult) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("Recovered in worker: ", r)
@@ -149,7 +150,7 @@ func spawnWorker(workerID, duration int, sample *models.Sample, runner models.IS
 			return
 		default:
 			start := time.Now()
-			sresult := scenarios.RunIScenario("", "", sample.Scenario, runner)
+			sresult := scenarios.RunIScenario(ctx, "", "", sample.Scenario, runner)
 
 			result := &IterationResult{
 				Time: time.Since(start).Milliseconds(),

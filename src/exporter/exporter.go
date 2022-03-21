@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -162,9 +163,9 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 	}
 }
 
-func runOneScenario(sample *models.Sample, configFile string) {
+func runOneScenario(ctx context.Context, sample *models.Sample, configFile string) {
 	log.Println("Running scenario:", sample.Name, "with description:", sample.Description)
-	m, err := scenarios.RunScenario(sample.Scenario, sample.Name, sample.Description)
+	m, err := scenarios.RunScenario(ctx, sample.Scenario, sample.Name, sample.Description)
 
 	if err != nil {
 		log.Println("Error running scenario:", err)
@@ -207,7 +208,7 @@ func runOneScenario(sample *models.Sample, configFile string) {
 	hidraScenarioIntervalVec.WithLabelValues(labels...).Set(float64(sample.ScrapeInterval))
 }
 
-func runSample(configFiles []string, maxExecutors int) {
+func runSample(ctx context.Context, configFiles []string, maxExecutors int) {
 	log.Println("Calculating samples to run")
 
 	newSamples := 0
@@ -238,7 +239,7 @@ func runSample(configFiles []string, maxExecutors int) {
 		lastRunMutex.Unlock()
 
 		jobsQueue <- func() {
-			runOneScenario(sample, configFile)
+			runOneScenario(ctx, sample, configFile)
 			lastRunMutex.Lock()
 			lastRun[sample.Name] = time.Now()
 			inProgress[sample.Name] = false
@@ -272,7 +273,7 @@ func checkDuplicatedSamples(configFiles []string) {
 	}
 }
 
-func metricsRecord(confPath string, maxExecutor int, buckets []float64) {
+func metricsRecord(ctx context.Context, confPath string, maxExecutor int, buckets []float64) {
 	configFiles, err := utils.AutoDiscoverYML(confPath)
 	if err != nil {
 		panic(err)
@@ -295,7 +296,7 @@ func metricsRecord(confPath string, maxExecutor int, buckets []float64) {
 
 	go func() {
 		for {
-			runSample(configFiles, maxExecutor)
+			runSample(ctx, configFiles, maxExecutor)
 			time.Sleep(2 * time.Second)
 		}
 	}()
@@ -318,11 +319,11 @@ func createWorkers(maxExecutor, possibleJobs int) {
 }
 
 // Run starts the metrics recorder
-func Run(wg *sync.WaitGroup, confPath string, maxExecutor, port int, buckets []float64) {
+func Run(ctx context.Context, wg *sync.WaitGroup, confPath string, maxExecutor, port int, buckets []float64) {
 	log.Println("Starting hidra in exporter mode")
 
 	// Start fetching metrics
-	metricsRecord(confPath, maxExecutor, buckets)
+	metricsRecord(ctx, confPath, maxExecutor, buckets)
 
 	http.Handle("/metrics", promhttp.Handler())
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)

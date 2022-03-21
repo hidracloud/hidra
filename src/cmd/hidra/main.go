@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -77,7 +78,7 @@ type flagConfig struct {
 }
 
 // This mode is used for fast checking yaml
-func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
+func runTestMode(ctx context.Context, cfg *flagConfig, wg *sync.WaitGroup) {
 	if cfg.testFile == "" {
 		log.Fatal("testFile expected to be not null")
 	}
@@ -114,7 +115,7 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 			}
 		}
 
-		m, err := scenarios.RunScenario(slist.Scenario, slist.Name, slist.Description)
+		m, err := scenarios.RunScenario(ctx, slist.Scenario, slist.Name, slist.Description)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -129,7 +130,7 @@ func runTestMode(cfg *flagConfig, wg *sync.WaitGroup) {
 
 }
 
-func runExporter(cfg *flagConfig, wg *sync.WaitGroup) {
+func runExporter(ctx context.Context, cfg *flagConfig, wg *sync.WaitGroup) {
 	buckets := make([]float64, 0)
 
 	bucketStrArray := strings.Split(cfg.buckets, ",")
@@ -144,7 +145,7 @@ func runExporter(cfg *flagConfig, wg *sync.WaitGroup) {
 
 	fmt.Println(buckets)
 
-	exporter.Run(wg, cfg.confPath, cfg.maxExecutor, cfg.port, buckets)
+	exporter.Run(ctx, wg, cfg.confPath, cfg.maxExecutor, cfg.port, buckets)
 }
 
 func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
@@ -183,8 +184,8 @@ func runSyntaxMode(cfg *flagConfig, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func runAttackMode(cfg *flagConfig, wg *sync.WaitGroup) {
-	attack.RunAttackMode(cfg.testFile, cfg.resultFile, cfg.workers, cfg.duration)
+func runAttackMode(ctx context.Context, cfg *flagConfig, wg *sync.WaitGroup) {
+	attack.RunAttackMode(ctx, cfg.testFile, cfg.resultFile, cfg.workers, cfg.duration)
 	wg.Done()
 }
 
@@ -245,14 +246,16 @@ func main() {
 	scenarios.ScreenshotS3SecretKey = cfg.screenshotS3SecretKey
 	scenarios.ScreenshotS3Prefix = cfg.screenshotS3Prefix
 
+	ctx := context.Background()
+
 	if testMode {
 		wg.Add(1)
-		go runTestMode(&cfg, &wg)
+		go runTestMode(ctx, &cfg, &wg)
 	}
 
 	if exporter {
 		wg.Add(1)
-		go runExporter(&cfg, &wg)
+		go runExporter(ctx, &cfg, &wg)
 	}
 
 	if syntaxMode {
@@ -262,7 +265,7 @@ func main() {
 
 	if attackMode {
 		wg.Add(1)
-		go runAttackMode(&cfg, &wg)
+		go runAttackMode(ctx, &cfg, &wg)
 	}
 
 	wg.Wait()

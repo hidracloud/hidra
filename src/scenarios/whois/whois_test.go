@@ -1,6 +1,7 @@
 package whois_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hidracloud/hidra/src/scenarios/whois"
@@ -14,7 +15,9 @@ func TestScenario(t *testing.T) {
 		"domain": "google.com",
 	}
 
-	_, err := s.RunStep("whoisFrom", params, 0)
+	ctx := context.TODO()
+
+	_, err := s.RunStep(ctx, "whoisFrom", params, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -22,7 +25,7 @@ func TestScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["for"] = "7d"
 
-	_, err = s.RunStep("shouldBeValidFor", params, 0)
+	_, err = s.RunStep(ctx, "shouldBeValidFor", params, 0)
 
 	if err != nil {
 		t.Error(err)

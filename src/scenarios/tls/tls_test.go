@@ -1,6 +1,7 @@
 package tls_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hidracloud/hidra/src/scenarios/tls"
@@ -11,9 +12,11 @@ func TestScenario(t *testing.T) {
 	s := &tls.Scenario{}
 	s.Init()
 
+	ctx := context.TODO()
+
 	params := make(map[string]string)
 	params["to"] = "google.com:443"
-	_, err := s.RunStep("connectTo", params, 0)
+	_, err := s.RunStep(ctx, "connectTo", params, 0)
 
 	if err != nil {
 		t.Error(err)
@@ -22,7 +25,7 @@ func TestScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["dns"] = "google.com"
 
-	_, err = s.RunStep("dnsShouldBePresent", params, 0)
+	_, err = s.RunStep(ctx, "dnsShouldBePresent", params, 0)
 
 	if err != nil {
 		t.Error(err)
@@ -31,7 +34,7 @@ func TestScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["for"] = "7d"
 
-	_, err = s.RunStep("shouldBeValidFor", params, 0)
+	_, err = s.RunStep(ctx, "shouldBeValidFor", params, 0)
 
 	if err != nil {
 		t.Error(err)

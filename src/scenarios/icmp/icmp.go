@@ -2,6 +2,7 @@
 package icmp
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os/user"
@@ -19,7 +20,7 @@ type Scenario struct {
 	models.Scenario
 }
 
-func (h *Scenario) traceroute(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) traceroute(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	options := traceroute.TracerouteOptions{}
 	options.SetRetries(0)
 	options.SetMaxHops(traceroute.DEFAULT_MAX_HOPS + 1)
@@ -92,7 +93,7 @@ func (h *Scenario) RCA(result *models.ScenarioResult) error {
 	return nil
 }
 
-func (h *Scenario) ping(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) ping(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["hostname"]; !ok {
 		return nil, fmt.Errorf("hostname parameter missing")
 	}
