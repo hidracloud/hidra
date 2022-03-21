@@ -1,6 +1,7 @@
 package tls
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -20,7 +21,7 @@ type Scenario struct {
 	certificates []*x509.Certificate
 }
 
-func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -43,7 +44,7 @@ func (s *Scenario) RCA(result *models.ScenarioResult) error {
 	return nil
 }
 
-func (s *Scenario) dnsShouldBePresent(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) dnsShouldBePresent(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if s.certificates == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
@@ -65,7 +66,7 @@ func (s *Scenario) dnsShouldBePresent(c map[string]string) ([]models.Metric, err
 	return nil, fmt.Errorf("dns missing")
 }
 
-func (s *Scenario) shouldBeValidFor(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) shouldBeValidFor(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	duration, err := utils.ParseDuration(c["for"])
 
 	if err != nil {
@@ -81,7 +82,7 @@ func (s *Scenario) shouldBeValidFor(c map[string]string) ([]models.Metric, error
 	return nil, nil
 }
 
-func (s *Scenario) dumpMetrics(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) dumpMetrics(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	customMetrics := make([]models.Metric, 0)
 
 	for _, cert := range s.certificates {

@@ -1,6 +1,7 @@
 package whois
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -19,7 +20,7 @@ type Scenario struct {
 	whoisInfo *whoisparser.WhoisInfo
 }
 
-func (s *Scenario) whoisFrom(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) whoisFrom(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if c["domain"] == "" {
 		return nil, fmt.Errorf("domain is required")
 	}
@@ -48,7 +49,7 @@ func (s *Scenario) RCA(result *models.ScenarioResult) error {
 	return nil
 }
 
-func (s *Scenario) dumpMetrics(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) dumpMetrics(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	customMetrics := make([]models.Metric, 0)
 
 	dateFormat := "2006-01-02T15:04:05.999Z"
@@ -74,7 +75,7 @@ func (s *Scenario) dumpMetrics(c map[string]string) ([]models.Metric, error) {
 	return customMetrics, nil
 }
 
-func (s *Scenario) shouldBeValidFor(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) shouldBeValidFor(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	duration, err := utils.ParseDuration(c["for"])
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package udp
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -37,7 +38,7 @@ func (s *Scenario) Close() {
 	}
 }
 
-func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	udpAddr, err := net.ResolveUDPAddr("udp", c["to"])
 	if err != nil {
 		return nil, err
@@ -52,7 +53,7 @@ func (s *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (s *Scenario) write(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if s.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
@@ -71,7 +72,7 @@ func (s *Scenario) write(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (s *Scenario) read(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	var err error
 
 	if s.conn == nil {

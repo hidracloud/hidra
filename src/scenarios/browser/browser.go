@@ -23,7 +23,7 @@ func (b *Scenario) RCA(result *models.ScenarioResult) error {
 	return nil
 }
 
-func (b *Scenario) urlShouldBe(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) urlShouldBe(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["url"]; !ok {
 		return nil, fmt.Errorf("url parameter missing")
 	}
@@ -43,7 +43,7 @@ func (b *Scenario) urlShouldBe(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (b *Scenario) textShouldBe(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) textShouldBe(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["text"]; !ok {
 		return nil, fmt.Errorf("text parameter missing")
 	}
@@ -67,7 +67,7 @@ func (b *Scenario) textShouldBe(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (b *Scenario) sendKeys(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) sendKeys(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["keys"]; !ok {
 		return nil, fmt.Errorf("keys parameter missing")
 	}
@@ -87,7 +87,7 @@ func (b *Scenario) sendKeys(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (b *Scenario) waitVisible(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) waitVisible(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["selector"]; !ok {
 		return nil, fmt.Errorf("selector parameter missing")
 	}
@@ -103,7 +103,7 @@ func (b *Scenario) waitVisible(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (b *Scenario) click(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) click(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["selector"]; !ok {
 		return nil, fmt.Errorf("selector parameter missing")
 	}
@@ -119,7 +119,7 @@ func (b *Scenario) click(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (b *Scenario) navigateTo(c map[string]string) ([]models.Metric, error) {
+func (b *Scenario) navigateTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if _, ok := c["url"]; !ok {
 		return nil, fmt.Errorf("url parameter missing")
 	}
