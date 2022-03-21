@@ -26,6 +26,8 @@ var prometheusLabels []string
 
 // lastRun is a map of last run time for each sample
 var lastRun map[string]time.Time
+var inProgress map[string]bool
+var lastRunMutex *sync.Mutex
 
 // hidraScenarioStatusVec is a metric vector type which holds hidra status
 var hidraScenarioStatusVec *prometheus.GaugeVec
@@ -220,17 +222,27 @@ func runSample(configFiles []string, maxExecutors int) {
 			lastRun[sample.Name] = lastRunTime
 		}
 
+		if _, ok = inProgress[sample.Name]; !ok {
+			inProgress[sample.Name] = false
+		}
+
 		// Check if it's time to run
-		if time.Since(lastRunTime) < sample.ScrapeInterval {
+		if time.Since(lastRunTime) < sample.ScrapeInterval || inProgress[sample.Name] {
 			continue
 		}
 
 		newSamples++
 
-		lastRun[sample.Name] = time.Now()
+		lastRunMutex.Lock()
+		inProgress[sample.Name] = true
+		lastRunMutex.Unlock()
 
 		jobsQueue <- func() {
 			runOneScenario(sample, configFile)
+			lastRunMutex.Lock()
+			lastRun[sample.Name] = time.Now()
+			inProgress[sample.Name] = false
+			lastRunMutex.Unlock()
 		}
 	}
 
@@ -276,6 +288,8 @@ func metricsRecord(confPath string, maxExecutor int, buckets []float64) {
 	log.Println("Prometheus metrics reloaded")
 
 	lastRun = make(map[string]time.Time)
+	inProgress = make(map[string]bool)
+	lastRunMutex = &sync.Mutex{}
 
 	createWorkers(maxExecutor, len(configFiles))
 
