@@ -245,7 +245,7 @@ func runSample(ctx context.Context, configFiles []string, maxExecutors int) {
 			runOneScenario(context.WithValue(ctx, utils.CustomContextKey("workerID"), workerID), sample, configFile)
 			lastRunMutex.Lock()
 			randomOffset := time.Duration(rand.Intn(int(sample.ScrapeInterval.Seconds()))) * time.Second
-			lastRun[sample.Name] = time.Now().Add(-randomOffset)
+			lastRun[sample.Name] = time.Now().Add(randomOffset)
 			inProgress[sample.Name] = false
 			lastRunMutex.Unlock()
 		}
