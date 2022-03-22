@@ -140,7 +140,7 @@ func CreateScreenshotWorker(ctx context.Context, maxExecutor int) {
 
 				err := GenerateScreenshots(screenshotQueueItem.Result, screenshotQueueItem.Scenario, screenshotQueueItem.Name, screenshotQueueItem.Desc)
 				if err != nil {
-					log.Println("Error generating screenshot", err)
+					log.Println("["+strconv.Itoa(workerID)+"] Error generating screenshot", err)
 				}
 
 				log.Println("["+strconv.Itoa(workerID)+"] Screenshot generated", screenshotQueueItem.Name)

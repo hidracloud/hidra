@@ -21,7 +21,7 @@ import (
 var mapMutex *sync.Mutex
 
 // jobsQueue represent
-var jobsQueue chan func()
+var jobsQueue chan func(int)
 
 // prometheusLabels contains the labels of the metrics
 var prometheusLabels []string
@@ -165,7 +165,8 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 }
 
 func runOneScenario(ctx context.Context, sample *models.Sample, configFile string) {
-	log.Println("Running scenario:", sample.Name, "with description:", sample.Description)
+	workerID := ctx.Value(utils.CustomContextKey("workerID")).(int)
+	log.Println("["+strconv.Itoa(workerID)+"] Running scenario:", sample.Name, "with description:", sample.Description)
 	m, err := scenarios.RunScenario(ctx, sample.Scenario, sample.Name, sample.Description)
 
 	if err != nil {
@@ -239,8 +240,8 @@ func runSample(ctx context.Context, configFiles []string, maxExecutors int) {
 		inProgress[sample.Name] = true
 		lastRunMutex.Unlock()
 
-		jobsQueue <- func() {
-			runOneScenario(ctx, sample, configFile)
+		jobsQueue <- func(workerID int) {
+			runOneScenario(context.WithValue(ctx, utils.CustomContextKey("workerID"), workerID), sample, configFile)
 			lastRunMutex.Lock()
 			lastRun[sample.Name] = time.Now()
 			inProgress[sample.Name] = false
@@ -305,7 +306,7 @@ func metricsRecord(ctx context.Context, confPath string, maxExecutor int, bucket
 
 func createWorkers(maxExecutor, possibleJobs int) {
 	log.Printf("Creating %d workers", maxExecutor)
-	jobsQueue = make(chan func(), possibleJobs)
+	jobsQueue = make(chan func(int), possibleJobs)
 	mapMutex = &sync.Mutex{}
 
 	for i := 0; i < maxExecutor; i++ {
@@ -314,9 +315,8 @@ func createWorkers(maxExecutor, possibleJobs int) {
 			for {
 				job := <-jobsQueue
 				log.Println("[" + strconv.Itoa(workerID) + "] running job")
-				job()
+				job(workerID)
 				log.Println("[" + strconv.Itoa(workerID) + "] run job successfully")
-
 			}
 		}(i)
 	}
