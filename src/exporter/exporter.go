@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -312,7 +313,10 @@ func createWorkers(maxExecutor, possibleJobs int) {
 			log.Println("Initializing worker", workerID)
 			for {
 				job := <-jobsQueue
+				log.Println("[" + strconv.Itoa(workerID) + "] running job")
 				job()
+				log.Println("[" + strconv.Itoa(workerID) + "] run job successfully")
+
 			}
 		}(i)
 	}

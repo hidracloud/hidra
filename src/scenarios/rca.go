@@ -3,6 +3,8 @@ package scenarios
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
 
 	"github.com/hidracloud/hidra/src/models"
 	"github.com/hidracloud/hidra/src/utils"
@@ -36,6 +38,17 @@ var ScreenshotS3Prefix = ""
 
 // ScreenshotS3TLS if true, use TLS to connect to S3
 var ScreenshotS3TLS = true
+
+// screenshotQueueItem represent a item of screenshots to generate
+type screenshotQueueItem struct {
+	Result   *models.ScenarioResult
+	Scenario models.Scenario
+	Name     string
+	Desc     string
+}
+
+// screenshotQueue represent a queue of screenshots to generate
+var screenshotQueue chan *screenshotQueueItem
 
 // uploadScreenshots upload screenshots to S3
 func uploadScreenshots(src, dest string) error {
@@ -94,4 +107,44 @@ func GenerateScreenshots(m *models.ScenarioResult, s models.Scenario, name, desc
 	}
 
 	return nil
+}
+
+// AddScreenshotsToQueue add screenshots to queue
+func AddScreenshotsToQueue(m *models.ScenarioResult, s models.Scenario, name, desc string) {
+	if !ScreenshotOnError || m.Error == nil || (s.Kind != "http") {
+		return
+	}
+
+	screenshotQueue <- &screenshotQueueItem{
+		Result:   m,
+		Scenario: s,
+		Name:     name,
+		Desc:     desc,
+	}
+}
+
+// CreateScreenshotWorker create a new worker to generate screenshots
+func CreateScreenshotWorker(ctx context.Context, maxExecutor int) {
+	if !ScreenshotOnError {
+		return
+	}
+
+	screenshotQueue = make(chan *screenshotQueueItem, maxExecutor)
+	for i := 0; i < maxExecutor; i++ {
+		go func(workerID int) {
+			log.Println("Initializing screenshot worker", workerID)
+
+			for {
+				screenshotQueueItem := <-screenshotQueue
+				log.Println("["+strconv.Itoa(workerID)+"] Generating screenshot", screenshotQueueItem.Name)
+
+				err := GenerateScreenshots(screenshotQueueItem.Result, screenshotQueueItem.Scenario, screenshotQueueItem.Name, screenshotQueueItem.Desc)
+				if err != nil {
+					log.Println("Error generating screenshot", err)
+				}
+
+				log.Println("["+strconv.Itoa(workerID)+"] Screenshot generated", screenshotQueueItem.Name)
+			}
+		}(i)
+	}
 }
