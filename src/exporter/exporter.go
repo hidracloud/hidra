@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"sync"
@@ -243,7 +244,8 @@ func runSample(ctx context.Context, configFiles []string, maxExecutors int) {
 		jobsQueue <- func(workerID int) {
 			runOneScenario(context.WithValue(ctx, utils.CustomContextKey("workerID"), workerID), sample, configFile)
 			lastRunMutex.Lock()
-			lastRun[sample.Name] = time.Now()
+			randomOffset := time.Duration(rand.Intn(int(sample.ScrapeInterval.Seconds()))) * time.Second
+			lastRun[sample.Name] = time.Now().Add(-randomOffset)
 			inProgress[sample.Name] = false
 			lastRunMutex.Unlock()
 		}
