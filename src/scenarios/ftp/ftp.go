@@ -2,6 +2,7 @@ package ftp
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -24,7 +25,7 @@ func (h *Scenario) RCA(result *models.ScenarioResult) error {
 	return nil
 }
 
-func (h *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	ftpConn, err := ftpclient.Dial(c["to"], ftpclient.DialWithTimeout(5*time.Second))
 
 	if err != nil {
@@ -36,7 +37,7 @@ func (h *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (h *Scenario) login(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) login(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	err := h.ftpConn.Login(c["user"], c["password"])
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func (h *Scenario) login(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (h *Scenario) write(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	data := bytes.NewBufferString(c["data"])
 	err := h.ftpConn.Stor(c["test-file"], data)
 	if err != nil {
@@ -54,7 +55,7 @@ func (h *Scenario) write(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (h *Scenario) read(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	r, err := h.ftpConn.Retr(c["test-file"])
 	if err != nil {
 		return nil, err
@@ -73,7 +74,7 @@ func (h *Scenario) read(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (h *Scenario) delete(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) delete(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	err := h.ftpConn.Delete(c["test-file"])
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -29,7 +30,7 @@ func (h *Scenario) Description() string {
 	return "Run a TCP scenario"
 }
 
-func (h *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", c["to"])
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func (h *Scenario) connectTo(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (h *Scenario) write(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if h.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
@@ -64,7 +65,7 @@ func (h *Scenario) write(c map[string]string) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (h *Scenario) read(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	var err error
 
 	if h.conn == nil {

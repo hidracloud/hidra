@@ -2,6 +2,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -28,19 +29,19 @@ type Scenario struct {
 }
 
 // Set user agent
-func (h *Scenario) setUserAgent(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) setUserAgent(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	h.Headers["User-Agent"] = c["user-agent"]
 	return nil, nil
 }
 
 // Add new HTTP header
-func (h *Scenario) addHTTPHeader(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) addHTTPHeader(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	h.Headers[c["key"]] = c["value"]
 	return nil, nil
 }
 
 // Send a request depends of the method
-func (h *Scenario) requestByMethod(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) requestByMethod(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	var err error
 
 	body := ""
@@ -88,7 +89,7 @@ func (h *Scenario) requestByMethod(c map[string]string) ([]models.Metric, error)
 }
 
 // Make http request to given URL
-func (h *Scenario) request(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) request(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	var err error
 	var ok bool
 
@@ -100,7 +101,7 @@ func (h *Scenario) request(c map[string]string) ([]models.Metric, error) {
 		h.Method = strings.ToUpper(c["method"])
 	}
 
-	_, err = h.requestByMethod(c)
+	_, err = h.requestByMethod(ctx, c)
 
 	if err != nil {
 		return nil, err
@@ -110,7 +111,7 @@ func (h *Scenario) request(c map[string]string) ([]models.Metric, error) {
 }
 
 // Check if status code match
-func (h *Scenario) statusCodeShouldBe(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) statusCodeShouldBe(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if h.Response == nil {
 		return nil, fmt.Errorf("request should be initialized first")
 	}
@@ -122,7 +123,7 @@ func (h *Scenario) statusCodeShouldBe(c map[string]string) ([]models.Metric, err
 	return nil, nil
 }
 
-func (h *Scenario) bodyShouldContain(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) bodyShouldContain(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if h.Response == nil {
 		return nil, fmt.Errorf("request should be initialized first")
 	}
@@ -134,7 +135,7 @@ func (h *Scenario) bodyShouldContain(c map[string]string) ([]models.Metric, erro
 	return nil, nil
 }
 
-func (h *Scenario) shouldRedirectTo(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) shouldRedirectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 
 	if h.Response == nil {
 		return nil, fmt.Errorf("request should be initialized first")
@@ -153,7 +154,7 @@ func (h *Scenario) shouldRedirectTo(c map[string]string) ([]models.Metric, error
 }
 
 // Clear parameters
-func (h *Scenario) clear(c map[string]string) ([]models.Metric, error) {
+func (h *Scenario) clear(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	h.URL = ""
 	h.Response = nil
 	h.Method = ""

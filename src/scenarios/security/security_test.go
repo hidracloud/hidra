@@ -1,8 +1,8 @@
 package security_test
 
 import (
+	"context"
 	"testing"
-	"time"
 
 	"github.com/hidracloud/hidra/src/scenarios/security"
 )
@@ -14,7 +14,9 @@ func TestPortscanner(t *testing.T) {
 	params := make(map[string]string)
 	params["hostname"] = "scanme.nmap.org"
 
-	_, err := s.RunStep("portScanner", params, time.Second*60)
+	ctx := context.TODO()
+
+	_, err := s.RunStep(ctx, "portScanner", params, 0)
 
 	if err != nil {
 		t.Errorf("PortScanner failed: %s", err)

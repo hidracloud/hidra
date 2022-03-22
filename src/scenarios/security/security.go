@@ -1,8 +1,10 @@
 package security
 
 import (
+	"context"
 	"log"
 	"strconv"
+	"sync"
 
 	"github.com/JoseCarlosGarcia95/go-port-scanner/portscanner"
 	"github.com/hidracloud/hidra/src/models"
@@ -25,7 +27,9 @@ func (s *Scenario) Description() string {
 	return "Run a security scenario"
 }
 
-func (s *Scenario) portScanner(c map[string]string) ([]models.Metric, error) {
+func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	wg := sync.WaitGroup{}
+
 	hostname := c["hostname"]
 	protocol := "tcp"
 
