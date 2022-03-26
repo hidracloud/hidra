@@ -2,11 +2,14 @@ package security
 
 import (
 	"context"
+	"encoding/binary"
 	"log"
+	"net"
 	"strconv"
-	"sync"
+	"time"
 
 	"github.com/JoseCarlosGarcia95/go-port-scanner/portscanner"
+	"github.com/go-ping/ping"
 	"github.com/hidracloud/hidra/src/models"
 	"github.com/hidracloud/hidra/src/scenarios"
 )
@@ -28,8 +31,6 @@ func (s *Scenario) Description() string {
 }
 
 func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	wg := sync.WaitGroup{}
-
 	hostname := c["hostname"]
 	protocol := "tcp"
 
@@ -48,12 +49,49 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 		endPort, _ = strconv.Atoi(c["port_end"])
 	}
 
-	workers := 1000
+	workers := 4
 
 	if _, ok := c["workers"]; ok && len(c["workers"]) > 0 {
 		workers, _ = strconv.Atoi(c["workers"])
 	}
 
+	// try a ping before to make a port scanner
+	pinger, err := ping.NewPinger(hostname)
+	pinger.Timeout = time.Second
+	if err != nil {
+		return nil, err
+	}
+
+	pinger.Count = 1
+	if _, ok := c["times"]; ok {
+		tmp, err := strconv.Atoi(c["times"])
+
+		if err != nil {
+			return nil, err
+		}
+
+		pinger.Count = tmp
+	}
+
+	err = pinger.Run()
+	if err != nil {
+		return nil, err
+	}
+
+	stats := pinger.Statistics()
+
+	if stats.PacketsRecv == 0 {
+		return []models.Metric{
+			{
+				Name:        "host_status",
+				Value:       0,
+				Description: "Host status",
+				Labels: map[string]string{
+					"hostname": hostname,
+				},
+			},
+		}, nil
+	}
 	openedPorts := portscanner.PortRange(hostname, protocol, uint32(startPort), uint32(endPort), uint32(workers))
 
 	fingerprint := true
@@ -62,12 +100,21 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 		fingerprint, _ = strconv.ParseBool(c["fingerprint"])
 	}
 
-	metrics := make([]models.Metric, 0)
+	metrics := []models.Metric{
+		{
+			Name:        "host_status",
+			Value:       1,
+			Description: "Host status",
+			Labels: map[string]string{
+				"hostname": hostname,
+			},
+		},
+	}
 	for _, port := range openedPorts {
 		serviceName := portscanner.Port2Service(hostname, protocol, port, fingerprint)
 
 		metric := models.Metric{
-			Name:        "oepened_port",
+			Name:        "opened_port",
 			Value:       1,
 			Description: "Opened port",
 			Labels: map[string]string{
@@ -80,6 +127,35 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 		metrics = append(metrics, metric)
 	}
 
+	return metrics, nil
+}
+
+func (s *Scenario) subnetPortScanner(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	_, ipv4Net, err := net.ParseCIDR(c["cidr"])
+	delete(c, "cidr")
+
+	if err != nil {
+		return nil, err
+	}
+
+	mask := binary.BigEndian.Uint32(ipv4Net.Mask)
+	start := binary.BigEndian.Uint32(ipv4Net.IP)
+
+	finish := (start & mask) | (mask ^ 0xffffffff)
+
+	metrics := make([]models.Metric, 0)
+	for i := start; i <= finish; i++ {
+		ip := make(net.IP, 4)
+		binary.BigEndian.PutUint32(ip, i)
+		c["hostname"] = ip.String()
+
+		oneIPMetrics, err := s.portScanner(ctx, c)
+		if err != nil {
+			return nil, err
+		}
+
+		metrics = append(metrics, oneIPMetrics...)
+	}
 	return metrics, nil
 }
 
@@ -103,6 +179,19 @@ func (s *Scenario) Init() {
 			{Name: "workers", Description: "Workers to make a port scanner", Optional: true},
 		},
 		Fn: s.portScanner,
+	})
+
+	s.RegisterStep("subnetPortScanner", models.StepDefinition{
+		Description: "Run a subnet port scanner",
+		Params: []models.StepParam{
+			{Name: "cidr", Description: "Subnet to make a port scanner", Optional: false},
+			{Name: "protocol", Description: "Protocol to make a port scanner", Optional: true},
+			{Name: "port_start", Description: "Port start to make a port scanner", Optional: true},
+			{Name: "port_end", Description: "Port end to make a port scanner", Optional: true},
+			{Name: "fingerprint", Description: "Fingerprint to make a port scanner", Optional: true},
+			{Name: "workers", Description: "Workers to make a port scanner", Optional: true},
+		},
+		Fn: s.subnetPortScanner,
 	})
 }
 

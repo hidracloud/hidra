@@ -5,7 +5,7 @@ timeout: 1s
 scenario:
   kind: security
   steps:
-    - type: portScanner
-      timeout: 60s
+    - type: subnetPortScanner
+      timeout: 1h
       params:
-        hostname: scanme.nmap.org
+        cidr: 10.18.3.1/24
