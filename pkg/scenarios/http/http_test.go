@@ -7,6 +7,10 @@ import (
 	"github.com/hidracloud/hidra/pkg/scenarios/http"
 )
 
+const (
+	errUrlParameterMissing = "url parameter is missing"
+)
+
 func TestHTTPRequestParameters(t *testing.T) {
 	// Initialize scenario
 	h := &http.Scenario{}
@@ -19,21 +23,21 @@ func TestHTTPRequestParameters(t *testing.T) {
 	_, err := h.RunStep(ctx, "request", params, 0)
 
 	if err == nil {
-		t.Error("url parameter missing but needed")
+		t.Error(errUrlParameterMissing)
 	}
 
 	params = make(map[string]string)
 	_, err = h.RunStep(ctx, "setUserAgent", params, 0)
 
 	if err == nil {
-		t.Error("url parameter missing but needed")
+		t.Error(errUrlParameterMissing)
 	}
 
 	params = make(map[string]string)
 	_, err = h.RunStep(ctx, "addHTTPHeader", params, 0)
 
 	if err == nil {
-		t.Error("url parameter missing but needed")
+		t.Error(errUrlParameterMissing)
 	}
 
 	params = make(map[string]string)
@@ -41,7 +45,7 @@ func TestHTTPRequestParameters(t *testing.T) {
 	_, err = h.RunStep(ctx, "addHTTPHeader", params, 0)
 
 	if err == nil {
-		t.Error("url parameter missing but needed")
+		t.Error(errUrlParameterMissing)
 	}
 }
 

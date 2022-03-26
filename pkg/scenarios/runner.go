@@ -10,6 +10,10 @@ import (
 	"github.com/hidracloud/hidra/pkg/utils"
 )
 
+const (
+	msgTotalScenarioDurationFmt = "[%s] Total scenario duration: %d (ms)\n"
+)
+
 // InitializeScenario initialize a new scenario
 func InitializeScenario(s models.Scenario) (models.IScenario, error) {
 	if len(s.Kind) == 0 {
@@ -84,7 +88,7 @@ func PrettyPrintScenarioResults(m *models.ScenarioResult, name, desc string) {
 		log.Printf("[%s] Scenario ran with issues: %s\n", name, m.Error)
 	}
 
-	log.Printf("[%s] Total scenario duration: %d (ms)\n", name, m.EndDate.Sub(m.StartDate).Milliseconds())
+	log.Printf(msgTotalScenarioDurationFmt, name, m.EndDate.Sub(m.StartDate).Milliseconds())
 
 	for _, s := range m.StepResults {
 		log.Printf("[%s]   |_ %s duration: %d (ms)\n", name, s.Step.Type, s.EndDate.Sub(s.StartDate).Milliseconds())
@@ -108,12 +112,12 @@ func PrettyPrintScenarioResults2String(m *models.ScenarioResult, name, desc stri
 
 	}
 
-	out += fmt.Sprintf("[%s] Total scenario duration: %d (ms)\n", name, m.EndDate.Sub(m.StartDate).Milliseconds())
+	out += fmt.Sprintf(msgTotalScenarioDurationFmt, name, m.EndDate.Sub(m.StartDate).Milliseconds())
 
 	for _, s := range m.StepResults {
 		out += fmt.Sprintf("[%s]   |_ %s duration: %d (ms)\n", name, s.Step.Type, s.EndDate.Sub(s.StartDate).Milliseconds())
 	}
 
-	out += fmt.Sprintf("[%s] Total scenario duration: %d (ms)\n", name, m.EndDate.Sub(m.StartDate).Milliseconds())
+	out += fmt.Sprintf(msgTotalScenarioDurationFmt, name, m.EndDate.Sub(m.StartDate).Milliseconds())
 	return out
 }

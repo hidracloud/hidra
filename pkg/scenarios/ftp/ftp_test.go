@@ -7,6 +7,11 @@ import (
 	"github.com/hidracloud/hidra/pkg/scenarios/ftp"
 )
 
+const (
+	testFile      = "test.txt"
+	testFileParam = "test-file"
+)
+
 func TestScenario(t *testing.T) {
 	s := &ftp.Scenario{}
 	s.Init()
@@ -33,7 +38,7 @@ func TestScenario(t *testing.T) {
 
 	params = make(map[string]string)
 	params["data"] = "test"
-	params["test-file"] = "test.txt"
+	params[testFileParam] = testFile
 
 	_, err = s.RunStep(ctx, "write", params, 0)
 
@@ -42,7 +47,7 @@ func TestScenario(t *testing.T) {
 	}
 
 	params = make(map[string]string)
-	params["test-file"] = "test.txt"
+	params[testFileParam] = testFile
 	params["data"] = "test"
 
 	_, err = s.RunStep(ctx, "read", params, 0)
@@ -52,7 +57,7 @@ func TestScenario(t *testing.T) {
 	}
 
 	params = make(map[string]string)
-	params["test-file"] = "test.txt"
+	params[testFileParam] = testFile
 
 	_, err = s.RunStep(ctx, "delete", params, 0)
 

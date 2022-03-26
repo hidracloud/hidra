@@ -157,7 +157,7 @@ func (s *Scenario) subnetPortScanner(ctx context.Context, c map[string]string) (
 
 // Close closes the scenario
 func (s *Scenario) Close() {
-
+	// nothing to do
 }
 
 // Init initializes the scenario

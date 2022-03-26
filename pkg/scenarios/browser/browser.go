@@ -24,10 +24,6 @@ func (b *Scenario) RCA(result *models.ScenarioResult) error {
 }
 
 func (b *Scenario) urlShouldBe(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["url"]; !ok {
-		return nil, fmt.Errorf("url parameter missing")
-	}
-
 	var url string
 	err := chromedp.Run(b.ctx,
 		chromedp.Location(&url),
@@ -44,14 +40,6 @@ func (b *Scenario) urlShouldBe(ctx context.Context, c map[string]string) ([]mode
 }
 
 func (b *Scenario) textShouldBe(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["text"]; !ok {
-		return nil, fmt.Errorf("text parameter missing")
-	}
-
-	if _, ok := c["selector"]; !ok {
-		return nil, fmt.Errorf("selector parameter missing")
-	}
-
 	var text string
 	err := chromedp.Run(b.ctx,
 		chromedp.Text(c["selector"], &text),
@@ -68,14 +56,6 @@ func (b *Scenario) textShouldBe(ctx context.Context, c map[string]string) ([]mod
 }
 
 func (b *Scenario) sendKeys(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["keys"]; !ok {
-		return nil, fmt.Errorf("keys parameter missing")
-	}
-
-	if _, ok := c["selector"]; !ok {
-		return nil, fmt.Errorf("selector parameter missing")
-	}
-
 	err := chromedp.Run(b.ctx,
 		chromedp.SendKeys(c["selector"], c["keys"]),
 	)
@@ -88,10 +68,6 @@ func (b *Scenario) sendKeys(ctx context.Context, c map[string]string) ([]models.
 }
 
 func (b *Scenario) waitVisible(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["selector"]; !ok {
-		return nil, fmt.Errorf("selector parameter missing")
-	}
-
 	err := chromedp.Run(b.ctx,
 		chromedp.WaitVisible(c["selector"]),
 	)
@@ -104,10 +80,6 @@ func (b *Scenario) waitVisible(ctx context.Context, c map[string]string) ([]mode
 }
 
 func (b *Scenario) click(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["selector"]; !ok {
-		return nil, fmt.Errorf("selector parameter missing")
-	}
-
 	err := chromedp.Run(b.ctx,
 		chromedp.Click(c["selector"], chromedp.NodeVisible),
 	)
@@ -120,10 +92,6 @@ func (b *Scenario) click(ctx context.Context, c map[string]string) ([]models.Met
 }
 
 func (b *Scenario) navigateTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if _, ok := c["url"]; !ok {
-		return nil, fmt.Errorf("url parameter missing")
-	}
-
 	err := chromedp.Run(b.ctx,
 		chromedp.Navigate(c["url"]),
 	)
@@ -142,7 +110,7 @@ func (b *Scenario) Description() string {
 
 // Close closes the scenario
 func (b *Scenario) Close() {
-
+	b.ctx.Done()
 }
 
 // Init initialize scenario

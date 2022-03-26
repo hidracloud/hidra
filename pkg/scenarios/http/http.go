@@ -15,6 +15,10 @@ import (
 	"github.com/hidracloud/hidra/pkg/scenarios"
 )
 
+const (
+	errRequestShouldBeInitialized = "request should be initialized"
+)
+
 // Scenario Represent an http scenario
 type Scenario struct {
 	models.Scenario
@@ -113,7 +117,7 @@ func (h *Scenario) request(ctx context.Context, c map[string]string) ([]models.M
 // Check if status code match
 func (h *Scenario) statusCodeShouldBe(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if h.Response == nil {
-		return nil, fmt.Errorf("request should be initialized first")
+		return nil, fmt.Errorf(errRequestShouldBeInitialized)
 	}
 
 	if strconv.Itoa(h.Response.StatusCode) != c["statusCode"] {
@@ -125,7 +129,7 @@ func (h *Scenario) statusCodeShouldBe(ctx context.Context, c map[string]string) 
 
 func (h *Scenario) bodyShouldContain(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	if h.Response == nil {
-		return nil, fmt.Errorf("request should be initialized first")
+		return nil, fmt.Errorf(errRequestShouldBeInitialized)
 	}
 
 	if !strings.Contains(h.Body, strings.ToLower(c["search"])) {
@@ -138,7 +142,7 @@ func (h *Scenario) bodyShouldContain(ctx context.Context, c map[string]string) (
 func (h *Scenario) shouldRedirectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 
 	if h.Response == nil {
-		return nil, fmt.Errorf("request should be initialized first")
+		return nil, fmt.Errorf(errRequestShouldBeInitialized)
 	}
 
 	// Check if header Location is present
@@ -176,6 +180,7 @@ func (h *Scenario) RCA(result *models.ScenarioResult) error {
 
 // Close closes the scenario
 func (h *Scenario) Close() {
+	h.Client.CloseIdleConnections()
 }
 
 // Init initialize scenario

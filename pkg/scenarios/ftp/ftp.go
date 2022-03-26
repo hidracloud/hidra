@@ -13,6 +13,10 @@ import (
 	ftpclient "github.com/jlaffaye/ftp"
 )
 
+const (
+	testFileParam = "test-file"
+)
+
 // Scenario Represent an ssl scenario
 type Scenario struct {
 	models.Scenario
@@ -48,7 +52,7 @@ func (h *Scenario) login(ctx context.Context, c map[string]string) ([]models.Met
 
 func (h *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	data := bytes.NewBufferString(c["data"])
-	err := h.ftpConn.Stor(c["test-file"], data)
+	err := h.ftpConn.Stor(c[testFileParam], data)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +60,7 @@ func (h *Scenario) write(ctx context.Context, c map[string]string) ([]models.Met
 }
 
 func (h *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	r, err := h.ftpConn.Retr(c["test-file"])
+	r, err := h.ftpConn.Retr(c[testFileParam])
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +79,7 @@ func (h *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metr
 }
 
 func (h *Scenario) delete(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	err := h.ftpConn.Delete(c["test-file"])
+	err := h.ftpConn.Delete(c[testFileParam])
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +138,7 @@ func (h *Scenario) Init() {
 		Description: "Write a file",
 		Params: []models.StepParam{
 			{
-				Name:        "test-file",
+				Name:        testFileParam,
 				Description: "File to write",
 				Optional:    false,
 			},
@@ -151,7 +155,7 @@ func (h *Scenario) Init() {
 		Description: "Read a file",
 		Params: []models.StepParam{
 			{
-				Name:        "test-file",
+				Name:        testFileParam,
 				Description: "File to read",
 				Optional:    false,
 			},
@@ -168,7 +172,7 @@ func (h *Scenario) Init() {
 		Description: "Delete a file",
 		Params: []models.StepParam{
 			{
-				Name:        "test-file",
+				Name:        testFileParam,
 				Description: "File to delete",
 				Optional:    false,
 			},

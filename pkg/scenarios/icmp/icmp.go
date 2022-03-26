@@ -185,7 +185,7 @@ func (h *Scenario) Description() string {
 
 // Close closes the scenario
 func (h *Scenario) Close() {
-
+	// nothing to do
 }
 
 // Init initializes the scenario
