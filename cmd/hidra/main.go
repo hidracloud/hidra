@@ -80,6 +80,41 @@ type flagConfig struct {
 	screenshotS3TLS bool
 }
 
+func runOneTestConfig(ctx context.Context, configFile string, cfg *flagConfig) {
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		log.Fatal("testFile does not exists")
+	}
+
+	utils.LogDebug("Running hidra in test mode")
+	utils.LogDebug("Running " + configFile)
+	data, err := ioutil.ReadFile(configFile)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slist, err := models.ReadSampleYAML(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	utils.LogDebug("Tags:")
+	for key, val := range slist.Tags {
+		utils.LogDebug(" " + key + "=" + val)
+	}
+
+	m, err := scenarios.RunScenario(ctx, slist.Scenario, slist.Name, slist.Description)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scenarios.PrettyPrintScenarioResults(m, slist.Name, slist.Description)
+	if m.Error != nil && cfg.exitOnError {
+		log.Fatal(m.Error)
+		os.Exit(1)
+	}
+}
+
 // This mode is used for fast checking yaml
 func runTestMode(ctx context.Context, cfg *flagConfig, wg *sync.WaitGroup) {
 	if cfg.testFile == "" {
@@ -94,40 +129,7 @@ func runTestMode(ctx context.Context, cfg *flagConfig, wg *sync.WaitGroup) {
 	}
 
 	for _, configFile := range configFiles {
-		if _, err := os.Stat(configFile); os.IsNotExist(err) {
-			log.Fatal("testFile does not exists")
-		}
-
-		utils.LogDebug("Running hidra in test mode")
-		utils.LogDebug("Running " + configFile)
-		data, err := ioutil.ReadFile(configFile)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		slist, err := models.ReadSampleYAML(data)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if len(slist.Tags) > 0 {
-			utils.LogDebug("Tags:")
-			for key, val := range slist.Tags {
-				utils.LogDebug(" " + key + "=" + val)
-			}
-		}
-
-		m, err := scenarios.RunScenario(ctx, slist.Scenario, slist.Name, slist.Description)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		scenarios.PrettyPrintScenarioResults(m, slist.Name, slist.Description)
-		if m.Error != nil && cfg.exitOnError {
-			log.Fatal(m.Error)
-			os.Exit(1)
-		}
+		runOneTestConfig(ctx, configFile, cfg)
 	}
 	wg.Done()
 

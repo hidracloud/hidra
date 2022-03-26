@@ -45,30 +45,38 @@ var hidraScenarioIntervalVec *prometheus.GaugeVec
 
 var hidraCustomMetrics map[string]*prometheus.GaugeVec
 
+func refreshOnePrometheusMetrics(configFile string, prometheusLabels *[]string) error {
+	data, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return err
+	}
+
+	sample, err := models.ReadSampleYAML(data)
+	if err != nil {
+		return err
+	}
+	for key := range sample.Tags {
+		found := false
+		for _, label := range *prometheusLabels {
+			if label == key {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			*prometheusLabels = append(*prometheusLabels, key)
+		}
+	}
+	return nil
+}
+
 func refreshPrometheusMetrics(configFiles []string, buckets []float64) error {
 	prometheusLabels = []string{"name", "description", "kind", "config_file"}
 	for _, configFile := range configFiles {
-		data, err := ioutil.ReadFile(configFile)
+		err := refreshOnePrometheusMetrics(configFile, &prometheusLabels)
 		if err != nil {
 			return err
-		}
-
-		sample, err := models.ReadSampleYAML(data)
-		if err != nil {
-			return err
-		}
-		for key := range sample.Tags {
-			found := false
-			for _, label := range prometheusLabels {
-				if label == key {
-					found = true
-					break
-				}
-			}
-
-			if !found {
-				prometheusLabels = append(prometheusLabels, key)
-			}
 		}
 	}
 
