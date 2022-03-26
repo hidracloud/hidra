@@ -30,16 +30,16 @@ func (s *Scenario) Description() string {
 	return "Run a security scenario"
 }
 
-func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	hostname := c["hostname"]
-	protocol := "tcp"
+func readPortScannerConfig(c map[string]string) (hostname string, protocol string, startPort int, endPort int, workers int, fingerprint bool, err error) {
+	hostname = c["hostname"]
+	protocol = "tcp"
 
 	if _, ok := c["protocol"]; ok && len(c["protocol"]) > 0 {
 		protocol = c["protocol"]
 	}
 
-	startPort := 1
-	endPort := 65535
+	startPort = 1
+	endPort = 65535
 
 	if _, ok := c["port_start"]; ok && len(c["port_start"]) > 0 {
 		startPort, _ = strconv.Atoi(c["port_start"])
@@ -49,13 +49,23 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 		endPort, _ = strconv.Atoi(c["port_end"])
 	}
 
-	workers := 4
+	workers = 4
 
 	if _, ok := c["workers"]; ok && len(c["workers"]) > 0 {
 		workers, _ = strconv.Atoi(c["workers"])
 	}
 
-	// try a ping before to make a port scanner
+	fingerprint = true
+
+	if _, ok := c["fingerprint"]; ok && len(c["fingerprint"]) > 0 {
+		fingerprint, _ = strconv.ParseBool(c["fingerprint"])
+	}
+	return
+}
+
+func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	hostname, protocol, startPort, endPort, workers, fingerprint, err := readPortScannerConfig(c)
+
 	pinger, err := ping.NewPinger(hostname)
 	pinger.Timeout = time.Second
 	if err != nil {
@@ -63,15 +73,6 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 	}
 
 	pinger.Count = 1
-	if _, ok := c["times"]; ok {
-		tmp, err := strconv.Atoi(c["times"])
-
-		if err != nil {
-			return nil, err
-		}
-
-		pinger.Count = tmp
-	}
 
 	err = pinger.Run()
 	if err != nil {
@@ -94,12 +95,6 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 	}
 	openedPorts := portscanner.PortRange(hostname, protocol, uint32(startPort), uint32(endPort), uint32(workers))
 
-	fingerprint := true
-
-	if _, ok := c["fingerprint"]; ok && len(c["fingerprint"]) > 0 {
-		fingerprint, _ = strconv.ParseBool(c["fingerprint"])
-	}
-
 	metrics := []models.Metric{
 		{
 			Name:        "host_status",
@@ -110,6 +105,7 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 			},
 		},
 	}
+
 	for _, port := range openedPorts {
 		serviceName := portscanner.Port2Service(hostname, protocol, port, fingerprint)
 
