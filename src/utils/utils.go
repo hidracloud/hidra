@@ -14,6 +14,9 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+// CustomContextKey is a custom context key
+type CustomContextKey string
+
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const (
 	letterIdxBits = 6                    // 6 bits to represent a letter index

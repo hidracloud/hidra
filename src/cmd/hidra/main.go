@@ -34,6 +34,9 @@ type flagConfig struct {
 	// maxExecutor is the maximum number of executor to run in parallel
 	maxExecutor int
 
+	// maxScreenshotExecutor is the maximum number of executor to run in parallel for screenshot
+	maxScreenshotExecutor int
+
 	// port is the port to listen on
 	port int
 
@@ -214,6 +217,7 @@ func main() {
 	flag.StringVar(&cfg.screenshotS3SecretKey, "screenshot-s3-secret-key", "", "-screenshot-s3-secret-key s3 secret key to save the screenshot")
 	flag.StringVar(&cfg.screenshotS3Prefix, "screenshot-s3-prefix", "", "-screenshot-s3-prefix s3 prefix to save the screenshot")
 	flag.BoolVar(&cfg.screenshotS3TLS, "screenshot-s3-tls", true, "-screenshot-s3-tls s3 tls to save the screenshot")
+	flag.IntVar(&cfg.maxScreenshotExecutor, "max-screenshot-executor", 1, "-max-screenshot-executor max screenshot executor")
 
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
@@ -247,6 +251,9 @@ func main() {
 	scenarios.ScreenshotS3Prefix = cfg.screenshotS3Prefix
 
 	ctx := context.Background()
+
+	// start screenshot worker if needed
+	scenarios.CreateScreenshotWorker(ctx, cfg.maxScreenshotExecutor)
 
 	if testMode {
 		wg.Add(1)

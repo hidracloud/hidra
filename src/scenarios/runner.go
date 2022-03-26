@@ -48,21 +48,14 @@ func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, sru
 		if step.Negate && err == nil {
 			metric.Error = fmt.Errorf("expected fail")
 			metric.EndDate = time.Now()
-			err = GenerateScreenshots(&metric, s, name, desc)
-			if err != nil {
-				log.Printf("[%s] Error generating screenshot: %s", name, err)
-			}
-
+			AddScreenshotsToQueue(&metric, s, name, desc)
 			return &metric
 		}
 
 		if err != nil && !step.Negate {
 			metric.Error = err
 			metric.EndDate = time.Now()
-			err = GenerateScreenshots(&metric, s, name, desc)
-			if err != nil {
-				log.Printf("[%s] Error generating screenshot: %s", name, err)
-			}
+			AddScreenshotsToQueue(&metric, s, name, desc)
 
 			return &metric
 		}
