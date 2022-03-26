@@ -30,7 +30,7 @@ func (s *Scenario) Description() string {
 	return "Run a security scenario"
 }
 
-func readPortScannerConfig(c map[string]string) (hostname string, protocol string, startPort int, endPort int, workers int, fingerprint bool, err error) {
+func readPortScannerConfig(c map[string]string) (hostname string, protocol string, startPort int, endPort int, workers int, fingerprint bool) {
 	hostname = c["hostname"]
 	protocol = "tcp"
 
@@ -64,7 +64,7 @@ func readPortScannerConfig(c map[string]string) (hostname string, protocol strin
 }
 
 func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	hostname, protocol, startPort, endPort, workers, fingerprint, err := readPortScannerConfig(c)
+	hostname, protocol, startPort, endPort, workers, fingerprint := readPortScannerConfig(c)
 
 	pinger, err := ping.NewPinger(hostname)
 	pinger.Timeout = time.Second
