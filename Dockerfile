@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o hidra src/cmd/hidra/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o hidra cmd/hidra/main.go
 
 FROM base as runtime
 

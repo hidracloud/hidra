@@ -1,4 +1,5 @@
 # Contributing
+
 *based on prometheus contributing guidelines*
 
 Hidra uses GitHub to manage reviews of pull requests.
@@ -16,21 +17,21 @@ Hidra uses GitHub to manage reviews of pull requests.
 
 * Relevant coding style guidelines are the [Go Code Review
   Comments](https://code.google.com/p/go-wiki/wiki/CodeReviewComments)
-  and the _Formatting and style_ section of Peter Bourgon's [Go: Best
+  and the *Formatting and style* section of Peter Bourgon's [Go: Best
   Practices for Production
   Environments](https://peter.bourgon.org/go-in-production/#formatting-and-style).
 
 * Be sure to sign off on the [DCO](https://github.com/probot/dco#how-it-works).
-
 
 ## Steps to Contribute
 
 Should you wish to work on an issue, please claim it first by commenting on the GitHub issue that you want to work on it. This is to prevent duplicated efforts from contributors on the same issue.
 
 For quickly compiling and testing your changes do:
+
 ```
 # For building.
-go build ./src/cmd/hidra/main.go
+go build ./cmd/hidra/main.go
 ./hidra
 
 # For testing.
