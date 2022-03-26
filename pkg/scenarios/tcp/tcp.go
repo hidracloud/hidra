@@ -20,17 +20,17 @@ type Scenario struct {
 }
 
 // RCA generate RCAs for scenario
-func (h *Scenario) RCA(result *models.ScenarioResult) error {
+func (t *Scenario) RCA(result *models.ScenarioResult) error {
 	log.Println("TCP RCA")
 	return nil
 }
 
 // Description return the description of the scenario
-func (h *Scenario) Description() string {
+func (t *Scenario) Description() string {
 	return "Run a TCP scenario"
 }
 
-func (h *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+func (t *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", c["to"])
 	if err != nil {
 		return nil, err
@@ -41,13 +41,13 @@ func (h *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models
 		return nil, err
 	}
 
-	h.conn = conn
+	t.conn = conn
 
 	return nil, nil
 }
 
-func (h *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if h.conn == nil {
+func (t *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	if t.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
 
@@ -57,7 +57,7 @@ func (h *Scenario) write(ctx context.Context, c map[string]string) ([]models.Met
 		return nil, err
 	}
 
-	_, err = h.conn.Write(data)
+	_, err = t.conn.Write(data)
 	if err != nil {
 		return nil, err
 	}
@@ -65,10 +65,10 @@ func (h *Scenario) write(ctx context.Context, c map[string]string) ([]models.Met
 	return nil, nil
 }
 
-func (h *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+func (t *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	var err error
 
-	if h.conn == nil {
+	if t.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
 
@@ -82,7 +82,7 @@ func (h *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metr
 	}
 
 	rcvData := make([]byte, bytesToRead)
-	n, err := h.conn.Read(rcvData)
+	n, err := t.conn.Read(rcvData)
 	if err != nil {
 		return nil, err
 	}
@@ -104,17 +104,17 @@ func (h *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metr
 }
 
 // Close closes the scenario
-func (h *Scenario) Close() {
-	if h.conn != nil {
-		h.conn.Close()
+func (t *Scenario) Close() {
+	if t.conn != nil {
+		t.conn.Close()
 	}
 }
 
 // Init initialize the scenario
-func (h *Scenario) Init() {
-	h.StartPrimitives()
+func (t *Scenario) Init() {
+	t.StartPrimitives()
 
-	h.RegisterStep("connectTo", models.StepDefinition{
+	t.RegisterStep("connectTo", models.StepDefinition{
 		Description: "Connect to a host",
 		Params: []models.StepParam{
 			{
@@ -123,10 +123,10 @@ func (h *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: h.connectTo,
+		Fn: t.connectTo,
 	})
 
-	h.RegisterStep("write", models.StepDefinition{
+	t.RegisterStep("write", models.StepDefinition{
 		Description: "Write data to the connection",
 		Params: []models.StepParam{
 			{
@@ -135,10 +135,10 @@ func (h *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: h.write,
+		Fn: t.write,
 	})
 
-	h.RegisterStep("read", models.StepDefinition{
+	t.RegisterStep("read", models.StepDefinition{
 		Description: "Read data from the connection",
 		Params: []models.StepParam{
 			{
@@ -152,7 +152,7 @@ func (h *Scenario) Init() {
 				Optional:    true,
 			},
 		},
-		Fn: h.read,
+		Fn: t.read,
 	})
 }
 

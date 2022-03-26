@@ -21,24 +21,24 @@ type Scenario struct {
 }
 
 // RCA generate RCAs for scenario
-func (s *Scenario) RCA(result *models.ScenarioResult) error {
+func (u *Scenario) RCA(result *models.ScenarioResult) error {
 	log.Println("UDP RCA")
 	return nil
 }
 
 // Description return the description of the scenario
-func (s *Scenario) Description() string {
+func (u *Scenario) Description() string {
 	return "Run a UDP scenario"
 }
 
 // Close closes the scenario
-func (s *Scenario) Close() {
-	if s.conn != nil {
-		s.conn.Close()
+func (u *Scenario) Close() {
+	if u.conn != nil {
+		u.conn.Close()
 	}
 }
 
-func (s *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+func (u *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	udpAddr, err := net.ResolveUDPAddr("udp", c["to"])
 	if err != nil {
 		return nil, err
@@ -48,13 +48,13 @@ func (s *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models
 		return nil, err
 	}
 
-	s.conn = conn
+	u.conn = conn
 
 	return nil, nil
 }
 
-func (s *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if s.conn == nil {
+func (u *Scenario) write(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	if u.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
 
@@ -64,7 +64,7 @@ func (s *Scenario) write(ctx context.Context, c map[string]string) ([]models.Met
 		return nil, err
 	}
 
-	_, err = s.conn.Write(data)
+	_, err = u.conn.Write(data)
 	if err != nil {
 		return nil, err
 	}
@@ -72,10 +72,10 @@ func (s *Scenario) write(ctx context.Context, c map[string]string) ([]models.Met
 	return nil, nil
 }
 
-func (s *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+func (u *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	var err error
 
-	if s.conn == nil {
+	if u.conn == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
 
@@ -89,7 +89,7 @@ func (s *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metr
 	}
 
 	rcvData := make([]byte, bytesToRead)
-	n, err := s.conn.Read(rcvData)
+	n, err := u.conn.Read(rcvData)
 	if err != nil {
 		return nil, err
 	}
@@ -111,10 +111,10 @@ func (s *Scenario) read(ctx context.Context, c map[string]string) ([]models.Metr
 }
 
 // Init initialize the scenario
-func (s *Scenario) Init() {
-	s.StartPrimitives()
+func (u *Scenario) Init() {
+	u.StartPrimitives()
 
-	s.RegisterStep("connectTo", models.StepDefinition{
+	u.RegisterStep("connectTo", models.StepDefinition{
 		Description: "Connect to a host",
 		Params: []models.StepParam{
 			{
@@ -123,10 +123,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.connectTo,
+		Fn: u.connectTo,
 	})
 
-	s.RegisterStep("write", models.StepDefinition{
+	u.RegisterStep("write", models.StepDefinition{
 		Description: "Write data to the connection",
 		Params: []models.StepParam{
 			{
@@ -135,10 +135,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.write,
+		Fn: u.write,
 	})
 
-	s.RegisterStep("read", models.StepDefinition{
+	u.RegisterStep("read", models.StepDefinition{
 		Description: "Read data from the connection",
 		Params: []models.StepParam{
 			{
@@ -152,7 +152,7 @@ func (s *Scenario) Init() {
 				Optional:    true,
 			},
 		},
-		Fn: s.read,
+		Fn: u.read,
 	})
 }
 

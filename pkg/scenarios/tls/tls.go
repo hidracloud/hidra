@@ -21,7 +21,7 @@ type Scenario struct {
 	certificates []*x509.Certificate
 }
 
-func (s *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+func (tl *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -33,23 +33,23 @@ func (s *Scenario) connectTo(ctx context.Context, c map[string]string) ([]models
 	}
 
 	defer conn.Close()
-	s.certificates = conn.ConnectionState().PeerCertificates
+	tl.certificates = conn.ConnectionState().PeerCertificates
 
 	return nil, nil
 }
 
 // RCA generate RCAs for scenario
-func (s *Scenario) RCA(result *models.ScenarioResult) error {
+func (tl *Scenario) RCA(result *models.ScenarioResult) error {
 	log.Println("TLS RCA")
 	return nil
 }
 
-func (s *Scenario) dnsShouldBePresent(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	if s.certificates == nil {
+func (tl *Scenario) dnsShouldBePresent(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	if tl.certificates == nil {
 		return nil, fmt.Errorf("you should connect to an addr first")
 	}
 
-	for _, cert := range s.certificates {
+	for _, cert := range tl.certificates {
 		for _, dns := range cert.DNSNames {
 			matched, err := filepath.Match(dns, c["dns"])
 
@@ -66,7 +66,7 @@ func (s *Scenario) dnsShouldBePresent(ctx context.Context, c map[string]string) 
 	return nil, fmt.Errorf("dns missing")
 }
 
-func (s *Scenario) shouldBeValidFor(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+func (tl *Scenario) shouldBeValidFor(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	duration, err := utils.ParseDuration(c["for"])
 
 	if err != nil {
@@ -74,7 +74,7 @@ func (s *Scenario) shouldBeValidFor(ctx context.Context, c map[string]string) ([
 	}
 
 	limitDate := time.Now().Add(duration)
-	for _, cert := range s.certificates {
+	for _, cert := range tl.certificates {
 		if limitDate.After(cert.NotAfter) {
 			return nil, fmt.Errorf("certificate will be invalid after %s, and your limit date is %s", cert.NotAfter, limitDate)
 		}
@@ -82,10 +82,10 @@ func (s *Scenario) shouldBeValidFor(ctx context.Context, c map[string]string) ([
 	return nil, nil
 }
 
-func (s *Scenario) dumpMetrics(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+func (tl *Scenario) dumpMetrics(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	customMetrics := make([]models.Metric, 0)
 
-	for _, cert := range s.certificates {
+	for _, cert := range tl.certificates {
 		customMetrics = append(customMetrics, models.Metric{
 			Name:  "certificate_not_after",
 			Value: float64(cert.NotAfter.Unix()),
@@ -115,20 +115,20 @@ func (s *Scenario) dumpMetrics(ctx context.Context, c map[string]string) ([]mode
 }
 
 // Description return the description of the scenario
-func (s *Scenario) Description() string {
+func (tl *Scenario) Description() string {
 	return "Run a TLS scenario"
 }
 
 // Close closes the scenario
-func (s *Scenario) Close() {
+func (tl *Scenario) Close() {
 	// nothing to do
 }
 
 // Init initialize the scenario
-func (s *Scenario) Init() {
-	s.StartPrimitives()
+func (tl *Scenario) Init() {
+	tl.StartPrimitives()
 
-	s.RegisterStep("connectTo", models.StepDefinition{
+	tl.RegisterStep("connectTo", models.StepDefinition{
 		Description: "Connect to a host",
 		Params: []models.StepParam{
 			{
@@ -137,10 +137,10 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.connectTo,
+		Fn: tl.connectTo,
 	})
 
-	s.RegisterStep("dnsShouldBePresent", models.StepDefinition{
+	tl.RegisterStep("dnsShouldBePresent", models.StepDefinition{
 		Description: "Check if the dns is present in the certificate",
 		Params: []models.StepParam{
 			{
@@ -149,16 +149,16 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.dnsShouldBePresent,
+		Fn: tl.dnsShouldBePresent,
 	})
 
-	s.RegisterStep("dumpMetrics", models.StepDefinition{
+	tl.RegisterStep("dumpMetrics", models.StepDefinition{
 		Description: "Dump metrics",
 		Params:      []models.StepParam{},
-		Fn:          s.dumpMetrics,
+		Fn:          tl.dumpMetrics,
 	})
 
-	s.RegisterStep("shouldBeValidFor", models.StepDefinition{
+	tl.RegisterStep("shouldBeValidFor", models.StepDefinition{
 		Description: "Check if the certificate is valid for a given duration",
 		Params: []models.StepParam{
 			{
@@ -167,7 +167,7 @@ func (s *Scenario) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: s.shouldBeValidFor,
+		Fn: tl.shouldBeValidFor,
 	})
 }
 
