@@ -31,7 +31,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.45
-          working-directory: "src/"
+          working-directory: "pkg/"
       - name: Test
         run: go test ./...
 
