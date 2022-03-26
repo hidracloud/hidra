@@ -18,4 +18,6 @@ import (
 	_ "github.com/hidracloud/hidra/src/scenarios/tcp"
 	// Run udp initialization
 	_ "github.com/hidracloud/hidra/src/scenarios/udp"
+	// Run security initialization
+	_ "github.com/hidracloud/hidra/src/scenarios/security"
 )

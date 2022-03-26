@@ -12,7 +12,7 @@ func TestPortscanner(t *testing.T) {
 	s.Init()
 
 	params := make(map[string]string)
-	params["hostname"] = "8.8.8.8"
+	params["hostname"] = "scanme.nmap.org"
 
 	ctx := context.TODO()
 
