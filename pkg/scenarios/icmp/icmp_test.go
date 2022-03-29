@@ -1,13 +1,6 @@
 package icmp_test
 
-import (
-	"context"
-	"testing"
-	"time"
-
-	"github.com/hidracloud/hidra/pkg/scenarios/icmp"
-)
-
+/*
 func TestPing(t *testing.T) {
 	// Initialize scenario
 	h := &icmp.Scenario{}
@@ -41,3 +34,4 @@ func TestTraceroute(t *testing.T) {
 		t.Errorf("TestPing failed: %s", err)
 	}
 }
+*/
