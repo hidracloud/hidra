@@ -8,6 +8,10 @@ import (
 
 	"github.com/hidracloud/hidra/pkg/models"
 	"github.com/hidracloud/hidra/pkg/utils"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -39,6 +43,13 @@ func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, sru
 
 	defer srunner.Close()
 
+	ctx, span := otel.Tracer("scenarios").Start(ctx, name, trace.WithAttributes(
+		attribute.String("name", name),
+		attribute.String("description", desc),
+		attribute.String("kind", s.Kind),
+	))
+	defer span.End()
+
 	for _, step := range s.Steps {
 		smetric := models.StepResult{}
 		smetric.Step = step
@@ -53,6 +64,7 @@ func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, sru
 			metric.Error = fmt.Errorf("expected fail")
 			metric.EndDate = time.Now()
 			AddScreenshotsToQueue(&metric, s, name, desc)
+			span.SetStatus(codes.Error, metric.Error.Error())
 			return &metric
 		}
 
@@ -60,7 +72,7 @@ func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, sru
 			metric.Error = err
 			metric.EndDate = time.Now()
 			AddScreenshotsToQueue(&metric, s, name, desc)
-
+			span.SetStatus(codes.Error, metric.Error.Error())
 			return &metric
 		}
 	}

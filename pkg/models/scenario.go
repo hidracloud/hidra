@@ -9,6 +9,10 @@ import (
 
 	"github.com/hidracloud/hidra/pkg/utils"
 	uuid "github.com/satori/go.uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/yaml.v2"
 )
 
@@ -162,6 +166,18 @@ func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string
 	metricsChain := make(chan []Metric, 1)
 	errorChain := make(chan error, 1)
 
+	var span trace.Span
+	ctx, span = otel.Tracer("steps").Start(ctx, name, trace.WithAttributes(
+		attribute.String("name", name),
+	))
+
+	// set params as attributes
+	for k, v := range c {
+		span.SetAttributes(attribute.String("params."+k, v))
+	}
+
+	defer span.End()
+
 	go func() {
 		metrics, err := s.StepsDefinitions[name].Fn(ctx, c)
 		metricsChain <- metrics
@@ -177,6 +193,10 @@ func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string
 		metrics := <-metricsChain
 		close(metricsChain)
 		close(errorChain)
+
+		if err != nil {
+			span.SetStatus(codes.Error, err.Error())
+		}
 		return metrics, err
 	case <-time.After(timeout):
 		return nil, fmt.Errorf("your step generated a timeout")

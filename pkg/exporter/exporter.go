@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/pkg/models"
+	"github.com/hidracloud/hidra/pkg/otel"
 	"github.com/hidracloud/hidra/pkg/scenarios"
 	"github.com/hidracloud/hidra/pkg/utils"
 	"github.com/prometheus/client_golang/prometheus"
@@ -335,6 +336,8 @@ func createWorkers(maxExecutor, possibleJobs int) {
 // Run starts the metrics recorder
 func Run(ctx context.Context, wg *sync.WaitGroup, confPath string, maxExecutor, port int, buckets []float64) {
 	log.Println("Starting hidra in exporter mode")
+
+	otel.StartOtel()
 
 	// Start fetching metrics
 	metricsRecord(ctx, confPath, maxExecutor, buckets)
