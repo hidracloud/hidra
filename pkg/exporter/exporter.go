@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -45,6 +44,7 @@ var hidraScenarioLastRunVec *prometheus.GaugeVec
 var hidraScenarioIntervalVec *prometheus.GaugeVec
 
 var hidraCustomMetrics map[string]*prometheus.GaugeVec
+var hidraCustomMetricsLabels map[string][]string
 
 func refreshOnePrometheusMetrics(configFile string, prometheusLabels *[]string) error {
 	data, err := ioutil.ReadFile(configFile)
@@ -73,7 +73,7 @@ func refreshOnePrometheusMetrics(configFile string, prometheusLabels *[]string) 
 }
 
 func refreshPrometheusMetrics(configFiles []string, buckets []float64) error {
-	prometheusLabels = []string{"name", "description", "kind", "config_file"}
+	prometheusLabels = []string{"name", "description", "kind"}
 	for _, configFile := range configFiles {
 		err := refreshOnePrometheusMetrics(configFile, &prometheusLabels)
 		if err != nil {
@@ -118,6 +118,7 @@ func refreshPrometheusMetrics(configFiles []string, buckets []float64) error {
 	}, prometheusLabels)
 
 	hidraCustomMetrics = make(map[string]*prometheus.GaugeVec)
+	hidraCustomMetricsLabels = make(map[string][]string)
 
 	// Restart prometheus
 	prometheus.MustRegister(hidraScenarioStatusVec)
@@ -136,9 +137,8 @@ func readLabels(sample *models.Sample, configFile string) []string {
 	labels = append(labels, sample.Name)
 	labels = append(labels, sample.Description)
 	labels = append(labels, sample.Scenario.Kind)
-	labels = append(labels, "")
 
-	for _, label := range prometheusLabels[4:] {
+	for _, label := range prometheusLabels[3:] {
 		foundVal := ""
 		for key, val := range sample.Tags {
 			if key == label {
@@ -165,11 +165,7 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 			metricLabels = append(metricLabels, label)
 		}
 
-		// sort metric labels by name
-		sort.Slice(metricLabels, func(i, j int) bool {
-			return metricLabels[i] < metricLabels[j]
-		})
-
+		hidraCustomMetricsLabels[metric.Name] = metricLabels
 		hidraCustomMetrics[metric.Name] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: fmt.Sprintf("hidra_custom_%s", metric.Name),
 			Help: metric.Description,
@@ -209,19 +205,13 @@ func runOneScenario(ctx context.Context, sample *models.Sample, configFile strin
 			metricLabels := []string{}
 			metricLabels = append(metricLabels, stepLabels...)
 
-			keys := make([]string, len(metric.Labels))
+			for _, key := range hidraCustomMetricsLabels[metric.Name][len(prometheusLabels)+1:] {
+				val := ""
 
-			for key := range metric.Labels {
-				keys = append(keys, key)
-			}
-
-			// sort metric labels by name
-			sort.Slice(keys, func(i, j int) bool {
-				return keys[i] < keys[j]
-			})
-
-			for _, key := range keys {
-				metricLabels = append(metricLabels, metric.Labels[key])
+				if _, ok := metric.Labels[key]; ok {
+					val = metric.Labels[key]
+				}
+				metricLabels = append(metricLabels, val)
 			}
 
 			mapMutex.Lock()
