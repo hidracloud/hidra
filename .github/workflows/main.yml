@@ -70,11 +70,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        arch: [amd64, arm64]
-    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
