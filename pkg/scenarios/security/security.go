@@ -109,6 +109,10 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 	for _, port := range openedPorts {
 		serviceName := portscanner.Port2Service(hostname, protocol, port, fingerprint)
 
+		if len(serviceName) == 0 {
+			serviceName = "unknown"
+		}
+
 		metric := models.Metric{
 			Name:        "opened_port",
 			Value:       1,
