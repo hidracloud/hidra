@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -164,6 +165,11 @@ func createCustomMetricIfDontExists(metric *models.Metric) {
 			metricLabels = append(metricLabels, label)
 		}
 
+		// sort metric labels by name
+		sort.Slice(metricLabels, func(i, j int) bool {
+			return metricLabels[i] < metricLabels[j]
+		})
+
 		hidraCustomMetrics[metric.Name] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: fmt.Sprintf("hidra_custom_%s", metric.Name),
 			Help: metric.Description,
@@ -203,8 +209,19 @@ func runOneScenario(ctx context.Context, sample *models.Sample, configFile strin
 			metricLabels := []string{}
 			metricLabels = append(metricLabels, stepLabels...)
 
-			for _, label := range metric.Labels {
-				metricLabels = append(metricLabels, label)
+			keys := make([]string, len(metric.Labels))
+
+			for key := range metric.Labels {
+				keys = append(keys, key)
+			}
+
+			// sort metric labels by name
+			sort.Slice(keys, func(i, j int) bool {
+				return keys[i] < keys[j]
+			})
+
+			for _, key := range keys {
+				metricLabels = append(metricLabels, metric.Labels[key])
 			}
 
 			mapMutex.Lock()
