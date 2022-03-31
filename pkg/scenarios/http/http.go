@@ -2,6 +2,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -23,13 +24,14 @@ const (
 type Scenario struct {
 	models.Scenario
 
-	URL      string
-	Method   string
-	Response *http.Response
-	Body     string
-	Redirect string
-	Headers  map[string]string
-	Client   *http.Client
+	URL       string
+	Method    string
+	Response  *http.Response
+	Body      string
+	Redirect  string
+	Headers   map[string]string
+	Client    *http.Client
+	SharedJar *cookiejar.Jar
 }
 
 // Set user agent
@@ -54,15 +56,12 @@ func (h *Scenario) requestByMethod(ctx context.Context, c map[string]string) ([]
 		body = c["body"]
 	}
 
-	jar, err := cookiejar.New(nil)
+	h.Client.Jar = h.SharedJar
 
-	if err != nil {
-		return nil, err
-	}
+	// convert body to bytes
+	bodyBytes := []byte(body)
 
-	h.Client.Jar = jar
-
-	req, err := http.NewRequest(h.Method, h.URL, strings.NewReader(body))
+	req, err := http.NewRequest(h.Method, h.URL, bytes.NewBuffer(bodyBytes))
 
 	if err != nil {
 		return nil, err
@@ -73,6 +72,9 @@ func (h *Scenario) requestByMethod(ctx context.Context, c map[string]string) ([]
 	}
 
 	resp, err := h.Client.Do(req)
+
+	// clean headers after request
+	h.Headers = make(map[string]string)
 
 	if err != nil {
 		return nil, err
@@ -192,6 +194,7 @@ func (h *Scenario) Init() {
 
 	h.Client = &http.Client{}
 
+	h.SharedJar, _ = cookiejar.New(nil)
 	h.Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
