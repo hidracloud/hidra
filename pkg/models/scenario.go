@@ -105,7 +105,7 @@ type IScenario interface {
 	StartPrimitives()
 	Init()
 	Close()
-	RunStep(context.Context, string, map[string]string, time.Duration) ([]Metric, error)
+	RunStep(context.Context, string, map[string]string, time.Duration, bool) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string
 	GetScenarioDefinitions() map[string]StepDefinition
@@ -122,7 +122,7 @@ type runStepGoTemplate struct {
 }
 
 // RunStep Run an step
-func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string, timeout time.Duration) ([]Metric, error) {
+func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string, timeout time.Duration, negate bool) ([]Metric, error) {
 	if _, ok := s.StepsDefinitions[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
 	}
@@ -169,6 +169,7 @@ func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string
 	var span trace.Span
 	ctx, span = otel.Tracer("steps").Start(ctx, name, trace.WithAttributes(
 		attribute.String("name", name),
+		attribute.Bool("negate", negate),
 	))
 
 	// set params as attributes
@@ -193,6 +194,14 @@ func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string
 		metrics := <-metricsChain
 		close(metricsChain)
 		close(errorChain)
+
+		if negate && err == nil {
+			err = fmt.Errorf("step %s should have failed but succeeded", name)
+		}
+
+		if negate && err != nil {
+			err = nil
+		}
 
 		if err != nil {
 			span.SetStatus(codes.Error, err.Error())

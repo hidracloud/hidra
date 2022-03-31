@@ -13,6 +13,9 @@ import (
 	"github.com/go-ping/ping"
 	"github.com/hidracloud/hidra/pkg/models"
 	"github.com/hidracloud/hidra/pkg/scenarios"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Scenario Represent an ICMP scenario
@@ -26,15 +29,32 @@ func (h *Scenario) traceroute(ctx context.Context, c map[string]string) ([]model
 	options.SetMaxHops(traceroute.DEFAULT_MAX_HOPS + 1)
 	options.SetFirstHop(traceroute.DEFAULT_FIRST_HOP)
 
+	ctx, span := otel.Tracer("icmp").Start(ctx, "traceroute", trace.WithAttributes(
+		attribute.String("hostname", c["hostname"]),
+	))
+	defer span.End()
+
 	zz := make(chan traceroute.TracerouteHop)
-	go func() {
+	go func(ctx1 context.Context) {
+		ctx, span := otel.Tracer("traceroute").Start(ctx1, "calculateTraceroute")
+
+		defer span.End()
 		for {
-			_, ok := <-zz
+			var hopSpan trace.Span
+
+			hop, ok := <-zz
+			ctx, hopSpan = otel.Tracer("calculateTraceroute").Start(ctx, "hop", trace.WithAttributes(
+				attribute.String("host", hop.Host),
+				attribute.Int64("ttl", int64(hop.TTL)),
+				attribute.String("ip", hop.AddressString()),
+			))
+
+			defer hopSpan.End()
 			if !ok {
 				return
 			}
 		}
-	}()
+	}(ctx)
 	tcrresult, err := traceroute.Traceroute(c["hostname"], &options, zz)
 
 	if err != nil {

@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: -exporter -conf ./examples -maxExecutor 8
+    command: -exporter -conf ./examples -maxExecutor 8 -jaeger-endpoint http://jaeger:14268/api/traces
     environment:
       - OTEL_LOG_LEVEL=true
       - DEBUG=true

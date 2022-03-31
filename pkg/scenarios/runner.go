@@ -54,19 +54,11 @@ func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, sru
 		smetric := models.StepResult{}
 		smetric.Step = step
 		smetric.StartDate = time.Now()
-		customMetrics, err := srunner.RunStep(ctx, step.Type, step.Params, step.Timeout)
+		customMetrics, err := srunner.RunStep(ctx, step.Type, step.Params, step.Timeout, step.Negate)
 
 		smetric.Metrics = customMetrics
 		smetric.EndDate = time.Now()
 		metric.StepResults = append(metric.StepResults, &smetric)
-
-		if step.Negate && err == nil {
-			metric.Error = fmt.Errorf("expected fail")
-			metric.EndDate = time.Now()
-			AddScreenshotsToQueue(&metric, s, name, desc)
-			span.SetStatus(codes.Error, metric.Error.Error())
-			return &metric
-		}
 
 		if err != nil && !step.Negate {
 			metric.Error = err

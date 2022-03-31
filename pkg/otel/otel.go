@@ -36,8 +36,8 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 }
 
 // StartOtel starts the OpenTelemetry tracing system.
-func StartOtel() {
-	tp, err := tracerProvider("http://jaeger:14268/api/traces")
+func StartOtel(endpoint string) {
+	tp, err := tracerProvider(endpoint)
 	if err != nil {
 		log.Fatal(err)
 	}

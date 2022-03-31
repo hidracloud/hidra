@@ -16,6 +16,7 @@ import (
 	"github.com/hidracloud/hidra/pkg/attack"
 	"github.com/hidracloud/hidra/pkg/exporter"
 	"github.com/hidracloud/hidra/pkg/models"
+	"github.com/hidracloud/hidra/pkg/otel"
 	"github.com/hidracloud/hidra/pkg/scenarios"
 	_ "github.com/hidracloud/hidra/pkg/scenarios/all"
 	"github.com/hidracloud/hidra/pkg/utils"
@@ -78,6 +79,9 @@ type flagConfig struct {
 
 	// screenshotS3TLS is the s3 tls to save the screenshot
 	screenshotS3TLS bool
+
+	// jaegerEndpoint is the jaeger endpoint to save the trace
+	jaegerEndpoint string
 }
 
 func runOneTestConfig(ctx context.Context, configFile string, cfg *flagConfig) {
@@ -232,7 +236,9 @@ func main() {
 	flag.IntVar(&cfg.workers, "workers", 10, "-workers your_workers")
 	flag.StringVar(&cfg.resultFile, "result", "", "-result your_result_file")
 
-	// Attack mode
+	// jaeger config
+	flag.StringVar(&cfg.jaegerEndpoint, "jaeger-endpoint", "", "-jaeger-endpoint your_jaeger_endpoint")
+
 	flag.Parse()
 
 	var wg sync.WaitGroup
@@ -256,6 +262,9 @@ func main() {
 
 	// start screenshot worker if needed
 	scenarios.CreateScreenshotWorker(ctx, cfg.maxScreenshotExecutor)
+
+	// initialize otel
+	otel.StartOtel(cfg.jaegerEndpoint)
 
 	if testMode {
 		wg.Add(1)
