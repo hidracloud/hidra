@@ -30,10 +30,10 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.45
+          version: v1.45.2
           working-directory: "pkg/"
       - name: Test
-        run: go test ./...
+        run: sudo $(which go) test ./...
 
   security-metrics:
     if: ${{ github.ref == 'refs/heads/main' }}

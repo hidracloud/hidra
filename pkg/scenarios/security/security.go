@@ -88,7 +88,7 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 				Value:       0,
 				Description: "Host status",
 				Labels: map[string]string{
-					"hostname": hostname,
+					"host": hostname,
 				},
 			},
 		}, nil
@@ -101,7 +101,7 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 			Value:       1,
 			Description: "Host status",
 			Labels: map[string]string{
-				"hostname": hostname,
+				"host": hostname,
 			},
 		},
 	}
@@ -109,12 +109,16 @@ func (s *Scenario) portScanner(ctx context.Context, c map[string]string) ([]mode
 	for _, port := range openedPorts {
 		serviceName := portscanner.Port2Service(hostname, protocol, port, fingerprint)
 
+		if len(serviceName) == 0 {
+			serviceName = "unknown"
+		}
+
 		metric := models.Metric{
 			Name:        "opened_port",
 			Value:       1,
 			Description: "Opened port",
 			Labels: map[string]string{
-				"hostname":     hostname,
+				"host":         hostname,
 				"port":         strconv.Itoa(int(port)),
 				"service_name": serviceName,
 			},
