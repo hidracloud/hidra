@@ -110,6 +110,7 @@ func (b *Scenario) Description() string {
 
 // Close closes the scenario
 func (b *Scenario) Close() {
+	chromedp.Stop().Do(b.ctx)
 	b.ctx.Done()
 }
 
