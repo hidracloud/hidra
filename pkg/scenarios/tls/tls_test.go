@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hidracloud/hidra/pkg/scenarios/tls"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios/tls"
 )
 
 func TestScenario(t *testing.T) {

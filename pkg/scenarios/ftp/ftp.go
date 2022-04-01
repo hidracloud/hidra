@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/scenarios"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
 	ftpclient "github.com/jlaffaye/ftp"
 )
 

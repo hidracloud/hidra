@@ -13,12 +13,12 @@ import (
 
 	"github.com/namsral/flag"
 
-	"github.com/hidracloud/hidra/pkg/attack"
-	"github.com/hidracloud/hidra/pkg/exporter"
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/scenarios"
-	_ "github.com/hidracloud/hidra/pkg/scenarios/all"
-	"github.com/hidracloud/hidra/pkg/utils"
+	"github.com/hidracloud/hidra/v2/pkg/attack"
+	"github.com/hidracloud/hidra/v2/pkg/exporter"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
+	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/all"
+	"github.com/hidracloud/hidra/v2/pkg/utils"
 )
 
 type flagConfig struct {

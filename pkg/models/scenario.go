@@ -7,7 +7,7 @@ import (
 	"html/template"
 	"time"
 
-	"github.com/hidracloud/hidra/pkg/utils"
+	"github.com/hidracloud/hidra/v2/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 )

@@ -10,8 +10,8 @@ import (
 
 	"github.com/JoseCarlosGarcia95/go-port-scanner/portscanner"
 	"github.com/go-ping/ping"
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/scenarios"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
 )
 
 // Scenario represent a security scenario

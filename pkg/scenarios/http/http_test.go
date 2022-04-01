@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hidracloud/hidra/pkg/scenarios/http"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios/http"
 )
 
 const (
