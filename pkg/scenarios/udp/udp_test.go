@@ -17,7 +17,7 @@ func TestScenario(t *testing.T) {
 	params := make(map[string]string)
 	params["to"] = "8.8.8.8:53"
 
-	_, err := s.RunStep(ctx, "connectTo", params, 0)
+	_, err := s.RunStep(ctx, "connectTo", params, 0, false)
 
 	if err != nil {
 		t.Error(err)

@@ -9,11 +9,14 @@ import (
 	"log"
 	"net/http"
 	"net/http/cookiejar"
+	"net/http/httptrace"
 	"strconv"
 	"strings"
 
 	"github.com/hidracloud/hidra/v2/pkg/models"
 	"github.com/hidracloud/hidra/v2/pkg/scenarios"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 const (
@@ -61,7 +64,7 @@ func (h *Scenario) requestByMethod(ctx context.Context, c map[string]string) ([]
 	// convert body to bytes
 	bodyBytes := []byte(body)
 
-	req, err := http.NewRequest(h.Method, h.URL, bytes.NewBuffer(bodyBytes))
+	req, err := http.NewRequestWithContext(ctx, h.Method, h.URL, bytes.NewBuffer(bodyBytes))
 
 	if err != nil {
 		return nil, err
@@ -192,7 +195,9 @@ func (h *Scenario) Init() {
 	h.Headers = make(map[string]string)
 	h.Headers["User-Agent"] = "hidra/monitoring"
 
-	h.Client = &http.Client{}
+	h.Client = &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport, otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+		return otelhttptrace.NewClientTrace(ctx, otelhttptrace.WithoutSubSpans())
+	}))}
 
 	h.SharedJar, _ = cookiejar.New(nil)
 	h.Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {

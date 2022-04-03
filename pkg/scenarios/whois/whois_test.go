@@ -17,7 +17,7 @@ func TestScenario(t *testing.T) {
 
 	ctx := context.TODO()
 
-	_, err := s.RunStep(ctx, "whoisFrom", params, 0)
+	_, err := s.RunStep(ctx, "whoisFrom", params, 0, false)
 	if err != nil {
 		t.Error(err)
 	}
@@ -25,7 +25,7 @@ func TestScenario(t *testing.T) {
 	params = make(map[string]string)
 	params["for"] = "7d"
 
-	_, err = s.RunStep(ctx, "shouldBeValidFor", params, 0)
+	_, err = s.RunStep(ctx, "shouldBeValidFor", params, 0, false)
 
 	if err != nil {
 		t.Error(err)

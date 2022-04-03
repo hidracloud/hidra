@@ -8,6 +8,10 @@ import (
 
 	"github.com/hidracloud/hidra/v2/pkg/models"
 	"github.com/hidracloud/hidra/v2/pkg/utils"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -39,28 +43,28 @@ func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, sru
 
 	defer srunner.Close()
 
+	ctx, span := otel.Tracer("scenarios").Start(ctx, name, trace.WithAttributes(
+		attribute.String("name", name),
+		attribute.String("description", desc),
+		attribute.String("kind", s.Kind),
+	))
+	defer span.End()
+
 	for _, step := range s.Steps {
 		smetric := models.StepResult{}
 		smetric.Step = step
 		smetric.StartDate = time.Now()
-		customMetrics, err := srunner.RunStep(ctx, step.Type, step.Params, step.Timeout)
+		customMetrics, err := srunner.RunStep(ctx, step.Type, step.Params, step.Timeout, step.Negate)
 
 		smetric.Metrics = customMetrics
 		smetric.EndDate = time.Now()
 		metric.StepResults = append(metric.StepResults, &smetric)
 
-		if step.Negate && err == nil {
-			metric.Error = fmt.Errorf("expected fail")
-			metric.EndDate = time.Now()
-			AddScreenshotsToQueue(&metric, s, name, desc)
-			return &metric
-		}
-
 		if err != nil && !step.Negate {
 			metric.Error = err
 			metric.EndDate = time.Now()
 			AddScreenshotsToQueue(&metric, s, name, desc)
-
+			span.SetStatus(codes.Error, metric.Error.Error())
 			return &metric
 		}
 	}

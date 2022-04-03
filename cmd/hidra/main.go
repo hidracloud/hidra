@@ -12,10 +12,12 @@ import (
 	"sync"
 
 	"github.com/namsral/flag"
+	"go.opentelemetry.io/otel/baggage"
 
 	"github.com/hidracloud/hidra/v2/pkg/attack"
 	"github.com/hidracloud/hidra/v2/pkg/exporter"
 	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/otel"
 	"github.com/hidracloud/hidra/v2/pkg/scenarios"
 	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/all"
 	"github.com/hidracloud/hidra/v2/pkg/utils"
@@ -78,6 +80,9 @@ type flagConfig struct {
 
 	// screenshotS3TLS is the s3 tls to save the screenshot
 	screenshotS3TLS bool
+
+	// jaegerEndpoint is the jaeger endpoint to save the trace
+	jaegerEndpoint string
 }
 
 func runOneTestConfig(ctx context.Context, configFile string, cfg *flagConfig) {
@@ -232,7 +237,9 @@ func main() {
 	flag.IntVar(&cfg.workers, "workers", 10, "-workers your_workers")
 	flag.StringVar(&cfg.resultFile, "result", "", "-result your_result_file")
 
-	// Attack mode
+	// jaeger config
+	flag.StringVar(&cfg.jaegerEndpoint, "jaeger-endpoint", "", "-jaeger-endpoint your_jaeger_endpoint")
+
 	flag.Parse()
 
 	var wg sync.WaitGroup
@@ -252,10 +259,13 @@ func main() {
 	scenarios.ScreenshotS3SecretKey = cfg.screenshotS3SecretKey
 	scenarios.ScreenshotS3Prefix = cfg.screenshotS3Prefix
 
-	ctx := context.Background()
+	ctx := baggage.ContextWithoutBaggage(context.Background())
 
 	// start screenshot worker if needed
 	scenarios.CreateScreenshotWorker(ctx, cfg.maxScreenshotExecutor)
+
+	// initialize otel
+	otel.StartOtel(cfg.jaegerEndpoint)
 
 	if testMode {
 		wg.Add(1)

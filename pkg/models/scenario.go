@@ -9,6 +9,10 @@ import (
 
 	"github.com/hidracloud/hidra/v2/pkg/utils"
 	uuid "github.com/satori/go.uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/yaml.v2"
 )
 
@@ -101,7 +105,7 @@ type IScenario interface {
 	StartPrimitives()
 	Init()
 	Close()
-	RunStep(context.Context, string, map[string]string, time.Duration) ([]Metric, error)
+	RunStep(context.Context, string, map[string]string, time.Duration, bool) ([]Metric, error)
 	RegisterStep(string, StepDefinition)
 	Description() string
 	GetScenarioDefinitions() map[string]StepDefinition
@@ -118,7 +122,7 @@ type runStepGoTemplate struct {
 }
 
 // RunStep Run an step
-func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string, timeout time.Duration) ([]Metric, error) {
+func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string, timeout time.Duration, negate bool) ([]Metric, error) {
 	if _, ok := s.StepsDefinitions[name]; !ok {
 		return nil, fmt.Errorf("sorry but %s not found", name)
 	}
@@ -162,6 +166,19 @@ func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string
 	metricsChain := make(chan []Metric, 1)
 	errorChain := make(chan error, 1)
 
+	var span trace.Span
+	ctx, span = otel.Tracer("steps").Start(ctx, name, trace.WithAttributes(
+		attribute.String("name", name),
+		attribute.Bool("negate", negate),
+	))
+
+	// set params as attributes
+	for k, v := range c {
+		span.SetAttributes(attribute.String("params."+k, v))
+	}
+
+	defer span.End()
+
 	go func() {
 		metrics, err := s.StepsDefinitions[name].Fn(ctx, c)
 		metricsChain <- metrics
@@ -177,6 +194,18 @@ func (s *Scenario) RunStep(ctx context.Context, name string, p map[string]string
 		metrics := <-metricsChain
 		close(metricsChain)
 		close(errorChain)
+
+		if negate && err == nil {
+			err = fmt.Errorf("step %s should have failed but succeeded", name)
+		}
+
+		if negate && err != nil {
+			err = nil
+		}
+
+		if err != nil {
+			span.SetStatus(codes.Error, err.Error())
+		}
 		return metrics, err
 	case <-time.After(timeout):
 		return nil, fmt.Errorf("your step generated a timeout")
