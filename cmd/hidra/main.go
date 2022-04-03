@@ -12,14 +12,15 @@ import (
 	"sync"
 
 	"github.com/namsral/flag"
+	"go.opentelemetry.io/otel/baggage"
 
-	"github.com/hidracloud/hidra/pkg/attack"
-	"github.com/hidracloud/hidra/pkg/exporter"
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/otel"
-	"github.com/hidracloud/hidra/pkg/scenarios"
-	_ "github.com/hidracloud/hidra/pkg/scenarios/all"
-	"github.com/hidracloud/hidra/pkg/utils"
+	"github.com/hidracloud/hidra/v2/pkg/attack"
+	"github.com/hidracloud/hidra/v2/pkg/exporter"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/otel"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
+	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/all"
+	"github.com/hidracloud/hidra/v2/pkg/utils"
 )
 
 type flagConfig struct {
@@ -258,7 +259,7 @@ func main() {
 	scenarios.ScreenshotS3SecretKey = cfg.screenshotS3SecretKey
 	scenarios.ScreenshotS3Prefix = cfg.screenshotS3Prefix
 
-	ctx := context.Background()
+	ctx := baggage.ContextWithoutBaggage(context.Background())
 
 	// start screenshot worker if needed
 	scenarios.CreateScreenshotWorker(ctx, cfg.maxScreenshotExecutor)

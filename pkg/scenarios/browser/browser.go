@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/chromedp/chromedp"
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/scenarios"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
 )
 
 // Scenario Represent an browser scenario
@@ -110,6 +110,10 @@ func (b *Scenario) Description() string {
 
 // Close closes the scenario
 func (b *Scenario) Close() {
+	err := chromedp.Stop().Do(b.ctx)
+	if err != nil {
+		log.Println(err)
+	}
 	b.ctx.Done()
 }
 

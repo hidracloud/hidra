@@ -2,6 +2,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -12,10 +13,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/scenarios"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -26,13 +27,14 @@ const (
 type Scenario struct {
 	models.Scenario
 
-	URL      string
-	Method   string
-	Response *http.Response
-	Body     string
-	Redirect string
-	Headers  map[string]string
-	Client   *http.Client
+	URL       string
+	Method    string
+	Response  *http.Response
+	Body      string
+	Redirect  string
+	Headers   map[string]string
+	Client    *http.Client
+	SharedJar *cookiejar.Jar
 }
 
 // Set user agent
@@ -57,15 +59,12 @@ func (h *Scenario) requestByMethod(ctx context.Context, c map[string]string) ([]
 		body = c["body"]
 	}
 
-	jar, err := cookiejar.New(nil)
+	h.Client.Jar = h.SharedJar
 
-	if err != nil {
-		return nil, err
-	}
+	// convert body to bytes
+	bodyBytes := []byte(body)
 
-	h.Client.Jar = jar
-
-	req, err := http.NewRequestWithContext(ctx, h.Method, h.URL, strings.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, h.Method, h.URL, bytes.NewBuffer(bodyBytes))
 
 	if err != nil {
 		return nil, err
@@ -76,6 +75,9 @@ func (h *Scenario) requestByMethod(ctx context.Context, c map[string]string) ([]
 	}
 
 	resp, err := h.Client.Do(req)
+
+	// clean headers after request
+	h.Headers = make(map[string]string)
 
 	if err != nil {
 		return nil, err
@@ -186,23 +188,6 @@ func (h *Scenario) Close() {
 	h.Client.CloseIdleConnections()
 }
 
-type httpClientTrace struct {
-	span trace.Span
-}
-
-func newClientTrace(span trace.Span) *httptrace.ClientTrace {
-	trace := &httpClientTrace{span: span}
-	return &httptrace.ClientTrace{
-		DNSStart: trace.dnsStart,
-	}
-}
-
-func (h *httpClientTrace) dnsStart(info httptrace.DNSStartInfo) {
-	h.span.AddEvent("DNSStart", map[string]interface{}{
-		"host": info.Host,
-	})
-}
-
 // Init initialize scenario
 func (h *Scenario) Init() {
 	h.StartPrimitives()
@@ -210,8 +195,11 @@ func (h *Scenario) Init() {
 	h.Headers = make(map[string]string)
 	h.Headers["User-Agent"] = "hidra/monitoring"
 
-	h.Client = &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
+	h.Client = &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport, otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+		return otelhttptrace.NewClientTrace(ctx, otelhttptrace.WithoutSubSpans())
+	}))}
 
+	h.SharedJar, _ = cookiejar.New(nil)
 	h.Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}

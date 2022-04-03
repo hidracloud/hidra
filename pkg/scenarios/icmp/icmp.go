@@ -11,8 +11,8 @@ import (
 
 	"github.com/aeden/traceroute"
 	"github.com/go-ping/ping"
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/scenarios"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"

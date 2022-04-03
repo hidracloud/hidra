@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hidracloud/hidra/pkg/models"
-	"github.com/hidracloud/hidra/pkg/scenarios"
-	"github.com/hidracloud/hidra/pkg/utils"
+	"github.com/hidracloud/hidra/v2/pkg/models"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios"
+	"github.com/hidracloud/hidra/v2/pkg/utils"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

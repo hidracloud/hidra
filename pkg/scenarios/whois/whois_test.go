@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hidracloud/hidra/pkg/scenarios/whois"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios/whois"
 )
 
 func TestScenario(t *testing.T) {
