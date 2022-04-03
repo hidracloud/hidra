@@ -38,6 +38,9 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 
 // StartOtel starts the OpenTelemetry tracing system.
 func StartOtel(endpoint string) {
+	if endpoint == "" {
+		return
+	}
 	tp, err := tracerProvider(endpoint)
 	if err != nil {
 		log.Fatal(err)

@@ -49,7 +49,7 @@ func (h *Scenario) traceroute(ctx context.Context, c map[string]string) ([]model
 				attribute.String("ip", hop.AddressString()),
 			))
 
-			defer hopSpan.End()
+			hopSpan.End()
 			if !ok {
 				return
 			}
