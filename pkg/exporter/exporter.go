@@ -311,10 +311,16 @@ func metricsRecord(ctx context.Context, confPath string, maxExecutor int, bucket
 	inProgress = make(map[string]bool)
 	lastRunMutex = &sync.Mutex{}
 
+	lastReload := time.Now()
+
 	createWorkers(maxExecutor, len(configFiles))
 
 	go func() {
 		for {
+			if time.Since(lastReload) > time.Minute {
+				configFiles, _ = utils.AutoDiscoverYML(confPath)
+				lastReload = time.Now()
+			}
 			runSample(ctx, configFiles, maxExecutor)
 			time.Sleep(2 * time.Second)
 		}
