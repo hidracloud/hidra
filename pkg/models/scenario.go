@@ -56,6 +56,7 @@ type StepResult struct {
 // Scenario definition
 type Scenario struct {
 	Kind             string
+	ReRun            int `yaml:"rerun"`
 	Steps            []Step
 	StepsDefinitions map[string]StepDefinition
 	Context          context.Context

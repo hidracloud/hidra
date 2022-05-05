@@ -28,6 +28,10 @@ func InitializeScenario(s models.Scenario) (models.IScenario, error) {
 		return nil, fmt.Errorf("Scenario kind \"%s\" is not supported", s.Kind)
 	}
 
+	if s.ReRun <= 0 {
+		s.ReRun = 1
+	}
+
 	srunner := Sample[s.Kind]()
 	srunner.Init()
 
@@ -36,6 +40,20 @@ func InitializeScenario(s models.Scenario) (models.IScenario, error) {
 
 // RunIScenario run already initialize scenario
 func RunIScenario(ctx context.Context, name, desc string, s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
+	var result *models.ScenarioResult
+	for i := 0; i < s.ReRun; i++ {
+		utils.LogDebug("[%s] Running scenario, \"%s\"\n", name, desc)
+		result = RunOneScenario(ctx, name, desc, s, srunner)
+
+		if result.Error != nil {
+			return result
+		}
+	}
+	return result
+}
+
+// RunOneScenario run already initialize scenario
+func RunOneScenario(ctx context.Context, name, desc string, s models.Scenario, srunner models.IScenario) *models.ScenarioResult {
 	metric := models.ScenarioResult{}
 	metric.Scenario = s
 	metric.StepResults = make([]*models.StepResult, 0)
