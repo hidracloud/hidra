@@ -162,6 +162,8 @@ func (h *Scenario) bodyShouldChange(ctx context.Context, c map[string]string) ([
 		return nil, fmt.Errorf("body should change")
 	}
 
+	bodyCache[string(urlMD5)] = bodyMD5
+
 	return nil, nil
 }
 
