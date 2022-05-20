@@ -152,17 +152,17 @@ func (h *Scenario) bodyShouldChange(ctx context.Context, c map[string]string) ([
 	bodyMD5 := getMD5Hash(h.Body)
 
 	// Get all the data from the cache
-	if bodyCache[string(urlMD5)] == "" {
-		bodyCache[string(urlMD5)] = bodyMD5
+	if bodyCache[urlMD5] == "" {
+		bodyCache[urlMD5] = bodyMD5
 		return nil, nil
 	}
 
 	// Check if the body has changed
-	if bodyCache[string(urlMD5)] == bodyMD5 {
+	if bodyCache[urlMD5] == bodyMD5 {
 		return nil, fmt.Errorf("body should change")
 	}
 
-	bodyCache[string(urlMD5)] = bodyMD5
+	bodyCache[urlMD5] = bodyMD5
 
 	return nil, nil
 }
