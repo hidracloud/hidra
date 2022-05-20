@@ -4,6 +4,8 @@ package http
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -22,6 +24,9 @@ import (
 const (
 	errRequestShouldBeInitialized = "request should be initialized"
 )
+
+// Cache of bodies
+var bodyCache = make(map[string]string)
 
 // Scenario Represent an http scenario
 type Scenario struct {
@@ -127,6 +132,34 @@ func (h *Scenario) statusCodeShouldBe(ctx context.Context, c map[string]string) 
 
 	if strconv.Itoa(h.Response.StatusCode) != c["statusCode"] {
 		return nil, fmt.Errorf("statusCode expected %s, but %d", c["statusCode"], h.Response.StatusCode)
+	}
+
+	return nil, nil
+}
+
+func getMD5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (h *Scenario) bodyShouldChange(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	if h.Response == nil {
+		return nil, fmt.Errorf(errRequestShouldBeInitialized)
+	}
+
+	urlMD5 := getMD5Hash(h.URL)
+	bodyMD5 := getMD5Hash(h.Body)
+
+	// Get all the data from the cache
+	if bodyCache[string(urlMD5)] == "" {
+		bodyCache[string(urlMD5)] = bodyMD5
+		return nil, nil
+	}
+
+	// Check if the body has changed
+	if bodyCache[string(urlMD5)] == bodyMD5 {
+		return nil, fmt.Errorf("body should change")
 	}
 
 	return nil, nil
@@ -242,6 +275,12 @@ func (h *Scenario) Init() {
 		Description: "Clear parameters",
 		Params:      []models.StepParam{},
 		Fn:          h.clear,
+	})
+
+	h.RegisterStep("bodyShouldChange", models.StepDefinition{
+		Description: "Check if body has changed",
+		Params:      []models.StepParam{},
+		Fn:          h.bodyShouldChange,
 	})
 
 	h.RegisterStep("addHTTPHeader", models.StepDefinition{
