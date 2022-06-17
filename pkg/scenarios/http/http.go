@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
@@ -51,6 +52,14 @@ func (h *Scenario) setUserAgent(ctx context.Context, c map[string]string) ([]mod
 // Add new HTTP header
 func (h *Scenario) addHTTPHeader(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	h.Headers[c["key"]] = c["value"]
+	return nil, nil
+}
+
+// Allow insecure TLS connections
+func (h *Scenario) allowInsecureTLS(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	h.Client.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
 	return nil, nil
 }
 
@@ -292,6 +301,12 @@ func (h *Scenario) Init() {
 			{Name: "value", Optional: false, Description: "Header value"},
 		},
 		Fn: h.addHTTPHeader,
+	})
+
+	h.RegisterStep("allowInsecureTLS", models.StepDefinition{
+		Description: "Allow insecure TLS",
+		Params:      []models.StepParam{},
+		Fn:          h.allowInsecureTLS,
 	})
 
 	h.RegisterStep("setUserAgent", models.StepDefinition{
