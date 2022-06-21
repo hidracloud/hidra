@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptrace"
@@ -33,14 +34,33 @@ var bodyCache = make(map[string]string)
 type Scenario struct {
 	models.Scenario
 
-	URL       string
-	Method    string
-	Response  *http.Response
-	Body      string
-	Redirect  string
-	Headers   map[string]string
-	Client    *http.Client
-	SharedJar *cookiejar.Jar
+	URL             string
+	Method          string
+	Response        *http.Response
+	Body            string
+	Redirect        string
+	ForceIP         string
+	Headers         map[string]string
+	Client          *http.Client
+	SharedJar       *cookiejar.Jar
+	SkipInsecureTLS bool `default:"false"`
+}
+
+// dialContext is a dialer that uses context to cancel a dial.
+func (h *Scenario) dialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	d := &net.Dialer{}
+
+	if h.ForceIP != "" {
+		port := 80
+
+		if strings.Contains(h.URL, "https") {
+			port = 443
+		}
+
+		addr = h.ForceIP + ":" + strconv.Itoa(port)
+	}
+
+	return d.DialContext(ctx, network, addr)
 }
 
 // Set user agent
@@ -57,9 +77,13 @@ func (h *Scenario) addHTTPHeader(ctx context.Context, c map[string]string) ([]mo
 
 // Allow insecure TLS connections
 func (h *Scenario) allowInsecureTLS(ctx context.Context, c map[string]string) ([]models.Metric, error) {
-	h.Client.Transport = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+	h.SkipInsecureTLS = true
+	return nil, nil
+}
+
+// Resolve force IP resolution
+func (h *Scenario) forceIP(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	h.ForceIP = c["ip"]
 	return nil, nil
 }
 
@@ -239,7 +263,12 @@ func (h *Scenario) Init() {
 	h.Headers = make(map[string]string)
 	h.Headers["User-Agent"] = "hidra/monitoring"
 
-	h.Client = &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport, otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+	httpTransport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: h.SkipInsecureTLS},
+		DialContext:     h.dialContext,
+	}
+
+	h.Client = &http.Client{Transport: otelhttp.NewTransport(httpTransport, otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
 		return otelhttptrace.NewClientTrace(ctx, otelhttptrace.WithoutSubSpans())
 	}))}
 
@@ -307,6 +336,14 @@ func (h *Scenario) Init() {
 		Description: "Allow insecure TLS",
 		Params:      []models.StepParam{},
 		Fn:          h.allowInsecureTLS,
+	})
+
+	h.RegisterStep("forceIP", models.StepDefinition{
+		Description: "Resolve IP",
+		Params: []models.StepParam{
+			{Name: "ip", Optional: false, Description: "IP to resolve"},
+		},
+		Fn: h.forceIP,
 	})
 
 	h.RegisterStep("setUserAgent", models.StepDefinition{
