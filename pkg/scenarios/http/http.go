@@ -78,6 +78,15 @@ func (h *Scenario) addHTTPHeader(ctx context.Context, c map[string]string) ([]mo
 // Allow insecure TLS connections
 func (h *Scenario) allowInsecureTLS(ctx context.Context, c map[string]string) ([]models.Metric, error) {
 	h.SkipInsecureTLS = true
+
+	httpTransport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: h.SkipInsecureTLS},
+		DialContext:     h.dialContext,
+	}
+
+	h.Client = &http.Client{Transport: otelhttp.NewTransport(httpTransport, otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+		return otelhttptrace.NewClientTrace(ctx, otelhttptrace.WithoutSubSpans())
+	}))}
 	return nil, nil
 }
 
