@@ -294,6 +294,10 @@ func TakeScreenshotWithChromedp(url, file string) error {
 
 	var buf []byte
 
+	defer func() {
+		chromedp.Stop().Do(ctx)
+	}()
+
 	// capture entire browser viewport, returning png with quality=90
 	if err := chromedp.Run(ctx, fullScreenshot(url, 90, &buf)); err != nil {
 		return err

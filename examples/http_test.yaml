@@ -6,6 +6,7 @@ tags:
   sla: dev
 scenario:
   kind: http
+  rerun: 10
   steps:
     - type: addHTTPHeader
       params:
