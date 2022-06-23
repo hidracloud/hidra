@@ -235,6 +235,8 @@ func runSample(ctx context.Context, configFiles []string, maxExecutors int) {
 		sample, _ := models.ReadSampleYAML(data)
 
 		// Check last run
+		lastRunMutex.Lock()
+
 		lastRunTime, ok := lastRun[sample.Name]
 		if !ok {
 			lastRunTime = time.Unix(0, 0)
@@ -244,6 +246,7 @@ func runSample(ctx context.Context, configFiles []string, maxExecutors int) {
 		if _, ok = inProgress[sample.Name]; !ok {
 			inProgress[sample.Name] = false
 		}
+		lastRunMutex.Unlock()
 
 		// Check if it's time to run
 		if time.Since(lastRunTime) < sample.ScrapeInterval || inProgress[sample.Name] {
