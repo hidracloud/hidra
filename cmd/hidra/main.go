@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -83,6 +82,9 @@ type flagConfig struct {
 
 	// jaegerEndpoint is the jaeger endpoint to save the trace
 	jaegerEndpoint string
+
+	// quiet is a flag to quiet the output
+	quiet bool
 }
 
 func runOneTestConfig(ctx context.Context, configFile string, cfg *flagConfig) {
@@ -152,8 +154,6 @@ func runExporter(ctx context.Context, cfg *flagConfig, wg *sync.WaitGroup) {
 		}
 		buckets = append(buckets, bucket)
 	}
-
-	fmt.Println(buckets)
 
 	exporter.Run(ctx, wg, cfg.confPath, cfg.maxExecutor, cfg.port, buckets)
 }
@@ -240,6 +240,7 @@ func main() {
 	// jaeger config
 	flag.StringVar(&cfg.jaegerEndpoint, "jaeger-endpoint", "", "-jaeger-endpoint your_jaeger_endpoint")
 
+	flag.BoolVar(&cfg.quiet, "quiet", false, "-quiet quiet mode")
 	flag.Parse()
 
 	var wg sync.WaitGroup
@@ -260,6 +261,12 @@ func main() {
 	scenarios.ScreenshotS3Prefix = cfg.screenshotS3Prefix
 
 	ctx := baggage.ContextWithoutBaggage(context.Background())
+
+	// disable logging if quiet mode is enabled
+	if cfg.quiet {
+		log.Println("Hidra has been started in quiet mode")
+		log.SetOutput(ioutil.Discard)
+	}
 
 	// start screenshot worker if needed
 	scenarios.CreateScreenshotWorker(ctx, cfg.maxScreenshotExecutor)
