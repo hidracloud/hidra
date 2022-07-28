@@ -229,7 +229,7 @@ func main() {
 	// Exporter mode
 	flag.IntVar(&cfg.maxExecutor, "maxExecutor", 1, "-maxExecutor your_max_executor")
 	flag.IntVar(&cfg.port, "port", 19090, "-port your_port")
-	flag.StringVar(&cfg.buckets, "buckets", "100,200,500,1000,2000,5000", "-buckets your_buckets")
+	flag.StringVar(&cfg.buckets, "buckets", "100,200,500,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,15000,25000,35000,45000,60000", "-buckets your_buckets")
 	flag.StringVar(&cfg.confPath, "conf", "", "-conf your_conf_path")
 
 	// Attack mode

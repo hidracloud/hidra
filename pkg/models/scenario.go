@@ -18,7 +18,7 @@ import (
 
 var envMap map[string]string
 
-var minStepTimeout = 10 * time.Second
+var minStepTimeout = 60 * time.Second
 
 type stepFn func(context.Context, map[string]string) ([]Metric, error)
 
