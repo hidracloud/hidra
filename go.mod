@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/JoseCarlosGarcia95/go-port-scanner v0.0.0-20220320103816-c16a37d0aa75
+	github.com/StalkR/dnssec-analyzer v1.0.0
 	github.com/aeden/traceroute v0.0.0-20210211061815-03f5f7cb7908
 	github.com/chromedp/chromedp v0.7.8
 	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534

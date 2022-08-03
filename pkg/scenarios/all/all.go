@@ -10,8 +10,8 @@ import (
 	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/icmp"
 	// Run tls initialization
 	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/tls"
-	// Run whois initialization
-	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/whois"
+	// Run dns initialization
+	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/dns"
 	// Run ftp initialization
 	_ "github.com/hidracloud/hidra/v2/pkg/scenarios/ftp"
 	// Run tcp initialization

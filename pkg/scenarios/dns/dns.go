@@ -1,4 +1,4 @@
-package whois
+package dns
 
 import (
 	"context"
@@ -11,6 +11,8 @@ import (
 	"github.com/hidracloud/hidra/v2/pkg/utils"
 	"github.com/likexian/whois"
 	whoisparser "github.com/likexian/whois-parser"
+
+	"github.com/StalkR/dnssec-analyzer/dnssec"
 )
 
 // Scenario Represent an ssl scenario
@@ -40,6 +42,25 @@ func (s *Scenario) whoisFrom(ctx context.Context, c map[string]string) ([]models
 	s.whoisInfo = &result
 	s.domain = c["domain"]
 
+	return nil, nil
+}
+
+func (s *Scenario) dnsSecShouldBeValid(ctx context.Context, c map[string]string) ([]models.Metric, error) {
+	if c["domain"] == "" {
+		return nil, fmt.Errorf("domain is required")
+	}
+
+	analysis, err := dnssec.Analyze(c["domain"])
+
+	if err != nil {
+		return nil, err
+	}
+
+	utils.LogDebug("dnssec analysis", analysis)
+
+	if analysis.Status() != dnssec.OK {
+		return nil, fmt.Errorf("domain has invalid dnssec configuration")
+	}
 	return nil, nil
 }
 
@@ -151,10 +172,22 @@ func (s *Scenario) Init() {
 		Params:      []models.StepParam{},
 		Fn:          s.dumpMetrics,
 	})
+
+	s.RegisterStep("dnsSecShouldBeValid", models.StepDefinition{
+		Description: "Check if domain has valid dnssec configuration",
+		Params: []models.StepParam{
+			{
+				Name:        "domain",
+				Description: "Domain to get whois",
+				Optional:    false,
+			},
+		},
+		Fn: s.dnsSecShouldBeValid,
+	})
 }
 
 func init() {
-	scenarios.Add("whois", func() models.IScenario {
+	scenarios.Add("dns", func() models.IScenario {
 		return &Scenario{}
 	})
 }

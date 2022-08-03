@@ -1,15 +1,18 @@
-name: whois_basic_example
+name: dns_basic_example
 description: Test that google.com dns are ok
 scrapeInterval: 1m
 timeout: 1s
 tags:
   sla: dev
 scenario:
-  kind: whois
+  kind: dns
   steps:
     - type: whoisFrom
       params:
         domain: google.com
     - type: shouldBeValidFor
       params:
-        period: 1d
+        for: 1d
+    - type: dnsSecShouldBeValid
+      params:
+        domain: google.com

@@ -1,14 +1,14 @@
-package whois_test
+package dns_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/hidracloud/hidra/v2/pkg/scenarios/whois"
+	"github.com/hidracloud/hidra/v2/pkg/scenarios/dns"
 )
 
 func TestScenario(t *testing.T) {
-	s := &whois.Scenario{}
+	s := &dns.Scenario{}
 	s.Init()
 
 	params := map[string]string{
@@ -17,7 +17,7 @@ func TestScenario(t *testing.T) {
 
 	ctx := context.TODO()
 
-	_, err := s.RunStep(ctx, "whoisFrom", params, 0, false)
+	_, err := s.RunStep(ctx, "dnsFrom", params, 0, false)
 	if err != nil {
 		t.Error(err)
 	}
