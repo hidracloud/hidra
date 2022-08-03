@@ -30,4 +30,13 @@ func TestScenario(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	params = make(map[string]string)
+	params["for"] = "brutal.systems"
+
+	_, err = s.RunStep(ctx, "dnsSecShouldBeValid", params, 0, false)
+
+	if err != nil {
+		t.Error(err)
+	}
 }

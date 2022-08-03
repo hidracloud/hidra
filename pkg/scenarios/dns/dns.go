@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hidracloud/hidra/v2/pkg/models"
@@ -57,10 +58,15 @@ func (s *Scenario) dnsSecShouldBeValid(ctx context.Context, c map[string]string)
 	}
 
 	utils.LogDebug("dnssec analysis", analysis)
+	if strings.Contains(analysis.String(), "No DNSKEY records found") {
+		utils.LogDebug("No DNSKEY records found")
+		return nil, nil
+	}
 
 	if analysis.Status() != dnssec.OK {
 		return nil, fmt.Errorf("domain has invalid dnssec configuration")
 	}
+
 	return nil, nil
 }
 

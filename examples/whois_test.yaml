@@ -15,4 +15,4 @@ scenario:
         for: 1d
     - type: dnsSecShouldBeValid
       params:
-        domain: google.com
+        domain: brutal.systems
