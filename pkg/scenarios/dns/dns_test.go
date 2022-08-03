@@ -32,7 +32,7 @@ func TestScenario(t *testing.T) {
 	}
 
 	params = make(map[string]string)
-	params["for"] = "brutal.systems"
+	params["domain"] = "brutal.systems"
 
 	_, err = s.RunStep(ctx, "dnsSecShouldBeValid", params, 0, false)
 
