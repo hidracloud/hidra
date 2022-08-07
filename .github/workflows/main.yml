@@ -3,12 +3,12 @@ name: Test and generate releases
 on:
   push:
     tags:
-      - '*'
+      - "*"
     branches:
-      - '*'
+      - "*"
   pull_request:
     branches:
-      - '*'
+      - "*"
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -17,7 +17,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.18.x]
+        go-version: [1.19.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -47,22 +47,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'go' ]
+        language: ["go"]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
-      with:
-        languages: ${{ matrix.language }}
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v1
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
 
   build-docker-image:
     runs-on: ubuntu-latest
@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: 'Generate version and dependencies'
+      - name: "Generate version and dependencies"
         run: |
           make versionize
       - name: Log in to the Container registry
@@ -97,7 +97,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-    
+
   build-release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: test
@@ -109,29 +109,29 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18.x
+          go-version: 1.19.x
       - name: Install CGO_ENABLED dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential
-      - name: 'Generate version and dependencies'
+      - name: "Generate version and dependencies"
         run: |
           make versionize
           make deps
 
-      - name: 'Build & test'
+      - name: "Build & test"
         run: |
           make build
 
-      - name: 'compresss'
+      - name: "compresss"
         run: |
           make compress
-          
+
       - name: Set git-tag
         run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
-      - uses: 'marvinpinto/action-automatic-releases@latest'
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: true
           draft: true
           files: |

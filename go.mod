@@ -1,6 +1,6 @@
 module github.com/hidracloud/hidra/v2
 
-go 1.18
+go 1.19
 
 require (
 	github.com/JoseCarlosGarcia95/go-port-scanner v0.0.0-20220320103816-c16a37d0aa75
