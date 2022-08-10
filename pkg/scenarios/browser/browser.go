@@ -16,7 +16,8 @@ import (
 // Scenario Represent an browser scenario
 type Scenario struct {
 	models.Scenario
-	ctx context.Context
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 // RCA generate RCAs for scenario
@@ -179,6 +180,11 @@ func (b *Scenario) Close() {
 		log.Println(err)
 	}
 	b.ctx.Done()
+
+	// keep browser open
+	if os.Getenv("DEBUG") == "" {
+		b.cancel()
+	}
 }
 
 // Init initialize scenario
@@ -193,7 +199,7 @@ func (b *Scenario) Init() {
 		initialCtx, _ = chromedp.NewExecAllocator(initialCtx, append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", false))...)
 	}
 
-	b.ctx, _ = chromedp.NewContext(
+	b.ctx, b.cancel = chromedp.NewContext(
 		initialCtx,
 	)
 
