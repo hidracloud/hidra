@@ -149,7 +149,10 @@ func (b *Scenario) takeScreenshot(ctx context.Context, c map[string]string) ([]m
 		return nil, err
 	}
 
-	f.Write(screenshot)
+	_, err = f.Write(screenshot)
+	if err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }
