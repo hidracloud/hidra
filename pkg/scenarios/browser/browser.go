@@ -141,8 +141,13 @@ func (b *Scenario) takeScreenshot(ctx context.Context, c map[string]string) ([]m
 	}
 
 	// save screenshot bytes to file
-	f, _ := os.OpenFile("screenshot.png", os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile("screenshot.png", os.O_WRONLY|os.O_CREATE, 0600)
 	defer f.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
 	f.Write(screenshot)
 
 	return nil, nil
