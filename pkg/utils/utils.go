@@ -284,13 +284,14 @@ func fullScreenshot(urlstr string, quality int, res *[]byte) chromedp.Tasks {
 // TakeScreenshotWithChromedp takes a screenshot of the current browser window.
 func TakeScreenshotWithChromedp(url, file string) error {
 	// create context
-	ctx, _ := chromedp.NewContext(
+	ctx, cancel := chromedp.NewContext(
 		context.Background(),
 	)
 
 	// add a timeout
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancelTimeout := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+	defer cancelTimeout()
 
 	var buf []byte
 
