@@ -37,7 +37,7 @@ var exporterCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		confPath := args[0]
 
-		log.Infof("Starting exporter with config: %s")
+		log.Infof("Starting exporter with config: %s", confPath)
 
 		exporterConf, err := config.LoadExporterConfigFromFile(confPath)
 

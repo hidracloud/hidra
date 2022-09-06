@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -32,7 +32,7 @@ func SetLogLevelFromStr(level string) {
 // AutoDiscoverYML find yaml in given path
 func AutoDiscoverYML(path string) ([]string, error) {
 	filesPath := []string{}
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
