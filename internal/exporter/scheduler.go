@@ -139,7 +139,7 @@ func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, execution
 	if penaltyPoints > 2 {
 		penalty = time.Duration(math.Round(penaltyPoints)) * sample.Interval
 
-		log.Info("Sample %s has been penalized for %s", sample.Name, penalty.String())
+		log.Infof("Sample %s has been penalized for %s", sample.Name, penalty.String())
 		penaltiesSamples[sample.Name] = penalty
 
 		return false
