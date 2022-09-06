@@ -87,8 +87,6 @@ func refreshSampleCommonTags() {
 
 // scheduleDecide decides if a sample should be scheduled
 func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, executionDurationStd float64) bool {
-	log.Debugf("Checking if sample %s should be scheduled", sample.Name)
-
 	sampleInProgress, exists := inProgress[sample.Name]
 
 	if !exists {
@@ -138,10 +136,10 @@ func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, execution
 
 	penaltyPoints := (float64(currentSampleRunningTime.Load()) - executionDurationAvg) / executionDurationStd
 
-	if penaltyPoints > 1 {
+	if penaltyPoints > 2 {
 		penalty = time.Duration(math.Round(penaltyPoints)) * sample.Interval
 
-		log.Debugf("Sample %s has a penalty of %s", sample.Name, penalty)
+		log.Info("Sample %s has been penalized for %s", sample.Name, penalty.String())
 		penaltiesSamples[sample.Name] = penalty
 
 		return false
@@ -165,9 +163,6 @@ func enqueueSamples(config *config.ExporterConfig) {
 
 	executionDurationStd = math.Sqrt(executionDurationStd / float64(len(configSamples)))
 
-	log.Debugf("Execution duration average: %f", executionDurationAvg)
-	log.Debugf("Execution duration standard deviation: %f", executionDurationStd)
-
 	for _, sample := range configSamples {
 		if scheduleDecide(sample, executionDurationAvg, executionDurationStd) {
 			log.Debugf("Enqueuing sample %s", sample.Name)
@@ -188,8 +183,7 @@ func InitializeScheduler(config *config.ExporterConfig) {
 }
 
 // TickScheduler ticks the scheduler
-func TickScheduler(config *config.ExporterConfig, wg *sync.WaitGroup) {
-	defer wg.Done()
+func TickScheduler(config *config.ExporterConfig) {
 	tickerRefreshSamples := time.NewTicker(config.SchedulerConfig.RefreshSamplesInterval)
 	tickerEnqueueSamples := time.NewTicker(config.SchedulerConfig.EnqueueSamplesInterval)
 

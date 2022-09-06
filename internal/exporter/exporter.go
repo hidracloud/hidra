@@ -2,7 +2,6 @@ package exporter
 
 import (
 	"net/http"
-	"sync"
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -26,25 +25,22 @@ func Initialize(config *config.ExporterConfig) {
 		log.Fatal("Samples path is empty")
 	}
 
-	wg := &sync.WaitGroup{}
-
 	log.Debug("Initializing scheduler...")
 
-	wg.Add(1)
 	InitializeScheduler(config)
-	go TickScheduler(config, wg)
+	go TickScheduler(config)
 
 	log.Debug("Initializing workers...")
 
-	wg.Add(1)
 	InitializeWorker(config)
-	go RunWorkers(config, wg)
+	go RunWorkers(config)
 
 	http.Handle(config.HTTPServerConfig.MetricsPath, promhttp.Handler())
+	log.Infof("Listening on %s and path %s", config.HTTPServerConfig.ListenAddress, config.HTTPServerConfig.MetricsPath)
+
 	err := http.ListenAndServe(config.HTTPServerConfig.ListenAddress, nil)
+
 	if err != nil {
 		panic(err)
 	}
-
-	wg.Wait()
 }

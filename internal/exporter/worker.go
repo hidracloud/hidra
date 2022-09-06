@@ -35,8 +35,7 @@ func InitializeWorker(config *config.ExporterConfig) {
 }
 
 // RunWorkers runs the workers
-func RunWorkers(cnf *config.ExporterConfig, wg *sync.WaitGroup) {
-	defer wg.Done()
+func RunWorkers(cnf *config.ExporterConfig) {
 
 	log.Debugf("Initializing %d workers...", cnf.WorkerConfig.ParallelJobs)
 
@@ -44,8 +43,6 @@ func RunWorkers(cnf *config.ExporterConfig, wg *sync.WaitGroup) {
 
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
 		go func(worker int) {
-			wg.Add(1)
-			defer wg.Done()
 			for {
 				sample := <-samplesJobs
 				startTime := time.Now()
