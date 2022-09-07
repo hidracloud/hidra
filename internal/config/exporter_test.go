@@ -19,6 +19,6 @@ samples_path: /tmp
 	config, err := config.LoadExporterConfig(data)
 	require.NoError(t, err)
 	assert.Equal(t, "debug", config.LogLevel)
-	assert.Equal(t, "", config.HTTPServerConfig.ListenAddress)
+	assert.Equal(t, ":19090", config.HTTPServerConfig.ListenAddress)
 	assert.Equal(t, "/tmp", config.SamplesPath)
 }

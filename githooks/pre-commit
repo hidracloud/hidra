@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+echo "Running go tests..."
+go test ./...
