@@ -18,6 +18,10 @@ type Strings struct {
 func (p *Strings) outputShouldContain(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	search := args["search"]
 
+	if _, ok := ctx.Value(plugins.ContextOutput).(string); !ok {
+		return ctx, nil, fmt.Errorf("output is not a string")
+	}
+
 	output := ctx.Value(plugins.ContextOutput).(string)
 
 	if strings.Contains(output, search) {

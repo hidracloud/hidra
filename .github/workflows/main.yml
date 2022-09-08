@@ -33,6 +33,8 @@ jobs:
           working-directory: "./"
       - name: Test
         run: go test ./...
+      - name: Run hidra on test mode
+        run: go run main.go test configs/hidra/samples/*.yml  --exit-on-error
 
   # security-metrics:
   #   if: ${{ github.ref == 'refs/heads/main' }}

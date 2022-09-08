@@ -97,6 +97,11 @@ var (
 		Name: "http.addr",
 	}
 
+	// ContextDNSInfo is the context key for the DNS info.
+	ContextDNSInfo = ContextKey{
+		Name: "dns.info",
+	}
+
 	// ContextOutput is the context key for the output.
 	ContextOutput = ContextKey{
 		Name: "output",

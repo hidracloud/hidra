@@ -8,6 +8,9 @@ steps:
     action: request
     parameters:
       url: https://hidra.cloud
+  - action: statusCodeShouldBe
+    parameters:
+      statusCode: 200
   - plugin: string
     action: outputShouldContain
     parameters:

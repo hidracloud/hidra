@@ -1,0 +1,18 @@
+description: "This is a sample to test the DNS plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: dns
+    action: whoisFrom
+    parameters:
+      domain: google.com
+
+  - action: shouldBeValidFor
+    parameters:
+      for: 1d
+
+  - action: dnsSecShouldBeValid
+    parameters:
+      domain: google.com

@@ -1,5 +1,5 @@
 package misc
-const Version = "v2.13.0-10-ga2bbefd"
-const BuildDate = "2022-09-08T14:03:04Z"
-const Commit = "a2bbefd2e1841277b2e076e897fd629fd495f26b"
+const Version = "v2.13.0-11-g324a983"
+const BuildDate = "2022-09-08T14:30:24Z"
+const Commit = "324a9834fbb13dab7e8e72e3769b2e1800929243"
 const Branch = "v3"

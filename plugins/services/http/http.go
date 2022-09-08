@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/plugins"
 )
 
@@ -55,7 +56,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 		if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
 			timeout = ctx.Value(plugins.ContextTimeout).(time.Duration)
 		}
-		
+
 		httpClient = &http.Client{
 			Jar: clientJar,
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -117,6 +118,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 	if err != nil {
 		return ctx, nil, err
 	}
+
+	req.Header.Set("User-Agent", fmt.Sprintf("hidra/monitoring %s", misc.Version))
 
 	if ctxHeaders, ok := ctx.Value(plugins.ContextHTTPHeaders).(map[string]string); ok {
 		for k, v := range ctxHeaders {

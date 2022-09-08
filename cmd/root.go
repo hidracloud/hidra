@@ -15,6 +15,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	exitOnError bool
+)
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "hidra",
@@ -100,6 +104,10 @@ var testCmd = &cobra.Command{
 			utils.PrintTable(infoTable)
 			fmt.Println()
 			fmt.Println()
+
+			if exitCode != 0 && exitOnError {
+				log.Fatal("Exit on error enabled, one test failed")
+			}
 		}
 
 		os.Exit(exitCode)
@@ -132,6 +140,8 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(exporterCmd)
+
+	testCmd.PersistentFlags().BoolVar(&exitOnError, "exit-on-error", false, "Exit with error code 1 if any test fails")
 	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(versionCmd)
 }

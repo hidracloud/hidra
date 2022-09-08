@@ -9,20 +9,18 @@ import (
 )
 
 // TestRequestByMethod
-func TestRequestByMethod(t *testing.T) {
+func TestHTTPRequestParameters(t *testing.T) {
 	h := http.HTTP{}
 	h.Init()
 
 	ctx := context.TODO()
 
-	args := map[string]string{
-		"method": "GET",
-		"url":    "https://www.google.com",
-	}
-
 	ctx, _, err := h.RunStep(ctx, &plugins.Step{
 		Name: "request",
-		Args: args,
+		Args: map[string]string{
+			"method": "GET",
+			"url":    "https://www.google.com",
+		},
 	})
 
 	if err != nil {
@@ -50,4 +48,5 @@ func TestRequestByMethod(t *testing.T) {
 	if err == nil {
 		t.Error("expected error")
 	}
+
 }

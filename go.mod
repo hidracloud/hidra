@@ -3,7 +3,10 @@ module github.com/hidracloud/hidra/v3
 go 1.19
 
 require (
+	github.com/StalkR/dnssec-analyzer v1.0.0
 	github.com/likexian/gokit v0.25.9
+	github.com/likexian/whois v1.14.2
+	github.com/likexian/whois-parser v1.24.1
 	github.com/prometheus/client_golang v1.13.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0
@@ -23,6 +26,8 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

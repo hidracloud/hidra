@@ -6,4 +6,7 @@ import (
 	_ "github.com/hidracloud/hidra/v3/plugins/misc/string"
 	// Run http initialization
 	_ "github.com/hidracloud/hidra/v3/plugins/services/http"
+
+	// Run http initialization
+	_ "github.com/hidracloud/hidra/v3/plugins/services/dns"
 )
