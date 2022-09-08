@@ -77,6 +77,16 @@ var (
 		Name: "http.dnsdoneinfo",
 	}
 
+	// ContextHTTPTlsInsecureSkipVerify is the context key for the HTTP TLS insecure skip verify.
+	ContextHTTPTlsInsecureSkipVerify = ContextKey{
+		Name: "http.tlsinsecureskipverify",
+	}
+
+	// ContextHTTPForceIP is the context key for the HTTP force IP.
+	ContextHTTPForceIP = ContextKey{
+		Name: "http.forceip",
+	}
+
 	// ContextHTTPNetwork is the context key for the HTTP network.
 	ContextHTTPNetwork = ContextKey{
 		Name: "http.network",
@@ -90,6 +100,16 @@ var (
 	// ContextOutput is the context key for the output.
 	ContextOutput = ContextKey{
 		Name: "output",
+	}
+
+	// ContextTimeout is the context key for the timeout.
+	ContextTimeout = ContextKey{
+		Name: "timeout",
+	}
+
+	// ContextHTTPClient is the context key for the HTTP client.
+	ContextHTTPClient = ContextKey{
+		Name: "http.client",
 	}
 )
 

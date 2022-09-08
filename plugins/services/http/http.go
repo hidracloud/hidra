@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptrace"
 	"strconv"
@@ -38,11 +39,46 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 		ctx = context.WithValue(ctx, plugins.ContextSharedJar, clientJar)
 	}
 
-	httpClient := &http.Client{
-		Jar: clientJar,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
+	tlsSkipInsecure := false
+
+	if _, ok := ctx.Value(plugins.ContextHTTPTlsInsecureSkipVerify).(bool); ok {
+		tlsSkipInsecure = ctx.Value(plugins.ContextHTTPTlsInsecureSkipVerify).(bool)
+	}
+
+	var httpClient *http.Client
+
+	if _, ok := ctx.Value(plugins.ContextHTTPClient).(*http.Client); ok {
+		httpClient = ctx.Value(plugins.ContextHTTPClient).(*http.Client)
+	} else {
+		timeout := 30 * time.Second
+
+		if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
+			timeout = ctx.Value(plugins.ContextTimeout).(time.Duration)
+		}
+		
+		httpClient = &http.Client{
+			Jar: clientJar,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+			Timeout: timeout,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: tlsSkipInsecure,
+				},
+				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+					d := &net.Dialer{}
+
+					if _, ok := ctx.Value(plugins.ContextHTTPForceIP).(string); ok {
+						addr = fmt.Sprintf("%s:%s", ctx.Value(plugins.ContextHTTPForceIP), strings.Split(addr, ":")[1])
+					}
+
+					return d.DialContext(ctx, network, addr)
+				},
+			},
+		}
+
+		ctx = context.WithValue(ctx, plugins.ContextHTTPClient, httpClient)
 	}
 
 	clientTrace := &httptrace.ClientTrace{
@@ -246,6 +282,48 @@ func (p *HTTP) bodyShouldContain(ctx context.Context, args map[string]string) (c
 	return ctx, nil, err
 }
 
+// shouldRedirectTo represents a HTTP should redirect to.
+func (p *HTTP) shouldRedirectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	var err error
+
+	// get context for current step
+	if _, ok := ctx.Value(plugins.ContextHTTPResponse).(*http.Response); !ok {
+		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", plugins.ContextHTTPResponse.Name)
+	}
+
+	resp := ctx.Value(plugins.ContextHTTPResponse).(*http.Response)
+
+	if resp.Header.Get("Location") != args["url"] {
+		return ctx, nil, fmt.Errorf("expected redirect to %s but got %s", args["url"], resp.Header.Get("Location"))
+	}
+
+	return ctx, nil, err
+}
+
+// addHTTPHeader represents a HTTP add header.
+func (p *HTTP) addHTTPHeader(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	var err error
+
+	// get context for current step
+	if _, ok := ctx.Value(plugins.ContextHTTPHeaders).(map[string]string); !ok {
+		ctx = context.WithValue(ctx, plugins.ContextHTTPHeaders, map[string]string{})
+	}
+
+	headers := ctx.Value(plugins.ContextHTTPHeaders).(map[string]string)
+
+	headers[args["key"]] = args["value"]
+
+	return ctx, nil, err
+}
+
+// setUserAgent represents a HTTP set user agent.
+func (p *HTTP) setUserAgent(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	return p.addHTTPHeader(ctx, map[string]string{
+		"key":   "User-Agent",
+		"value": args["userAgent"],
+	})
+}
+
 // Init initializes the plugin.
 func (p *HTTP) Init() {
 	p.Primitives()
@@ -259,11 +337,21 @@ func (p *HTTP) Init() {
 			{Name: "body", Description: "The body", Optional: true},
 		},
 		Fn: p.request,
+		ContextGenerator: []plugins.ContextGenerator{
+			{
+				Name:        plugins.ContextHTTPResponse.Name,
+				Description: "The HTTP response",
+			},
+			{
+				Name:        plugins.ContextOutput.Name,
+				Description: "The HTTP response body",
+			},
+		},
 	})
 
 	p.RegisterStep(&plugins.StepDefinition{
 		Name:        "statusCodeShouldBe",
-		Description: "[DEPRECATED] Checks if the status code is equal to the expected value",
+		Description: "Checks if the status code is equal to the expected value",
 		Params: []plugins.StepParam{
 			{Name: "statusCode", Description: "The expected status code", Optional: false},
 		},
@@ -272,12 +360,62 @@ func (p *HTTP) Init() {
 
 	p.RegisterStep(&plugins.StepDefinition{
 		Name:        "bodyShouldContain",
-		Description: "[DEPRECATED] Checks if the body contains the expected value",
+		Description: "[DEPRECATED] Please use outputShouldContain from string plugin. Checks if the body contains the expected value",
 		Params: []plugins.StepParam{
 			{Name: "search", Description: "The expected value", Optional: false},
 		},
 		Fn: p.bodyShouldContain,
 	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "shouldRedirectTo",
+		Description: "Checks if the response redirects to the expected URL",
+		Params: []plugins.StepParam{
+			{Name: "url", Description: "The expected URL", Optional: false},
+		},
+		Fn: p.shouldRedirectTo,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "addHTTPHeader",
+		Description: "Adds a HTTP header to the request. If the header already exists, it will be overwritten",
+		Params: []plugins.StepParam{
+			{Name: "key", Description: "The header name", Optional: false},
+			{Name: "value", Description: "The header value", Optional: false},
+		},
+		Fn: p.addHTTPHeader,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "setUserAgent",
+		Description: "Sets the User-Agent header",
+		Params: []plugins.StepParam{
+			{Name: "user-agent", Description: "The User-Agent value", Optional: false},
+		},
+		Fn: p.setUserAgent,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "allowInsecureTLS",
+		Description: "Allows insecure TLS connections. This is useful for testing purposes, but should not be used in production",
+		Fn: func(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+			ctx = context.WithValue(ctx, plugins.ContextHTTPTlsInsecureSkipVerify, true)
+			return ctx, nil, nil
+		},
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "forceIP",
+		Description: "Forces the IP address to use for the request",
+		Params: []plugins.StepParam{
+			{Name: "ip", Description: "The IP address", Optional: false},
+		},
+		Fn: func(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+			ctx = context.WithValue(ctx, plugins.ContextHTTPForceIP, args["ip"])
+			return ctx, nil, nil
+		},
+	})
+
 }
 
 // Init initializes the plugin.

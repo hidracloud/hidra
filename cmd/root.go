@@ -7,6 +7,7 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/exporter"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/hidracloud/hidra/v3/plugins"
 	"github.com/spf13/cobra"
@@ -105,6 +106,22 @@ var testCmd = &cobra.Command{
 	},
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of Hidra",
+	Long:  `All software has versions. This is Hidra's`,
+	Run: func(cmd *cobra.Command, args []string) {
+		infoTable := [][]string{
+			{"Version", misc.Version},
+			{"Build date", misc.BuildDate},
+			{"Branch", misc.Branch},
+			{"Commit", misc.Commit},
+		}
+
+		utils.PrintTable(infoTable)
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
 	err := rootCmd.Execute()
@@ -116,4 +133,5 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(exporterCmd)
 	rootCmd.AddCommand(testCmd)
+	rootCmd.AddCommand(versionCmd)
 }

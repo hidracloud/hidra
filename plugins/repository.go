@@ -34,6 +34,8 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 
 	lastPlugin := ""
 
+	ctx = context.WithValue(ctx, ContextTimeout, sample.Timeout)
+
 	for _, step := range sample.Steps {
 		log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
 		log.Debugf("|_%s Action: %v", strings.Repeat("_", depthSize), step.Action)

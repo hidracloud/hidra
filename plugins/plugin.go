@@ -44,7 +44,7 @@ type StepDefinition struct {
 	Description      string
 	Params           []StepParam
 	Fn               stepFn `json:"-"`
-	ContextGenerator []*ContextGenerator
+	ContextGenerator []ContextGenerator
 }
 
 // ContextGenerator represents a context generator.

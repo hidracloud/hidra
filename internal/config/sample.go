@@ -46,6 +46,10 @@ func LoadSampleConfig(data []byte) (*SampleConfig, error) {
 		return nil, err
 	}
 
+	if config.Timeout == 0 {
+		config.Timeout = 10 * time.Second
+	}
+
 	return &config, nil
 }
 
