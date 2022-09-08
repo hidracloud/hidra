@@ -22,10 +22,7 @@ var (
 	configSamples []*config.SampleConfig
 
 	// penaltiesSamples is the penalties
-	penaltiesSamples map[string]time.Duration
-
-	// inProgress is the in progress
-	inProgress map[string]bool
+	penaltiesSamples = make(map[string]time.Duration)
 )
 
 // RefreshSamples refreshes the samples.
@@ -72,7 +69,7 @@ func refreshSamples(cnf *config.ExporterConfig) {
 
 // refreshPrometheusCustomLabels refreshes the prometheus custom labels
 func refreshSampleCommonTags() {
-	sampleCommonTags = make([]string, 0)
+	sampleCommonTags = []string{"sample_name"}
 	alreadyAdded := make(map[string]bool)
 
 	for _, sample := range configSamples {
@@ -87,20 +84,6 @@ func refreshSampleCommonTags() {
 
 // scheduleDecide decides if a sample should be scheduled
 func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, executionDurationStd float64) bool {
-	sampleInProgress, exists := inProgress[sample.Name]
-
-	if !exists {
-		log.Debugf("Sample %s has never been scheduled, scheduling...", sample.Name)
-
-		return true
-	}
-
-	if sampleInProgress {
-		log.Debugf("Sample %s is already in progress, skipping...", sample.Name)
-
-		return false
-	}
-
 	lastSampleRun, exists := lastRun[sample.Name]
 
 	if !exists {
@@ -136,10 +119,10 @@ func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, execution
 
 	penaltyPoints := (float64(currentSampleRunningTime.Load()) - executionDurationAvg) / executionDurationStd
 
-	if penaltyPoints > 2 {
+	if penaltyPoints > 0 {
 		penalty = time.Duration(math.Round(penaltyPoints)) * sample.Interval
 
-		log.Infof("Sample %s has been penalized for %s", sample.Name, penalty.String())
+		log.Warnf("Sample %s has been penalized for %s", sample.Name, penalty.String())
 		penaltiesSamples[sample.Name] = penalty
 
 		return false
@@ -166,7 +149,7 @@ func enqueueSamples(config *config.ExporterConfig) {
 	for _, sample := range configSamples {
 		if scheduleDecide(sample, executionDurationAvg, executionDurationStd) {
 			log.Debugf("Enqueuing sample %s", sample.Name)
-			inProgress[sample.Name] = true
+			lastRun[sample.Name] = time.Now().Add(time.Hour * 24 * 365)
 			samplesJobs <- sample
 		}
 	}
@@ -176,8 +159,6 @@ func enqueueSamples(config *config.ExporterConfig) {
 func InitializeScheduler(config *config.ExporterConfig) {
 	lastRun = make(map[string]time.Time)
 	samplesMutex = &sync.RWMutex{}
-	inProgress = make(map[string]bool)
-
 	refreshSamples(config)
 	refreshSampleCommonTags()
 }

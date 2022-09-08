@@ -1,11 +1,16 @@
 package exporter
 
 import (
+	"context"
+	"math/rand"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/config"
+	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/plugins"
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,6 +29,12 @@ var (
 
 	// lastRunMutex is the mutex to protect the last scheduler run
 	lastRunMutex *sync.RWMutex
+
+	// prometheusMetricStore is the prometheus metric store
+	prometheusMetricStore = make(map[string]*prometheus.GaugeVec)
+
+	// prometheusStatusMetricStore is the prometheus status metric store
+	prometheusStatusMetric *prometheus.GaugeVec
 )
 
 // InitializeWorker initializes the worker
@@ -34,6 +45,79 @@ func InitializeWorker(config *config.ExporterConfig) {
 	lastRunMutex = &sync.RWMutex{}
 }
 
+// updateMetrics updates the metrics
+func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, err error) {
+	for _, metric := range allMetrics {
+		prometheusMetric := initializePrometheusMetrics(metric)
+		labels := createLabels(metric, sample)
+
+		prometheusMetric.With(labels).Set(metric.Value)
+
+		statusLabels := createLabelsForStatus(sample)
+
+		if err != nil {
+			prometheusStatusMetric.With(statusLabels).Set(0)
+		} else {
+			prometheusStatusMetric.With(statusLabels).Set(1)
+		}
+	}
+}
+
+// createLabelsForStatus creates the labels for status
+func createLabelsForStatus(sample *config.SampleConfig) prometheus.Labels {
+	return createLabels(&metrics.Metric{}, sample)
+}
+
+// createLabels creates the labels
+func createLabels(metric *metrics.Metric, sample *config.SampleConfig) prometheus.Labels {
+	metricLabels := make([]string, 0)
+
+	for label := range metric.Labels {
+		metricLabels = append(metricLabels, label)
+	}
+
+	metricLabels = append(metricLabels, sampleCommonTags...)
+
+	labels := prometheus.Labels{}
+
+	for _, label := range metricLabels {
+		labels[label] = ""
+		if _, ok := metric.Labels[label]; ok {
+			labels[label] = metric.Labels[label]
+		} else if _, ok := sample.Tags[label]; ok {
+			labels[label] = sample.Tags[label]
+		}
+	}
+
+	labels["sample_name"] = sample.Name
+	return labels
+}
+
+// initializePrometheusMetrics initializes the prometheus metrics
+func initializePrometheusMetrics(metric *metrics.Metric) *prometheus.GaugeVec {
+	if _, ok := prometheusMetricStore[metric.Name]; !ok {
+		metricLabels := make([]string, 0)
+
+		for label := range metric.Labels {
+			metricLabels = append(metricLabels, label)
+		}
+
+		metricLabels = append(metricLabels, sampleCommonTags...)
+
+		prometheusMetricStore[metric.Name] = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name:      metric.Name,
+				Help:      metric.Description,
+				Namespace: "hidra",
+			},
+			metricLabels,
+		)
+		prometheus.MustRegister(prometheusMetricStore[metric.Name])
+	}
+
+	return prometheusMetricStore[metric.Name]
+}
+
 // RunWorkers runs the workers
 func RunWorkers(cnf *config.ExporterConfig) {
 
@@ -41,12 +125,30 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 	samplesJobs = make(chan *config.SampleConfig, cnf.WorkerConfig.MaxQueueSize)
 
+	prometheusStatusMetric = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name:      "hidra_exporter_sample_status",
+			Help:      "Hidra exporter status",
+			Namespace: "hidra",
+		},
+		sampleCommonTags,
+	)
+
+	prometheus.MustRegister(prometheusStatusMetric)
+
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
 		go func(worker int) {
 			for {
 				sample := <-samplesJobs
 				startTime := time.Now()
 				log.Debugf("Running sample %s, with description %s from worker %d", sample.Name, sample.Description, worker)
+
+				// Run the sample
+				ctx := context.Background()
+				_, allMetrics, err := plugins.RunSample(ctx, sample)
+
+				// Update the metrics
+				updateMetrics(allMetrics, sample, err)
 
 				runningTime.Add(uint64(time.Since(startTime).Milliseconds()))
 
@@ -56,9 +158,9 @@ func RunWorkers(cnf *config.ExporterConfig) {
 					sampleRunningTime[sample.Name] = &atomic.Uint64{}
 				}
 
+				randomOffset := time.Duration(rand.Intn(int(sample.Interval.Seconds()))) * time.Second
 				sampleRunningTime[sample.Name].Add(uint64(time.Since(startTime).Milliseconds()))
-				lastRun[sample.Name] = time.Now()
-				inProgress[sample.Name] = false
+				lastRun[sample.Name] = time.Now().Add(randomOffset)
 				lastRunMutex.Unlock()
 			}
 		}(i)

@@ -8,3 +8,6 @@ steps:
     action: request
     parameters:
       url: https://hidra.cloud
+  - action: bodyShouldContain
+    parameters:
+      search: H1dra

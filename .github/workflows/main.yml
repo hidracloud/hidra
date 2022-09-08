@@ -32,36 +32,36 @@ jobs:
         with:
           working-directory: "./"
       - name: Test
-        run: sudo $(which go) test ./...
+        run: go test ./...
 
-  security-metrics:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    name: Analyze
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
+  # security-metrics:
+  #   if: ${{ github.ref == 'refs/heads/main' }}
+  #   name: Analyze
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     actions: read
+  #     contents: read
+  #     security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["go"]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       language: ["go"]
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v2
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: ${{ matrix.language }}
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v1
+  #       with:
+  #         languages: ${{ matrix.language }}
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
+  #     - name: Autobuild
+  #       uses: github/codeql-action/autobuild@v1
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+  #     - name: Perform CodeQL Analysis
+  #       uses: github/codeql-action/analyze@v1
 
   build-docker-image:
     runs-on: ubuntu-latest
@@ -97,48 +97,48 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  build-release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: test
-    name: Create Release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.19.x
-      - name: Install CGO_ENABLED dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y build-essential
-      - name: "Generate version and dependencies"
-        run: |
-          make versionize
-          make deps
+  # build-release:
+  #   if: startsWith(github.ref, 'refs/tags/v')
+  #   needs: test
+  #   name: Create Release
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #     - name: Install Go
+  #       uses: actions/setup-go@v2
+  #       with:
+  #         go-version: 1.19.x
+  #     - name: Install CGO_ENABLED dependencies
+  #       run: |
+  #         sudo apt-get update && sudo apt-get install -y build-essential
+  #     - name: "Generate version and dependencies"
+  #       run: |
+  #         make versionize
+  #         make deps
 
-      - name: "Build & test"
-        run: |
-          make build
+  #     - name: "Build & test"
+  #       run: |
+  #         make build
 
-      - name: "compresss"
-        run: |
-          make compress
+  #     - name: "compresss"
+  #       run: |
+  #         make compress
 
-      - name: Set git-tag
-        run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+  #     - name: Set git-tag
+  #       run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
-          draft: true
-          files: |
-            build/hidra-${{ env.GIT_TAG }}-darwin-amd64.tar.gz
-            build/hidra-${{ env.GIT_TAG }}-darwin-arm64.tar.gz
-            build/hidra-${{ env.GIT_TAG }}-linux-386.tar.gz
-            build/hidra-${{ env.GIT_TAG }}-linux-amd64.tar.gz
-            build/hidra-${{ env.GIT_TAG }}-linux-arm64.tar.gz
-            build/hidra-${{ env.GIT_TAG }}-linux-arm.tar.gz
-            build/hidra-${{ env.GIT_TAG }}-amd64.deb
-            build/hidra-${{ env.GIT_TAG }}-arm64.deb
+  #     - uses: "marvinpinto/action-automatic-releases@latest"
+  #       with:
+  #         repo_token: "${{ secrets.GITHUB_TOKEN }}"
+  #         prerelease: true
+  #         draft: true
+  #         files: |
+  #           build/hidra-${{ env.GIT_TAG }}-darwin-amd64.tar.gz
+  #           build/hidra-${{ env.GIT_TAG }}-darwin-arm64.tar.gz
+  #           build/hidra-${{ env.GIT_TAG }}-linux-386.tar.gz
+  #           build/hidra-${{ env.GIT_TAG }}-linux-amd64.tar.gz
+  #           build/hidra-${{ env.GIT_TAG }}-linux-arm64.tar.gz
+  #           build/hidra-${{ env.GIT_TAG }}-linux-arm.tar.gz
+  #           build/hidra-${{ env.GIT_TAG }}-amd64.deb
+  #           build/hidra-${{ env.GIT_TAG }}-arm64.deb

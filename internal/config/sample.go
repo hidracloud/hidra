@@ -19,10 +19,10 @@ type SampleConfig struct {
 	Tags map[string]string `yaml:"tags"`
 
 	// ScrapeInterval is the interval to scrape the sample.
-	Interval time.Duration `yaml:"scrape_interval"`
+	Interval time.Duration `yaml:"interval"`
 
 	// Timeout is the timeout to scrape the sample.
-	Timeout time.Duration `yaml:"scrape_timeout"`
+	Timeout time.Duration `yaml:"timeout"`
 
 	// Steps is the steps to scrape the sample.
 	Steps []StepConfig `yaml:"steps"`

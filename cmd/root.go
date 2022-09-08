@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
 	"os"
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/exporter"
 	"github.com/hidracloud/hidra/v3/internal/utils"
+	"github.com/hidracloud/hidra/v3/plugins"
 	"github.com/spf13/cobra"
 
 	log "github.com/sirupsen/logrus"
@@ -53,6 +56,55 @@ var exporterCmd = &cobra.Command{
 	},
 }
 
+// testCmd represents the test command
+var testCmd = &cobra.Command{
+	Use:   "test",
+	Short: "Starts the test",
+	Long:  `Starts the test`,
+	Args:  cobra.ArbitraryArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		exitCode := 0
+		log.SetLevel(log.DebugLevel)
+		for _, sample := range args {
+			// Load sample config
+			sampleConf, err := config.LoadSampleConfigFromFile(sample)
+
+			if err != nil {
+				log.Fatal("Error loading config: ", err)
+			}
+
+			ctx := context.TODO()
+
+			_, metrics, err := plugins.RunSample(ctx, sampleConf)
+
+			if err != nil {
+				exitCode = 1
+			}
+
+			resultEmoji := "✅"
+			if err != nil {
+				resultEmoji = "❌"
+			}
+
+			infoTable := [][]string{
+				{"Sample", sample},
+				{"Error", fmt.Sprintf("%v", err)},
+				{"Result", resultEmoji},
+			}
+
+			for _, metric := range metrics {
+				infoTable = append(infoTable, []string{fmt.Sprintf("%s (%s) (%v)", metric.Description, metric.Name, metric.Labels), fmt.Sprintf("%f", metric.Value)})
+			}
+
+			utils.PrintTable(infoTable)
+			fmt.Println()
+			fmt.Println()
+		}
+
+		os.Exit(exitCode)
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
 	err := rootCmd.Execute()
@@ -63,4 +115,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(exporterCmd)
+	rootCmd.AddCommand(testCmd)
 }

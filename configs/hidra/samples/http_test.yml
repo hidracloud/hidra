@@ -8,3 +8,6 @@ steps:
     action: request
     parameters:
       url: https://www.google.com
+  - action: statusCodeShouldBe
+    parameters:
+      statusCode: 200

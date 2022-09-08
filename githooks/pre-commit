@@ -3,3 +3,6 @@ set -e
 
 echo "Running go tests..."
 go test ./...
+
+echo "Running golanci-lint..."
+golangci-lint run
