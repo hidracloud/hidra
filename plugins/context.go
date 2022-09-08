@@ -8,87 +8,87 @@ type ContextKey struct {
 
 var (
 	// ContextHTTPMethod is the context key for the HTTP method.
-	ContextHTTPMethod = &ContextKey{
+	ContextHTTPMethod = ContextKey{
 		Name: "http.method",
 	}
 	// ContextHTTPURL is the context key for the HTTP URL.
-	ContextHTTPURL = &ContextKey{
+	ContextHTTPURL = ContextKey{
 		Name: "http.url",
 	}
 	// ContextHTTPBody is the context key for the HTTP body.
-	ContextHTTPBody = &ContextKey{
+	ContextHTTPBody = ContextKey{
 		Name: "http.body",
 	}
 	// ContextSharedJar is the context key for the shared jar.
-	ContextSharedJar = &ContextKey{
+	ContextSharedJar = ContextKey{
 		Name: "http.sharedjar",
 	}
 	// ContextHTTPHeaders is the context key for the HTTP headers.
-	ContextHTTPHeaders = &ContextKey{
+	ContextHTTPHeaders = ContextKey{
 		Name: "http.headers",
 	}
 	// ContextHTTPResponse is the context key for the HTTP response.
-	ContextHTTPResponse = &ContextKey{
+	ContextHTTPResponse = ContextKey{
 		Name: "http.response",
 	}
 
 	// ContextHTTPConnInfo is the context key for the HTTP connection info.
-	ContextHTTPConnInfo = &ContextKey{
+	ContextHTTPConnInfo = ContextKey{
 		Name: "http.conninfo",
 	}
 
 	// ContextHTTPDNSStartInfo is the context key for the HTTP DNS start info.
-	ContextHTTPDNSStartInfo = &ContextKey{
+	ContextHTTPDNSStartInfo = ContextKey{
 		Name: "http.dnsstartinfo",
 	}
 
 	// ContextHTTPDNSStartTime is the context key for the HTTP DNS start time.
-	ContextHTTPDNSStartTime = &ContextKey{
+	ContextHTTPDNSStartTime = ContextKey{
 		Name: "http.dnsstarttime",
 	}
 
 	// ContextHTTPDNSStopTime is the context key for the HTTP DNS stop time.
-	ContextHTTPDNSStopTime = &ContextKey{
+	ContextHTTPDNSStopTime = ContextKey{
 		Name: "http.dnsstoptime",
 	}
 
 	// ContextHTTPTcpConnectStartTime is the context key for the HTTP TCP connect start time.
-	ContextHTTPTcpConnectStartTime = &ContextKey{
+	ContextHTTPTcpConnectStartTime = ContextKey{
 		Name: "http.tcpconnectstarttime",
 	}
 
 	// ContextHTTPTcpConnectStopTime is the context key for the HTTP TCP connect stop time.
-	ContextHTTPTcpConnectStopTime = &ContextKey{
+	ContextHTTPTcpConnectStopTime = ContextKey{
 		Name: "http.tcpconnectstoptime",
 	}
 
 	// ContextHTTPTlsHandshakeStartTime is the context key for the HTTP TLS handshake start time.
-	ContextHTTPTlsHandshakeStartTime = &ContextKey{
+	ContextHTTPTlsHandshakeStartTime = ContextKey{
 		Name: "http.tlshandshakestarttime",
 	}
 
 	// ContextHTTPTlsHandshakeStopTime is the context key for the HTTP TLS handshake stop time.
-	ContextHTTPTlsHandshakeStopTime = &ContextKey{
+	ContextHTTPTlsHandshakeStopTime = ContextKey{
 		Name: "http.tlshandshakestoptime",
 	}
 
 	// ContextHTTPDNSDoneInfo is the context key for the HTTP DNS done info.
-	ContextHTTPDNSDoneInfo = &ContextKey{
+	ContextHTTPDNSDoneInfo = ContextKey{
 		Name: "http.dnsdoneinfo",
 	}
 
 	// ContextHTTPNetwork is the context key for the HTTP network.
-	ContextHTTPNetwork = &ContextKey{
+	ContextHTTPNetwork = ContextKey{
 		Name: "http.network",
 	}
 
 	// ContextHTTPAddr is the context key for the HTTP address.
-	ContextHTTPAddr = &ContextKey{
+	ContextHTTPAddr = ContextKey{
 		Name: "http.addr",
 	}
 
 	// ContextOutput is the context key for the output.
-	ContextOutput = &ContextKey{
+	ContextOutput = ContextKey{
 		Name: "output",
 	}
 )

@@ -8,6 +8,7 @@ steps:
     action: request
     parameters:
       url: https://hidra.cloud
-  - action: bodyShouldContain
+  - plugin: string
+    action: outputShouldContain
     parameters:
-      search: H1dra
+      search: Hidra

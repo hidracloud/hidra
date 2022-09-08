@@ -40,10 +40,19 @@ type StepParam struct {
 
 // StepDefinition represents a step definition.
 type StepDefinition struct {
-	Name        string
+	Name             string
+	Description      string
+	Params           []StepParam
+	Fn               stepFn `json:"-"`
+	ContextGenerator []*ContextGenerator
+}
+
+// ContextGenerator represents a context generator.
+type ContextGenerator struct {
+	// Name is the name of the context generator.
+	Name string
+	// Description is the description of the context generator.
 	Description string
-	Params      []StepParam
-	Fn          stepFn `json:"-"`
 }
 
 // BasePlugin represents a base plugin.
