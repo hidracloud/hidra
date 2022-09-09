@@ -14,6 +14,8 @@ COPY . .
 
 RUN go build -o hidra .
 
+FROM golang:${GOLANG_VERSION}-buster as release-maker
+
 FROM alpine:${ALPINE_VERSION} AS production
 
 RUN apk add --no-cache ca-certificates

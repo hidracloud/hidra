@@ -5,3 +5,38 @@ tasks:
     cmds:
       - cp -r githooks/* .git/hooks/
       - chmod +x .git/hooks/*
+  generate-release:
+    vars:
+      VERSION:
+        sh: git describe --tags --always
+    cmds:
+      - echo "Generate builds..."
+      - docker compose run -T builder sh -c "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/hidra-{{.VERSION}}-linux-amd64/hidra ."
+      - docker compose run -T builder sh -c "CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o build/hidra-{{.VERSION}}-linux-arm64/hidra ."
+      - docker compose run -T builder sh -c "CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o build/hidra-{{.VERSION}}-linux-arm/hidra ."
+      - docker compose run -T builder sh -c "CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o build/hidra-{{.VERSION}}-darwin-amd64/hidra ."
+      - docker compose run -T builder sh -c "CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o build/hidra-{{.VERSION}}-darwin-arm64/hidra ."
+      - docker compose run -T builder sh -c "CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o build/hidra-{{.VERSION}}-windows-amd64/hidra.exe ."
+      - docker compose run -T builder sh -c "CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o build/hidra-{{.VERSION}}-windows-arm64/hidra.exe ."
+      - echo "Generate archives..."
+      - docker compose run -T builder sh -c "cd build && tar -czf hidra-{{.VERSION}}-linux-amd64.tar.gz hidra-{{.VERSION}}-linux-amd64"
+      - docker compose run -T builder sh -c "cd build && tar -czf hidra-{{.VERSION}}-linux-arm64.tar.gz hidra-{{.VERSION}}-linux-arm64"
+      - docker compose run -T builder sh -c "cd build && tar -czf hidra-{{.VERSION}}-linux-arm.tar.gz hidra-{{.VERSION}}-linux-arm"
+      - docker compose run -T builder sh -c "cd build && tar -czf hidra-{{.VERSION}}-darwin-amd64.tar.gz hidra-{{.VERSION}}-darwin-amd64"
+      - docker compose run -T builder sh -c "cd build && tar -czf hidra-{{.VERSION}}-darwin-arm64.tar.gz hidra-{{.VERSION}}-darwin-arm64"
+      - docker compose run -T builder sh -c "cd build && tar -czf hidra-{{.VERSION}}-windows-amd64.tar.gz hidra-{{.VERSION}}-windows-amd64"
+      - docker compose run -T builder sh -c "cd build && tar -czf hidra-{{.VERSION}}-windows-arm64.tar.gz hidra-{{.VERSION}}-windows-arm64"
+      - echo "Generate checksums..."
+      - cd build && sha256sum hidra-{{.VERSION}}-linux-amd64.tar.gz > hidra-{{.VERSION}}-linux-amd64.tar.gz.sha256
+      - cd build && sha256sum hidra-{{.VERSION}}-linux-arm64.tar.gz > hidra-{{.VERSION}}-linux-arm64.tar.gz.sha256
+      - cd build && sha256sum hidra-{{.VERSION}}-linux-arm.tar.gz > hidra-{{.VERSION}}-linux-arm.tar.gz.sha256
+      - cd build && sha256sum hidra-{{.VERSION}}-darwin-amd64.tar.gz > hidra-{{.VERSION}}-darwin-amd64.tar.gz.sha256
+      - cd build && sha256sum hidra-{{.VERSION}}-darwin-arm64.tar.gz > hidra-{{.VERSION}}-darwin-arm64.tar.gz.sha256
+      - cd build && sha256sum hidra-{{.VERSION}}-windows-amd64.tar.gz > hidra-{{.VERSION}}-windows-amd64.tar.gz.sha256
+      - cd build && sha256sum hidra-{{.VERSION}}-windows-arm64.tar.gz > hidra-{{.VERSION}}-windows-arm64.tar.gz.sha256
+    silent: true
+
+  clean-release:
+    cmds:
+      - docker compose run -T builder sh -c "rm -rf build"
+    silent: true

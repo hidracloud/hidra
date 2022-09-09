@@ -39,6 +39,15 @@ services:
       - 3000
     links:
       - prometheus
+
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: release-maker
+    volumes:
+      - ./:/app
+    working_dir: /app
 volumes:
   prometheus_data: {}
   grafana_data: {}
