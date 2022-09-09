@@ -327,6 +327,12 @@ func (p *HTTP) setUserAgent(ctx context.Context, args map[string]string) (contex
 	})
 }
 
+// onFailure implements the plugins.Plugin interface.
+func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	// Generate an screenshot of current response
+	return ctx, nil, nil
+}
+
 // Init initializes the plugin.
 func (p *HTTP) Init() {
 	p.Primitives()
@@ -417,6 +423,12 @@ func (p *HTTP) Init() {
 			ctx = context.WithValue(ctx, plugins.ContextHTTPForceIP, args["ip"])
 			return ctx, nil, nil
 		},
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "onFailure",
+		Description: "Executes the steps if the previous step failed",
+		Fn:          p.onFailure,
 	})
 
 }

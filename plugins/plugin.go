@@ -70,6 +70,10 @@ func (p *BasePlugin) RunStep(ctx context.Context, step *Step) (context.Context, 
 	// get step definition
 	stepDefinition, ok := p.StepDefinitions[step.Name]
 
+	if !ok && step.Name == "onFailure" {
+		return ctx, nil, ctx.Value(LastError).(error)
+	}
+
 	if !ok {
 		return ctx, nil, fmt.Errorf("step %s not found", step.Name)
 	}
@@ -82,7 +86,18 @@ func (p *BasePlugin) RunStep(ctx context.Context, step *Step) (context.Context, 
 	}
 
 	// run step
-	return stepDefinition.Fn(ctx, step.Args)
+	ctx, metrics, err := stepDefinition.Fn(ctx, step.Args)
+
+	if err != nil {
+		ctx = context.WithValue(ctx, LastError, err)
+		step.Name = "onFailure"
+
+		ctx, metrics, _ = p.RunStep(ctx, step)
+
+		return ctx, metrics, err
+	}
+
+	return ctx, metrics, nil
 }
 
 // RegisterStep registers a step.

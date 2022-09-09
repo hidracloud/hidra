@@ -27,6 +27,7 @@ func GetPlugin(name string) PluginInterface {
 // RunSample runs a sample.
 func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Context, []*metrics.Metric, error) {
 	var newMetrics []*metrics.Metric
+	var err error
 
 	allMetrics := []*metrics.Metric{}
 
@@ -56,7 +57,7 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 		}
 
 		lastPlugin = step.Plugin
-		var err error
+
 		ctx, newMetrics, err = plugin.RunStep(ctx, &Step{
 			Name: step.Action,
 			Args: step.Parameters,
@@ -68,5 +69,5 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 			return ctx, allMetrics, err
 		}
 	}
-	return ctx, allMetrics, nil
+	return ctx, allMetrics, err
 }

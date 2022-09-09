@@ -64,12 +64,24 @@ func refreshSamples(cnf *config.ExporterConfig) {
 		configSamples = append(configSamples, sample)
 	}
 
+	for _, metric := range prometheusMetricStore {
+		metric.Reset()
+	}
+
+	if prometheusLastUpdate != nil {
+		prometheusLastUpdate.Reset()
+	}
+
+	if prometheusStatusMetric != nil {
+		prometheusStatusMetric.Reset()
+	}
+
 	log.Debug("Samples has been updated")
 }
 
 // refreshPrometheusCustomLabels refreshes the prometheus custom labels
 func refreshSampleCommonTags() {
-	sampleCommonTags = []string{"sample_name"}
+	sampleCommonTags = []string{"sample_name", "plugins", "description"}
 	alreadyAdded := make(map[string]bool)
 
 	for _, sample := range configSamples {

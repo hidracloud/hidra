@@ -107,6 +107,11 @@ var (
 		Name: "output",
 	}
 
+	// LastError is the context key for the last error.
+	LastError = ContextKey{
+		Name: "last.error",
+	}
+
 	// ContextTimeout is the context key for the timeout.
 	ContextTimeout = ContextKey{
 		Name: "timeout",

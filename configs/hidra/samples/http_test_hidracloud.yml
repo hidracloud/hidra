@@ -7,11 +7,13 @@ steps:
   - plugin: http
     action: request
     parameters:
-      url: https://hidra.cloud
-  - action: statusCodeShouldBe
-    parameters:
-      statusCode: 200
+      url: https://hidra.cloud/
   - plugin: string
     action: outputShouldContain
     parameters:
       search: Hidra
+
+  - plugin: http
+    action: statusCodeShouldBe
+    parameters:
+      statusCode: 200

@@ -3,6 +3,8 @@ package exporter
 import (
 	"context"
 	"math/rand"
+	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -35,6 +37,9 @@ var (
 
 	// prometheusStatusMetricStore is the prometheus status metric store
 	prometheusStatusMetric *prometheus.GaugeVec
+
+	// prometheusLastUpdate is the last time the metrics were updated
+	prometheusLastUpdate *prometheus.GaugeVec
 )
 
 // InitializeWorker initializes the worker
@@ -60,6 +65,8 @@ func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, er
 		} else {
 			prometheusStatusMetric.With(statusLabels).Set(1)
 		}
+
+		prometheusLastUpdate.With(statusLabels).Set(float64(time.Now().Unix()))
 	}
 }
 
@@ -89,7 +96,24 @@ func createLabels(metric *metrics.Metric, sample *config.SampleConfig) prometheu
 		}
 	}
 
+	pluginList := make(map[string]bool, 0)
+	for _, step := range sample.Steps {
+		if step.Plugin != "" {
+			pluginList[step.Plugin] = true
+		}
+	}
+
+	allPlugins := make([]string, 0)
+
+	for plugin := range pluginList {
+		allPlugins = append(allPlugins, plugin)
+	}
+
+	sort.Strings(allPlugins)
+
 	labels["sample_name"] = sample.Name
+	labels["plugins"] = strings.Join(allPlugins, ",")
+	labels["description"] = sample.Description
 	return labels
 }
 
@@ -127,13 +151,23 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 	prometheusStatusMetric = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name:      "hidra_exporter_sample_status",
-			Help:      "Hidra exporter status",
+			Name:      "sample_status",
+			Help:      "Hidra sample status",
 			Namespace: "hidra",
 		},
 		sampleCommonTags,
 	)
 
+	prometheusLastUpdate = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name:      "last_update",
+			Help:      "Hidra last update",
+			Namespace: "hidra",
+		},
+		sampleCommonTags,
+	)
+
+	prometheus.MustRegister(prometheusLastUpdate)
 	prometheus.MustRegister(prometheusStatusMetric)
 
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
