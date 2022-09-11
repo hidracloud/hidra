@@ -112,9 +112,8 @@ jobs:
       - name: Install CGO_ENABLED dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential
-      - name: "Install task"
-        run: |
-          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+      - name: Install Task
+        uses: arduino/setup-task@v1
 
       - name: "Build & test"
         run: |
