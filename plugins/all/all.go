@@ -14,6 +14,12 @@ import (
 	// Run ftp initialization
 	_ "github.com/hidracloud/hidra/v3/plugins/services/ftp"
 
-	// Run ftp initialization
+	// Run icmp initialization
 	_ "github.com/hidracloud/hidra/v3/plugins/services/icmp"
+
+	// Run tcp initialization
+	_ "github.com/hidracloud/hidra/v3/plugins/services/tcp"
+
+	// Run udp initialization
+	_ "github.com/hidracloud/hidra/v3/plugins/services/udp"
 )

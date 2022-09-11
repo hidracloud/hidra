@@ -112,6 +112,16 @@ var (
 		Name: "ftp.host",
 	}
 
+	// ContextTCPConnection is the context key for the TCP connection.
+	ContextTCPConnection = ContextKey{
+		Name: "tcp.connection",
+	}
+
+	// ContextUDPConnection is the context key for the TCP connection.
+	ContextUDPConnection = ContextKey{
+		Name: "udp.connection",
+	}
+
 	// ContextOutput is the context key for the output.
 	ContextOutput = ContextKey{
 		Name: "output",
