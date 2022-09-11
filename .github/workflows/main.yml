@@ -97,48 +97,43 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  # build-release:
-  #   if: startsWith(github.ref, 'refs/tags/v')
-  #   needs: test
-  #   name: Create Release
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-  #     - name: Install Go
-  #       uses: actions/setup-go@v2
-  #       with:
-  #         go-version: 1.19.x
-  #     - name: Install CGO_ENABLED dependencies
-  #       run: |
-  #         sudo apt-get update && sudo apt-get install -y build-essential
-  #     - name: "Generate version and dependencies"
-  #       run: |
-  #         make versionize
-  #         make deps
+  build-release:
+    #if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19.x
+      - name: Install CGO_ENABLED dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential
+      - name: "Install task"
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
-  #     - name: "Build & test"
-  #       run: |
-  #         make build
+      - name: "Build & test"
+        run: |
+          task generate-release
 
-  #     - name: "compresss"
-  #       run: |
-  #         make compress
+      # - name: Set git-tag
+      #   run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
-  #     - name: Set git-tag
-  #       run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-
-  #     - uses: "marvinpinto/action-automatic-releases@latest"
-  #       with:
-  #         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-  #         prerelease: true
-  #         draft: true
-  #         files: |
-  #           build/hidra-${{ env.GIT_TAG }}-darwin-amd64.tar.gz
-  #           build/hidra-${{ env.GIT_TAG }}-darwin-arm64.tar.gz
-  #           build/hidra-${{ env.GIT_TAG }}-linux-386.tar.gz
-  #           build/hidra-${{ env.GIT_TAG }}-linux-amd64.tar.gz
-  #           build/hidra-${{ env.GIT_TAG }}-linux-arm64.tar.gz
-  #           build/hidra-${{ env.GIT_TAG }}-linux-arm.tar.gz
-  #           build/hidra-${{ env.GIT_TAG }}-amd64.deb
-  #           build/hidra-${{ env.GIT_TAG }}-arm64.deb
+      # - uses: "marvinpinto/action-automatic-releases@latest"
+      #   with:
+      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
+      #     prerelease: true
+      #     draft: true
+      #     files: |
+      #       build/hidra-${{ env.GIT_TAG }}-darwin-amd64.tar.gz
+      #       build/hidra-${{ env.GIT_TAG }}-darwin-arm64.tar.gz
+      #       build/hidra-${{ env.GIT_TAG }}-linux-386.tar.gz
+      #       build/hidra-${{ env.GIT_TAG }}-linux-amd64.tar.gz
+      #       build/hidra-${{ env.GIT_TAG }}-linux-arm64.tar.gz
+      #       build/hidra-${{ env.GIT_TAG }}-linux-arm.tar.gz
+      #       build/hidra-${{ env.GIT_TAG }}-amd64.deb
+      #       build/hidra-${{ env.GIT_TAG }}-arm64.deb
