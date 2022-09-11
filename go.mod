@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/StalkR/dnssec-analyzer v1.0.0
+	github.com/jlaffaye/ftp v0.1.0
 	github.com/likexian/gokit v0.25.9
 	github.com/likexian/whois v1.14.2
 	github.com/likexian/whois-parser v1.24.1
@@ -19,6 +20,8 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

@@ -30,6 +30,7 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 	var err error
 
 	allMetrics := []*metrics.Metric{}
+	pluginsByNames := make(map[string]PluginInterface)
 
 	depthSize := 1
 
@@ -57,6 +58,7 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 		}
 
 		lastPlugin = step.Plugin
+		pluginsByNames[step.Plugin] = plugin
 
 		ctx, newMetrics, err = plugin.RunStep(ctx, &Step{
 			Name: step.Action,
@@ -67,6 +69,20 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 
 		if err != nil {
 			return ctx, allMetrics, err
+		}
+	}
+
+	// Clean up plugins
+	for _, plugin := range pluginsByNames {
+		if plugin.StepExists("onClose") {
+			_, _, err = plugin.RunStep(ctx, &Step{
+				Name: "onClose",
+				Args: map[string]string{},
+			})
+
+			if err != nil {
+				log.Warnf("Error closing plugin: %v", err)
+			}
 		}
 	}
 	return ctx, allMetrics, err

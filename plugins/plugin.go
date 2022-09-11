@@ -17,6 +17,8 @@ type PluginInterface interface {
 	RunStep(context.Context, *Step) (context.Context, []*metrics.Metric, error)
 	// RegisterStep registers a step.
 	RegisterStep(*StepDefinition)
+	// StepExists returns true if the step exists.
+	StepExists(string) bool
 }
 
 // Step represents a step.
@@ -98,6 +100,13 @@ func (p *BasePlugin) RunStep(ctx context.Context, step *Step) (context.Context, 
 	}
 
 	return ctx, metrics, nil
+}
+
+// StepExists returns true if the step exists.
+func (p *BasePlugin) StepExists(name string) bool {
+	_, ok := p.StepDefinitions[name]
+
+	return ok
 }
 
 // RegisterStep registers a step.

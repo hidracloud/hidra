@@ -102,6 +102,16 @@ var (
 		Name: "dns.info",
 	}
 
+	// ContextFTPConnection is the context key for the FTP connection.
+	ContextFTPConnection = ContextKey{
+		Name: "ftp.connection",
+	}
+
+	// ContextFTPHost is the context key for the FTP host.
+	ContextFTPHost = ContextKey{
+		Name: "ftp.host",
+	}
+
 	// ContextOutput is the context key for the output.
 	ContextOutput = ContextKey{
 		Name: "output",
