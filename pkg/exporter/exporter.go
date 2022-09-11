@@ -343,6 +343,9 @@ func createWorkers(maxExecutor, possibleJobs int) {
 				log.Println("[" + strconv.Itoa(workerID) + "] running job")
 				job(workerID)
 				log.Println("[" + strconv.Itoa(workerID) + "] run job successfully")
+
+				// Sleep to avoid overloading
+				time.Sleep(5 * time.Second)
 			}
 		}(i)
 	}
