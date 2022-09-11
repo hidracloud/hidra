@@ -36,6 +36,8 @@ type ExporterConfig struct {
 		ParallelJobs int `yaml:"parallel_jobs"`
 		// MaxQueueSize is the max size of the queue.
 		MaxQueueSize int `yaml:"max_queue_size"`
+		// SleepBetweenJobs is the sleep between jobs.
+		SleepBetweenJobs time.Duration `yaml:"sleep_between_jobs"`
 	} `yaml:"worker"`
 }
 
@@ -62,6 +64,10 @@ func LoadExporterConfig(data []byte) (*ExporterConfig, error) {
 
 	if len(config.HTTPServerConfig.MetricsPath) == 0 {
 		config.HTTPServerConfig.MetricsPath = "/metrics"
+	}
+
+	if config.WorkerConfig.SleepBetweenJobs == 0 {
+		config.WorkerConfig.SleepBetweenJobs = 5 * time.Second
 	}
 
 	if config.WorkerConfig.ParallelJobs <= 0 {

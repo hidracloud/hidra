@@ -9,6 +9,7 @@ require (
 	github.com/likexian/gokit v0.25.9
 	github.com/likexian/whois v1.14.2
 	github.com/likexian/whois-parser v1.24.1
+	github.com/pixelbender/go-traceroute v0.0.0-20190414152342-e631ab553a80
 	github.com/prometheus/client_golang v1.13.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0

@@ -1,4 +1,4 @@
-description: "This is a sample to test the ICMP plugin"
+description: "This is a sample to test the ICMP Ping plugin"
 tags:
   tenant: "hidra"
 interval: "1m"

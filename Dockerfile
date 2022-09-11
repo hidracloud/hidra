@@ -22,7 +22,8 @@ RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /app/hidra /usr/local/bin/hidra
 
-RUN addgroup -S hidra && adduser -S -G hidra hidra
-USER hidra
+# RUN addgroup -S hidra && adduser -S -G hidra hidra
+# USER hidra
+USER root
 
 ENTRYPOINT ["/usr/local/bin/hidra"]

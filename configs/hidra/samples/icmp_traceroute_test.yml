@@ -1,0 +1,10 @@
+description: "This is a sample to test the ICMP Ping plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: icmp
+    action: traceroute
+    parameters:
+      hostname: 8.8.8.8

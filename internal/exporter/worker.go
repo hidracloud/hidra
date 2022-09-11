@@ -196,6 +196,8 @@ func RunWorkers(cnf *config.ExporterConfig) {
 				sampleRunningTime[sample.Name].Add(uint64(time.Since(startTime).Milliseconds()))
 				lastRun[sample.Name] = time.Now().Add(randomOffset)
 				lastRunMutex.Unlock()
+
+				time.Sleep(cnf.WorkerConfig.SleepBetweenJobs)
 			}
 		}(i)
 	}
