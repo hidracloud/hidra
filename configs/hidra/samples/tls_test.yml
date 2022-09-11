@@ -1,0 +1,18 @@
+description: "This is a sample to test the TLS plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: tls
+    action: connectTo
+    parameters:
+      to: google.com:443
+
+  - action: dnsShouldBePresent
+    parameters:
+      dns: google.com
+
+  - action: shouldBeValidFor
+    parameters:
+      for: 7d

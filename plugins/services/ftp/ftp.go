@@ -18,6 +18,14 @@ type FTP struct {
 
 // whoisFrom returns the whois information from a domain.
 func (p *FTP) connectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); ok {
+		err := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn).Quit()
+
+		if err != nil {
+			return ctx, nil, err
+		}
+	}
+
 	timeout := 30 * time.Second
 
 	if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
@@ -178,8 +186,8 @@ func (p *FTP) onClose(ctx context.Context, args map[string]string) (context.Cont
 
 		if err != nil {
 			return ctx, nil, err
-	}
 		}
+	}
 
 	return ctx, nil, nil
 }

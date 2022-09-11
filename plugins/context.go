@@ -122,6 +122,21 @@ var (
 		Name: "udp.connection",
 	}
 
+	// ContextTLSConnection is the context key for the TLS connection.
+	ContextTLSConnection = ContextKey{
+		Name: "tls.connection",
+	}
+
+	// ContextTLSHost is the context key for the TLS host.
+	ContextTLSHost = ContextKey{
+		Name: "tls.host",
+	}
+
+	// ContextTLSCertificates is the context key for the TLS certificates.
+	ContextTLSCertificates = ContextKey{
+		Name: "tls.certificates",
+	}
+
 	// ContextOutput is the context key for the output.
 	ContextOutput = ContextKey{
 		Name: "output",

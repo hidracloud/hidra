@@ -98,7 +98,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   build-release:
-    #if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: test
     name: Create Release
     runs-on: ubuntu-latest
@@ -112,8 +112,9 @@ jobs:
       - name: Install CGO_ENABLED dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential
-      - name: Install Task
-        uses: arduino/setup-task@v1
+
+      - name: Set git-tag
+        run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
@@ -124,9 +125,6 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Set git-tag
-      #   run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       # - uses: "marvinpinto/action-automatic-releases@latest"
       #   with:

@@ -22,4 +22,7 @@ import (
 
 	// Run udp initialization
 	_ "github.com/hidracloud/hidra/v3/plugins/services/udp"
+
+	// Run udp initialization
+	_ "github.com/hidracloud/hidra/v3/plugins/services/tls"
 )
