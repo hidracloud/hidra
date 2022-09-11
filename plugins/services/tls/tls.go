@@ -44,6 +44,8 @@ func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Co
 		InsecureSkipVerify: true,
 	}
 
+	startTime := time.Now()
+
 	conn, err := tls.Dial("tcp", args["to"], conf)
 
 	if err != nil {
@@ -70,6 +72,13 @@ func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Co
 				"host": args["to"],
 			},
 			Value: float64(conn.ConnectionState().CipherSuite),
+		},
+		{
+			Name: "tls_handshake_duration_seconds",
+			Labels: map[string]string{
+				"host": args["to"],
+			},
+			Value: time.Since(startTime).Seconds(),
 		},
 	}
 
