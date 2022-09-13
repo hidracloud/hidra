@@ -26,7 +26,6 @@ type ExporterConfig struct {
 	SchedulerConfig struct {
 		// RefreshSamplesInterval is the interval to refresh the samples.
 		RefreshSamplesInterval time.Duration `yaml:"refresh_samples_interval"`
-
 		// EnqueueSamplesInterval is the interval to enqueue the samples.
 		EnqueueSamplesInterval time.Duration `yaml:"enqueue_samples_interval"`
 	} `yaml:"scheduler"`
@@ -39,6 +38,14 @@ type ExporterConfig struct {
 		// SleepBetweenJobs is the sleep between jobs.
 		SleepBetweenJobs time.Duration `yaml:"sleep_between_jobs"`
 	} `yaml:"worker"`
+
+	// ScreenshotsConfig is the configuration for the screenshots.
+	ScreenshotsConfig struct {
+		// Timeout is the timeout for the screenshots.
+		Timeout time.Duration `yaml:"timeout"`
+		// Enable is the flag to enable screenshots.
+		Enabled bool `yaml:"enabled"`
+	} `yaml:"screenshots"`
 }
 
 // LoadExporterConfig loads from byte array.
@@ -72,6 +79,10 @@ func LoadExporterConfig(data []byte) (*ExporterConfig, error) {
 
 	if config.WorkerConfig.ParallelJobs <= 0 {
 		config.WorkerConfig.ParallelJobs = runtime.GOMAXPROCS(0)
+	}
+
+	if config.ScreenshotsConfig.Timeout == 0 {
+		config.ScreenshotsConfig.Timeout = 15 * time.Second
 	}
 
 	return &config, nil
