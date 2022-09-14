@@ -76,6 +76,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Generate version.go
+        run: |
+          # Generate version.go
+          echo "package misc" > internal/misc/version.go
+          echo "const Version = \"$(git describe --tags --always)\"" >> internal/misc/version.go
+          echo "const BuildDate = \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"" >> internal/misc/version.go
+          echo "const Commit = \"$(git rev-parse HEAD)\"" >> internal/misc/version.go
+          echo "const Branch = \"$(git rev-parse --abbrev-ref HEAD)\"" >> internal/misc/version.go
+
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
@@ -119,6 +128,15 @@ jobs:
 
       - name: Set git-tag
         run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - name: Generate version.go
+        run: |
+          # Generate version.go
+          echo "package misc" > internal/misc/version.go
+          echo "const Version = \"$(git describe --tags --always)\"" >> internal/misc/version.go
+          echo "const BuildDate = \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"" >> internal/misc/version.go
+          echo "const Commit = \"$(git rev-parse HEAD)\"" >> internal/misc/version.go
+          echo "const Branch = \"$(git rev-parse --abbrev-ref HEAD)\"" >> internal/misc/version.go
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
