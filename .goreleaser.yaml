@@ -42,5 +42,9 @@ nfpms:
         dst: /etc/hidra/exporter.yml
         type: config|noreplace
 
+furies:
+  - account: "JoseCarlosGarcia95"
+    secret_name: FURY_IO_TOKEN
+
 release:
   prerelease: auto
