@@ -14,7 +14,17 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  build-checker:
+    name: Check if other Deploys are In progress
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Turnstyle
+        uses: softprops/turnstyle@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   test:
+    needs: build-checker
     strategy:
       matrix:
         go-version: [1.19.x]
