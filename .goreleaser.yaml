@@ -41,3 +41,6 @@ nfpms:
       - src: ./configs/hidra/exporter.yml
         dst: /etc/hidra/exporter.yml
         type: config|noreplace
+
+release:
+  prerelease: auto
