@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hidracloud/hidra/v3/internal/metrics"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -81,11 +80,6 @@ func EqualSlices[T comparable](a, b []T) bool {
 		}
 	}
 	return true
-}
-
-// PrintMetrics prints the metrics
-func PrintMetrics(metric []metrics.Metric) {
-
 }
 
 // PrintTable prints a table
