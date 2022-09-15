@@ -124,8 +124,9 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		pluginsByNames[step.Plugin] = plugin
 
 		ctx, newMetrics, err = plugin.RunStep(ctx, &Step{
-			Name: step.Action,
-			Args: step.Parameters,
+			Name:   step.Action,
+			Args:   step.Parameters,
+			Negate: step.Negate,
 		})
 
 		allMetrics = append(allMetrics, newMetrics...)

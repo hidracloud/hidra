@@ -29,6 +29,8 @@ type Step struct {
 	Args map[string]string
 	// Timeout is the timeout of the step.
 	Timeout int
+	// Negate is true if the step should be negated.
+	Negate bool
 }
 
 type stepFn func(context.Context, map[string]string) (context.Context, []*metrics.Metric, error)
@@ -89,6 +91,12 @@ func (p *BasePlugin) RunStep(ctx context.Context, step *Step) (context.Context, 
 
 	// run step
 	ctx, metrics, err := stepDefinition.Fn(ctx, step.Args)
+
+	if err != nil && step.Negate {
+		return ctx, metrics, nil
+	} else if err == nil && step.Negate {
+		return ctx, metrics, fmt.Errorf("step %s should have failed", step.Name)
+	}
 
 	if err != nil {
 		ctx = context.WithValue(ctx, LastError, err)

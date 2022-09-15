@@ -39,6 +39,8 @@ type StepConfig struct {
 	Action string `yaml:"action"`
 	// Parameters is the parameters to scrape the sample
 	Parameters map[string]string `yaml:"parameters"`
+	// Negate is the negate to scrape the sample
+	Negate bool `yaml:"negate"`
 }
 
 // LoadSampleConfig loads from byte array.
