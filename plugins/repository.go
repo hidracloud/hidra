@@ -71,17 +71,13 @@ func (s *StepParamTemplate) Replace(m map[string]string) (map[string]string, err
 	return result, nil
 }
 
-// RunSample runs a sample.
-func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Context, []*metrics.Metric, error) {
-	var newMetrics []*metrics.Metric
-	var err error
+// RunWithVariables runs the step with variables.
+func RunWithVariables(ctx context.Context, variables map[string]string, sample *config.SampleConfig) (context.Context, []*metrics.Metric, error) {
+	var allMetrics, newMetrics []*metrics.Metric
 
-	allMetrics := []*metrics.Metric{}
-	pluginsByNames := make(map[string]PluginInterface)
-
+	depthSize := 1
 	lastPlugin := ""
-
-	ctx = context.WithValue(ctx, ContextTimeout, sample.Timeout)
+	pluginsByNames := make(map[string]PluginInterface)
 
 	stepParamTemplate := StepParamTemplate{
 		Env:     utils.EnvToMap(),
@@ -89,72 +85,90 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 		Context: ctx,
 	}
 
-	for _, variables := range sample.Variables {
-		depthSize := 1
+	variables, err := stepParamTemplate.Replace(variables)
 
-		variables, err = stepParamTemplate.Replace(variables)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	stepParamTemplate.Variables = variables
+
+	for _, step := range sample.Steps {
+		log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
+		log.Debugf("|_%s Action: %v", strings.Repeat("_", depthSize), step.Action)
+		log.Debugf("|_%s Parameters: ", strings.Repeat("_", depthSize))
+
+		stepParamTemplate.Context = ctx
+
+		step.Parameters, err = stepParamTemplate.Replace(step.Parameters)
 
 		if err != nil {
 			return ctx, nil, err
 		}
 
-		stepParamTemplate.Variables = variables
+		for k, v := range step.Parameters {
+			log.Debugf("|__%s %s: %v", strings.Repeat("_", depthSize), k, v)
+		}
 
-		for _, step := range sample.Steps {
-			log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
-			log.Debugf("|_%s Action: %v", strings.Repeat("_", depthSize), step.Action)
-			log.Debugf("|_%s Parameters: ", strings.Repeat("_", depthSize))
+		depthSize++
+		if step.Plugin == "" {
+			step.Plugin = lastPlugin
+		}
+		plugin := GetPlugin(step.Plugin)
 
-			stepParamTemplate.Context = ctx
+		if plugin == nil {
+			return ctx, allMetrics, fmt.Errorf("plugin %s not found", step.Plugin)
+		}
 
-			step.Parameters, err = stepParamTemplate.Replace(step.Parameters)
+		lastPlugin = step.Plugin
+		pluginsByNames[step.Plugin] = plugin
 
-			if err != nil {
-				return ctx, nil, err
-			}
+		ctx, newMetrics, err = plugin.RunStep(ctx, &Step{
+			Name: step.Action,
+			Args: step.Parameters,
+		})
 
-			for k, v := range step.Parameters {
-				log.Debugf("|__%s %s: %v", strings.Repeat("_", depthSize), k, v)
-			}
+		allMetrics = append(allMetrics, newMetrics...)
 
-			depthSize++
-			if step.Plugin == "" {
-				step.Plugin = lastPlugin
-			}
-			plugin := GetPlugin(step.Plugin)
+		if err != nil {
+			return ctx, allMetrics, err
+		}
+	}
 
-			if plugin == nil {
-				return ctx, allMetrics, fmt.Errorf("plugin %s not found", step.Plugin)
-			}
-
-			lastPlugin = step.Plugin
-			pluginsByNames[step.Plugin] = plugin
-
-			ctx, newMetrics, err = plugin.RunStep(ctx, &Step{
-				Name: step.Action,
-				Args: step.Parameters,
+	// Clean up plugins
+	for _, plugin := range pluginsByNames {
+		if plugin.StepExists("onClose") {
+			_, _, err = plugin.RunStep(ctx, &Step{
+				Name: "onClose",
+				Args: map[string]string{},
 			})
 
-			allMetrics = append(allMetrics, newMetrics...)
-
 			if err != nil {
-				return ctx, allMetrics, err
+				log.Warnf("Error closing plugin: %v", err)
 			}
 		}
+	}
 
-		// Clean up plugins
-		for _, plugin := range pluginsByNames {
-			if plugin.StepExists("onClose") {
-				_, _, err = plugin.RunStep(ctx, &Step{
-					Name: "onClose",
-					Args: map[string]string{},
-				})
+	return ctx, allMetrics, err
+}
 
-				if err != nil {
-					log.Warnf("Error closing plugin: %v", err)
-				}
-			}
+// RunSample runs a sample.
+func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Context, []*metrics.Metric, error) {
+	var err error
+
+	allMetrics := []*metrics.Metric{}
+
+	ctx = context.WithValue(ctx, ContextTimeout, sample.Timeout)
+
+	for _, variables := range sample.Variables {
+		ctx, newMetrics, err := RunWithVariables(ctx, variables, sample)
+
+		allMetrics = append(allMetrics, newMetrics...)
+
+		if err != nil {
+			return ctx, allMetrics, err
 		}
+
 	}
 	return ctx, allMetrics, err
 }

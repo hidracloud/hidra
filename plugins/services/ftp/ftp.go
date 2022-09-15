@@ -11,6 +11,10 @@ import (
 	ftpclient "github.com/jlaffaye/ftp"
 )
 
+var (
+	errNoFTPConnection = fmt.Errorf("no FTP connection found")
+)
+
 // FTP represents a FTP plugin.
 type FTP struct {
 	plugins.BasePlugin
@@ -47,7 +51,7 @@ func (p *FTP) connectTo(ctx context.Context, args map[string]string) (context.Co
 // login logs in to the FTP server.
 func (p *FTP) login(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
-		return ctx, nil, fmt.Errorf("no FTP connection found")
+		return ctx, nil, errNoFTPConnection
 	}
 
 	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
@@ -64,7 +68,7 @@ func (p *FTP) login(ctx context.Context, args map[string]string) (context.Contex
 // write writes a file to the FTP server.
 func (p *FTP) write(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
-		return ctx, nil, fmt.Errorf("no FTP connection found")
+		return ctx, nil, errNoFTPConnection
 	}
 
 	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
@@ -104,7 +108,7 @@ func (p *FTP) write(ctx context.Context, args map[string]string) (context.Contex
 // read reads a file from the FTP server.
 func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
-		return ctx, nil, fmt.Errorf("no FTP connection found")
+		return ctx, nil, errNoFTPConnection
 	}
 
 	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
@@ -152,7 +156,7 @@ func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context
 // delete deletes a file from the FTP server.
 func (p *FTP) delete(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
-		return ctx, nil, fmt.Errorf("no FTP connection found")
+		return ctx, nil, errNoFTPConnection
 	}
 
 	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
