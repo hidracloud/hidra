@@ -26,6 +26,9 @@ type SampleConfig struct {
 
 	// Steps is the steps to scrape the sample.
 	Steps []StepConfig `yaml:"steps"`
+
+	// Variables is the variables to scrape the sample
+	Variables []map[string]string `yaml:"variables"`
 }
 
 // StepConfig is the step configuration.
@@ -48,6 +51,14 @@ func LoadSampleConfig(data []byte) (*SampleConfig, error) {
 
 	if config.Timeout == 0 {
 		config.Timeout = 10 * time.Second
+	}
+
+	if config.Variables == nil {
+		config.Variables = make([]map[string]string, 0)
+	}
+
+	if len(config.Variables) == 0 {
+		config.Variables = append(config.Variables, make(map[string]string))
 	}
 
 	return &config, nil

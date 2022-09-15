@@ -3,11 +3,14 @@ tags:
   tenant: "hidra"
 interval: "1m"
 timeout: "10s"
+variables:
+  - domain: google.com
+  - domain: hidra.cloud
 steps:
   - plugin: dns
     action: whoisFrom
     parameters:
-      domain: google.com
+      domain: "{{ .Variables.domain }}"
 
   - action: shouldBeValidFor
     parameters:
@@ -15,4 +18,4 @@ steps:
 
   - action: dnsSecShouldBeValid
     parameters:
-      domain: google.com
+      domain: "{{ .Variables.domain }}"

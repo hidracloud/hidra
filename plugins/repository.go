@@ -30,9 +30,10 @@ func GetPlugin(name string) PluginInterface {
 
 // StepParamTemplate represents a step parameter template.
 type StepParamTemplate struct {
-	Env     map[string]string
-	Date    time.Time
-	Context context.Context
+	Env       map[string]string
+	Date      time.Time
+	Context   context.Context
+	Variables map[string]string
 }
 
 // GetContext return context value by key
@@ -50,6 +51,26 @@ func (s *StepParamTemplate) GetContext(key string) string {
 	return value.(string)
 }
 
+// Replace replaces the template.
+func (s *StepParamTemplate) Replace(m map[string]string) (map[string]string, error) {
+	result := make(map[string]string)
+	for k, v := range m {
+		t, err := template.New("").Parse(v)
+		if err != nil {
+			return nil, err
+		}
+
+		var buf bytes.Buffer
+		err = t.Execute(&buf, s)
+		if err != nil {
+			return nil, err
+		}
+
+		result[k] = buf.String()
+	}
+	return result, nil
+}
+
 // RunSample runs a sample.
 func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Context, []*metrics.Metric, error) {
 	var newMetrics []*metrics.Metric
@@ -57,8 +78,6 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 
 	allMetrics := []*metrics.Metric{}
 	pluginsByNames := make(map[string]PluginInterface)
-
-	depthSize := 1
 
 	lastPlugin := ""
 
@@ -70,65 +89,70 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 		Context: ctx,
 	}
 
-	for _, step := range sample.Steps {
-		log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
-		log.Debugf("|_%s Action: %v", strings.Repeat("_", depthSize), step.Action)
-		log.Debugf("|_%s Parameters: ", strings.Repeat("_", depthSize))
+	for _, variables := range sample.Variables {
+		depthSize := 1
 
-		stepParamTemplate.Context = ctx
-
-		for k, v := range step.Parameters {
-			t, err := template.New("").Parse(v)
-			if err != nil {
-				return ctx, nil, err
-			}
-
-			var buf bytes.Buffer
-			err = t.Execute(&buf, stepParamTemplate)
-			if err != nil {
-				return ctx, nil, err
-			}
-
-			v = buf.String()
-			step.Parameters[k] = buf.String()
-			log.Debugf("|__%s %s: %v", strings.Repeat("_", depthSize), k, v)
-		}
-
-		depthSize++
-		if step.Plugin == "" {
-			step.Plugin = lastPlugin
-		}
-		plugin := GetPlugin(step.Plugin)
-
-		if plugin == nil {
-			return ctx, allMetrics, fmt.Errorf("plugin %s not found", step.Plugin)
-		}
-
-		lastPlugin = step.Plugin
-		pluginsByNames[step.Plugin] = plugin
-
-		ctx, newMetrics, err = plugin.RunStep(ctx, &Step{
-			Name: step.Action,
-			Args: step.Parameters,
-		})
-
-		allMetrics = append(allMetrics, newMetrics...)
+		variables, err = stepParamTemplate.Replace(variables)
 
 		if err != nil {
-			return ctx, allMetrics, err
+			return ctx, nil, err
 		}
-	}
 
-	// Clean up plugins
-	for _, plugin := range pluginsByNames {
-		if plugin.StepExists("onClose") {
-			_, _, err = plugin.RunStep(ctx, &Step{
-				Name: "onClose",
-				Args: map[string]string{},
-			})
+		stepParamTemplate.Variables = variables
+
+		for _, step := range sample.Steps {
+			log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
+			log.Debugf("|_%s Action: %v", strings.Repeat("_", depthSize), step.Action)
+			log.Debugf("|_%s Parameters: ", strings.Repeat("_", depthSize))
+
+			stepParamTemplate.Context = ctx
+
+			step.Parameters, err = stepParamTemplate.Replace(step.Parameters)
 
 			if err != nil {
-				log.Warnf("Error closing plugin: %v", err)
+				return ctx, nil, err
+			}
+
+			for k, v := range step.Parameters {
+				log.Debugf("|__%s %s: %v", strings.Repeat("_", depthSize), k, v)
+			}
+
+			depthSize++
+			if step.Plugin == "" {
+				step.Plugin = lastPlugin
+			}
+			plugin := GetPlugin(step.Plugin)
+
+			if plugin == nil {
+				return ctx, allMetrics, fmt.Errorf("plugin %s not found", step.Plugin)
+			}
+
+			lastPlugin = step.Plugin
+			pluginsByNames[step.Plugin] = plugin
+
+			ctx, newMetrics, err = plugin.RunStep(ctx, &Step{
+				Name: step.Action,
+				Args: step.Parameters,
+			})
+
+			allMetrics = append(allMetrics, newMetrics...)
+
+			if err != nil {
+				return ctx, allMetrics, err
+			}
+		}
+
+		// Clean up plugins
+		for _, plugin := range pluginsByNames {
+			if plugin.StepExists("onClose") {
+				_, _, err = plugin.RunStep(ctx, &Step{
+					Name: "onClose",
+					Args: map[string]string{},
+				})
+
+				if err != nil {
+					log.Warnf("Error closing plugin: %v", err)
+				}
 			}
 		}
 	}
