@@ -305,3 +305,22 @@ func leadingFraction(s string) (x int64, scale float64, rem string) {
 	}
 	return x, scale, s[i:]
 }
+
+var envToMapCache map[string]string
+
+// EnvToMap returns a map of environment variables from the given environment
+func EnvToMap() map[string]string {
+	if envToMapCache != nil {
+		return envToMapCache
+	}
+
+	envMap := make(map[string]string)
+	for _, v := range os.Environ() {
+		splitV := strings.SplitN(v, "=", 2)
+		envMap[splitV[0]] = strings.Join(splitV[1:], "=")
+	}
+
+	envToMapCache = envMap
+
+	return envMap
+}
