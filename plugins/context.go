@@ -156,6 +156,21 @@ var (
 	ContextHTTPClient = ContextKey{
 		Name: "http.client",
 	}
+
+	// ContextBrowserChromedpCtx is the context key for the browser chromedp context.
+	ContextBrowserChromedpCtx = ContextKey{
+		Name: "browser.chromedpctx",
+	}
+
+	// ContextBrowserChromedpCancel is the context key for the browser chromedp cancel.
+	ContextBrowserChromedpCancel = ContextKey{
+		Name: "browser.chromedpcancel",
+	}
+
+	// ContextBrowserChromedpTimeoutCancel is the context key for the browser chromedp cancel.
+	ContextBrowserChromedpCancelTimeout = ContextKey{
+		Name: "browser.chromedptimeoutcancel",
+	}
 )
 
 func (c *ContextKey) String() string {
