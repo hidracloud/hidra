@@ -145,16 +145,17 @@ func (p *Browser) waitVisible(ctx context.Context, args map[string]string) (cont
 
 // onClose implements the browser.onClose primitive.
 func (p *Browser) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	var err error
 	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); ok {
 		chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
 
-		chromedp.Stop().Do(chromedpCtx)
+		err = chromedp.Stop().Do(chromedpCtx)
 
 		ctx.Value(plugins.ContextBrowserChromedpCancel).(context.CancelFunc)()
 		ctx.Value(plugins.ContextBrowserChromedpCancelTimeout).(context.CancelFunc)()
 	}
 
-	return ctx, nil, nil
+	return ctx, nil, err
 }
 
 // click implements the browser.click primitive.

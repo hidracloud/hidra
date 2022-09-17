@@ -81,8 +81,12 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	h.RunStep(ctx, &plugins.Step{
+	_, _, err = h.RunStep(ctx, &plugins.Step{
 		Name: "onClose",
 	})
+
+	if err != nil {
+		t.Error(err)
+	}
 
 }
