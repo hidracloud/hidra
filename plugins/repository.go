@@ -146,6 +146,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 
 			if err != nil {
 				log.Warnf("Error closing plugin: %v", err)
+				err = nil
 			}
 		}
 	}

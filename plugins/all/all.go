@@ -25,4 +25,7 @@ import (
 
 	// Run udp initialization
 	_ "github.com/hidracloud/hidra/v3/plugins/collector/tls"
+
+	// Run browser initialization
+	_ "github.com/hidracloud/hidra/v3/plugins/collector/browser"
 )

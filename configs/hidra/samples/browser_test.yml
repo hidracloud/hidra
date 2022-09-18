@@ -1,0 +1,31 @@
+description: "This is a sample to test the browser plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: browser
+    action: navigateTo
+    parameters:
+      url: https://hidra.cloud/
+
+  - action: urlShouldBe
+    parameters:
+      url: https://hidra.cloud/
+
+  - action: textShouldBe
+    parameters:
+      selector: "#td-cover-block-0 > div > div > div > div > h1"
+      text: "Welcome to Hidra! Your new solution for monitoring"
+
+  - action: waitVisible
+    parameters:
+      selector: "#td-cover-block-0 > div > div > div > div > div > div > a.btn.btn-lg.btn-primary.mr-3.mb-4"
+
+  - action: click
+    parameters:
+      selector: "#td-cover-block-0 > div > div > div > div > div > div > a.btn.btn-lg.btn-primary.mr-3.mb-4"
+
+  - action: urlShouldBe
+    parameters:
+      url: https://hidra.cloud/docs/
