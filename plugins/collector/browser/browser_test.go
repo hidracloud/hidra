@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hidracloud/hidra/v3/plugins"
-	"github.com/hidracloud/hidra/v3/plugins/services/browser"
+	"github.com/hidracloud/hidra/v3/plugins/collector/browser"
 )
 
 func TestScenario(t *testing.T) {

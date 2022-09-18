@@ -1,24 +1,23 @@
-package icmp_test
+package udp_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/hidracloud/hidra/v3/plugins"
-	"github.com/hidracloud/hidra/v3/plugins/services/icmp"
+	"github.com/hidracloud/hidra/v3/plugins/collector/udp"
 )
 
-// TestRequestByMethod
-func TestHTTPRequestParameters(t *testing.T) {
-	h := icmp.ICMP{}
+func TestScenario(t *testing.T) {
+	h := &udp.UDP{}
 	h.Init()
 
 	ctx := context.TODO()
 
 	_, _, err := h.RunStep(ctx, &plugins.Step{
-		Name: "ping",
+		Name: "connectTo",
 		Args: map[string]string{
-			"hostname": "8.8.8.8",
+			"to": "8.8.8.8:53",
 		},
 	})
 

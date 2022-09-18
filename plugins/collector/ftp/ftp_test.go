@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hidracloud/hidra/v3/plugins"
-	"github.com/hidracloud/hidra/v3/plugins/services/ftp"
+	"github.com/hidracloud/hidra/v3/plugins/collector/ftp"
 )
 
 func TestScenario(t *testing.T) {

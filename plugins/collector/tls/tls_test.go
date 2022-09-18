@@ -1,15 +1,16 @@
-package tcp_test
+package tls_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/hidracloud/hidra/v3/plugins"
-	"github.com/hidracloud/hidra/v3/plugins/services/tcp"
+	"github.com/hidracloud/hidra/v3/plugins/collector/tls"
 )
 
 func TestScenario(t *testing.T) {
-	h := &tcp.TCP{}
+	// Initialize scenario
+	h := &tls.TLS{}
 	h.Init()
 
 	ctx := context.TODO()
@@ -17,7 +18,7 @@ func TestScenario(t *testing.T) {
 	ctx, _, err := h.RunStep(ctx, &plugins.Step{
 		Name: "connectTo",
 		Args: map[string]string{
-			"to": "google.com:80",
+			"to": "google.com:443",
 		},
 	})
 
@@ -26,9 +27,9 @@ func TestScenario(t *testing.T) {
 	}
 
 	ctx, _, err = h.RunStep(ctx, &plugins.Step{
-		Name: "write",
+		Name: "dnsShouldBePresent",
 		Args: map[string]string{
-			"data": "SEVBRCAvIEhUVFAvMS4xDQoNCgo=",
+			"dns": "google.com",
 		},
 	})
 
@@ -37,8 +38,10 @@ func TestScenario(t *testing.T) {
 	}
 
 	_, _, err = h.RunStep(ctx, &plugins.Step{
-		Name: "read",
-		Args: map[string]string{},
+		Name: "shouldBeValidFor",
+		Args: map[string]string{
+			"for": "7d",
+		},
 	})
 
 	if err != nil {

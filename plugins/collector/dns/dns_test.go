@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hidracloud/hidra/v3/plugins"
-	"github.com/hidracloud/hidra/v3/plugins/services/dns"
+	"github.com/hidracloud/hidra/v3/plugins/collector/dns"
 )
 
 // TestRequestByMethod

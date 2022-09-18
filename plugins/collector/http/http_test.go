@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hidracloud/hidra/v3/plugins"
-	"github.com/hidracloud/hidra/v3/plugins/services/http"
+	"github.com/hidracloud/hidra/v3/plugins/collector/http"
 )
 
 // TestRequestByMethod
