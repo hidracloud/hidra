@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/hidracloud/hidra/v3/plugins"
 
@@ -35,7 +36,7 @@ func (p *DNS) whoisFrom(ctx context.Context, args map[string]string) (context.Co
 		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, plugins.ContextDNSInfo, &result)
+	ctx = context.WithValue(ctx, misc.ContextDNSInfo, &result)
 
 	dateFormat := "2006-01-02T15:04:05.999Z"
 
@@ -76,7 +77,7 @@ func (p *DNS) shouldBeValidFor(ctx context.Context, args map[string]string) (con
 		dateFormat = args["dateFormat"]
 	}
 
-	result := ctx.Value(plugins.ContextDNSInfo).(*whoisparser.WhoisInfo)
+	result := ctx.Value(misc.ContextDNSInfo).(*whoisparser.WhoisInfo)
 
 	if result == nil {
 		return ctx, nil, fmt.Errorf("whois info not found")

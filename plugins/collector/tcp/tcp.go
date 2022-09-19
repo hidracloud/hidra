@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/plugins"
 
 	b64 "encoding/base64"
@@ -30,18 +31,18 @@ func (p *TCP) connectTo(ctx context.Context, args map[string]string) (context.Co
 		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, plugins.ContextTCPConnection, conn)
+	ctx = context.WithValue(ctx, misc.ContextTCPConnection, conn)
 
 	return ctx, nil, nil
 }
 
 // write writes a file to the TCP server.
 func (p *TCP) write(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextTCPConnection).(*net.TCPConn); !ok {
+	if _, ok := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn); !ok {
 		return ctx, nil, fmt.Errorf("no tcp connection found")
 	}
 
-	conn := ctx.Value(plugins.ContextTCPConnection).(*net.TCPConn)
+	conn := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn)
 
 	data, err := b64.StdEncoding.DecodeString(args["data"])
 
@@ -76,11 +77,11 @@ func (p *TCP) write(ctx context.Context, args map[string]string) (context.Contex
 func (p *TCP) read(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	var err error
 
-	if _, ok := ctx.Value(plugins.ContextTCPConnection).(*net.TCPConn); !ok {
+	if _, ok := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn); !ok {
 		return ctx, nil, fmt.Errorf("no TCP connection found")
 	}
 
-	conn := ctx.Value(plugins.ContextTCPConnection).(*net.TCPConn)
+	conn := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn)
 
 	bytesToRead := 1024
 
@@ -102,7 +103,7 @@ func (p *TCP) read(ctx context.Context, args map[string]string) (context.Context
 
 	rcvDataStr := string(rcvData[:n])
 
-	ctx = context.WithValue(ctx, plugins.ContextOutput, rcvDataStr)
+	ctx = context.WithValue(ctx, misc.ContextOutput, rcvDataStr)
 
 	customMetrics := []*metrics.Metric{
 		{
@@ -123,11 +124,11 @@ func (p *TCP) read(ctx context.Context, args map[string]string) (context.Context
 // onClose closes the connection.
 func (p *TCP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 
-	if _, ok := ctx.Value(plugins.ContextTCPConnection).(*net.TCPConn); !ok {
+	if _, ok := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn); !ok {
 		return ctx, nil, fmt.Errorf("no FTP connection found")
 	}
 
-	conn := ctx.Value(plugins.ContextTCPConnection).(*net.TCPConn)
+	conn := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn)
 
 	err := conn.Close()
 
@@ -180,7 +181,7 @@ func (p *TCP) Init() {
 		},
 		ContextGenerator: []plugins.ContextGenerator{
 			{
-				Name:        plugins.ContextOutput.Name,
+				Name:        misc.ContextOutput.Name,
 				Description: "The TCP read contents",
 			},
 		},

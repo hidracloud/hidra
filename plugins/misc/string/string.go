@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/plugins"
 )
 
@@ -18,11 +19,11 @@ type Strings struct {
 func (p *Strings) outputShouldContain(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	search := args["search"]
 
-	if _, ok := ctx.Value(plugins.ContextOutput).(string); !ok {
+	if _, ok := ctx.Value(misc.ContextOutput).(string); !ok {
 		return ctx, nil, fmt.Errorf("output is not a string")
 	}
 
-	output := ctx.Value(plugins.ContextOutput).(string)
+	output := ctx.Value(misc.ContextOutput).(string)
 
 	if strings.Contains(output, search) {
 		return ctx, []*metrics.Metric{}, nil

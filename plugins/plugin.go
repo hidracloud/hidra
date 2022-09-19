@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 )
 
 // PluginInterface represents a plugin.
@@ -75,7 +76,7 @@ func (p *BasePlugin) RunStep(ctx context.Context, step *Step) (context.Context, 
 	stepDefinition, ok := p.StepDefinitions[step.Name]
 
 	if !ok && step.Name == "onFailure" {
-		return ctx, nil, ctx.Value(LastError).(error)
+		return ctx, nil, ctx.Value(misc.LastError).(error)
 	}
 
 	if !ok {
@@ -99,7 +100,7 @@ func (p *BasePlugin) RunStep(ctx context.Context, step *Step) (context.Context, 
 	}
 
 	if err != nil {
-		ctx = context.WithValue(ctx, LastError, err)
+		ctx = context.WithValue(ctx, misc.LastError, err)
 		step.Name = "onFailure"
 
 		ctx, metrics, _ = p.RunStep(ctx, step)

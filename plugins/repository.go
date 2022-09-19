@@ -10,6 +10,7 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -160,7 +161,7 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 
 	allMetrics := []*metrics.Metric{}
 
-	ctx = context.WithValue(ctx, ContextTimeout, sample.Timeout)
+	ctx = context.WithValue(ctx, misc.ContextTimeout, sample.Timeout)
 
 	for _, variables := range sample.Variables {
 		ctx, newMetrics, err := RunWithVariables(ctx, variables, sample)
@@ -168,6 +169,7 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 		allMetrics = append(allMetrics, newMetrics...)
 
 		if err != nil {
+			// TODO: DumpReport(ctx, sample, allMetrics, err)
 			return ctx, allMetrics, err
 		}
 

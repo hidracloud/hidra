@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/plugins"
 
 	"github.com/go-ping/ping"
@@ -35,8 +36,8 @@ func (p *ICMP) ping(ctx context.Context, args map[string]string) (context.Contex
 
 	timeout := 30 * time.Second
 
-	if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
-		timeout = ctx.Value(plugins.ContextTimeout).(time.Duration)
+	if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
+		timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
 	}
 
 	pinger.Count = PingerCount
@@ -136,8 +137,8 @@ func (p *ICMP) traceroute(ctx context.Context, args map[string]string) (context.
 
 	timeout := 30 * time.Second
 
-	if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
-		timeout = ctx.Value(plugins.ContextTimeout).(time.Duration)
+	if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
+		timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
 	}
 
 	traceroute.DefaultConfig.Timeout = timeout

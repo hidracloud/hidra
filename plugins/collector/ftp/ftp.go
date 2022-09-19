@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/plugins"
 	ftpclient "github.com/jlaffaye/ftp"
 )
@@ -22,8 +23,8 @@ type FTP struct {
 
 // whoisFrom returns the whois information from a domain.
 func (p *FTP) connectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); ok {
-		err := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn).Quit()
+	if _, ok := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn); ok {
+		err := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn).Quit()
 
 		if err != nil {
 			return ctx, nil, err
@@ -32,8 +33,8 @@ func (p *FTP) connectTo(ctx context.Context, args map[string]string) (context.Co
 
 	timeout := 30 * time.Second
 
-	if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
-		timeout = ctx.Value(plugins.ContextTimeout).(time.Duration)
+	if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
+		timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
 	}
 
 	ftpConn, err := ftpclient.Dial(args["to"], ftpclient.DialWithTimeout(timeout))
@@ -42,19 +43,19 @@ func (p *FTP) connectTo(ctx context.Context, args map[string]string) (context.Co
 		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, plugins.ContextFTPHost, args["to"])
-	ctx = context.WithValue(ctx, plugins.ContextFTPConnection, ftpConn)
+	ctx = context.WithValue(ctx, misc.ContextFTPHost, args["to"])
+	ctx = context.WithValue(ctx, misc.ContextFTPConnection, ftpConn)
 
 	return ctx, nil, nil
 }
 
 // login logs in to the FTP server.
 func (p *FTP) login(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
+	if _, ok := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
 		return ctx, nil, errNoFTPConnection
 	}
 
-	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
+	ftpConn := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn)
 
 	err := ftpConn.Login(args["user"], args["password"])
 
@@ -67,11 +68,11 @@ func (p *FTP) login(ctx context.Context, args map[string]string) (context.Contex
 
 // write writes a file to the FTP server.
 func (p *FTP) write(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
+	if _, ok := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
 		return ctx, nil, errNoFTPConnection
 	}
 
-	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
+	ftpConn := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn)
 
 	data := bytes.NewBufferString(args["data"])
 
@@ -89,7 +90,7 @@ func (p *FTP) write(ctx context.Context, args map[string]string) (context.Contex
 			Description: "The size of the file written to the FTP server",
 			Value:       float64(len(args["data"])),
 			Labels: map[string]string{
-				"host": ctx.Value(plugins.ContextFTPHost).(string),
+				"host": ctx.Value(misc.ContextFTPHost).(string),
 			},
 		},
 		{
@@ -97,7 +98,7 @@ func (p *FTP) write(ctx context.Context, args map[string]string) (context.Contex
 			Description: "The time it took to write the file to the FTP server",
 			Value:       float64(time.Since(startTime).Milliseconds()),
 			Labels: map[string]string{
-				"host": ctx.Value(plugins.ContextFTPHost).(string),
+				"host": ctx.Value(misc.ContextFTPHost).(string),
 			},
 		},
 	}
@@ -107,11 +108,11 @@ func (p *FTP) write(ctx context.Context, args map[string]string) (context.Contex
 
 // read reads a file from the FTP server.
 func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
+	if _, ok := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
 		return ctx, nil, errNoFTPConnection
 	}
 
-	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
+	ftpConn := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn)
 
 	startTime := time.Now()
 
@@ -129,7 +130,7 @@ func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context
 		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, plugins.ContextOutput, buf.String())
+	ctx = context.WithValue(ctx, misc.ContextOutput, buf.String())
 
 	customMetrics := []*metrics.Metric{
 		{
@@ -137,7 +138,7 @@ func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context
 			Description: "The size of the file read from the FTP server",
 			Value:       float64(buf.Len()),
 			Labels: map[string]string{
-				"host": ctx.Value(plugins.ContextFTPHost).(string),
+				"host": ctx.Value(misc.ContextFTPHost).(string),
 			},
 		},
 		{
@@ -145,7 +146,7 @@ func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context
 			Description: "The time it took to read the file from the FTP server",
 			Value:       float64(time.Since(startTime).Milliseconds()),
 			Labels: map[string]string{
-				"host": ctx.Value(plugins.ContextFTPHost).(string),
+				"host": ctx.Value(misc.ContextFTPHost).(string),
 			},
 		},
 	}
@@ -155,11 +156,11 @@ func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context
 
 // delete deletes a file from the FTP server.
 func (p *FTP) delete(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
+	if _, ok := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn); !ok {
 		return ctx, nil, errNoFTPConnection
 	}
 
-	ftpConn := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn)
+	ftpConn := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn)
 
 	startTime := time.Now()
 
@@ -175,7 +176,7 @@ func (p *FTP) delete(ctx context.Context, args map[string]string) (context.Conte
 			Description: "The time it took to delete the file from the FTP server",
 			Value:       float64(time.Since(startTime).Milliseconds()),
 			Labels: map[string]string{
-				"host": ctx.Value(plugins.ContextFTPHost).(string),
+				"host": ctx.Value(misc.ContextFTPHost).(string),
 			},
 		},
 	}
@@ -185,8 +186,8 @@ func (p *FTP) delete(ctx context.Context, args map[string]string) (context.Conte
 
 // onClose closes the connection.
 func (p *FTP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn); ok {
-		err := ctx.Value(plugins.ContextFTPConnection).(*ftpclient.ServerConn).Quit()
+	if _, ok := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn); ok {
+		err := ctx.Value(misc.ContextFTPConnection).(*ftpclient.ServerConn).Quit()
 
 		if err != nil {
 			return ctx, nil, err
@@ -261,7 +262,7 @@ func (p *FTP) Init() {
 		},
 		ContextGenerator: []plugins.ContextGenerator{
 			{
-				Name:        plugins.ContextOutput.Name,
+				Name:        misc.ContextOutput.Name,
 				Description: "The FTP file contents",
 			},
 		},

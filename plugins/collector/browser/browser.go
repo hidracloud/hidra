@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/plugins"
 
 	"github.com/chromedp/cdproto/performance"
@@ -25,11 +26,11 @@ type Browser struct {
 
 // navigateTo implements the browser.navigateTo primitive.
 func (p *Browser) navigateTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); !ok {
+	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
 		timeout := 120 * time.Second
 
-		if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
-			timeout = ctx.Value(plugins.ContextTimeout).(time.Duration)
+		if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
+			timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
 		}
 
 		// initialize chromedp
@@ -42,12 +43,12 @@ func (p *Browser) navigateTo(ctx context.Context, args map[string]string) (conte
 		chromedpCtx, cancel := chromedp.NewContext(initialCtx)
 		chromedpCtx, cancelTimeout := context.WithTimeout(chromedpCtx, timeout)
 
-		ctx = context.WithValue(ctx, plugins.ContextBrowserChromedpCtx, chromedpCtx)
-		ctx = context.WithValue(ctx, plugins.ContextBrowserChromedpCancel, cancel)
-		ctx = context.WithValue(ctx, plugins.ContextBrowserChromedpCancelTimeout, cancelTimeout)
+		ctx = context.WithValue(ctx, misc.ContextBrowserChromedpCtx, chromedpCtx)
+		ctx = context.WithValue(ctx, misc.ContextBrowserChromedpCancel, cancel)
+		ctx = context.WithValue(ctx, misc.ContextBrowserChromedpCancelTimeout, cancelTimeout)
 	}
 
-	chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
 	err := chromedp.Run(chromedpCtx, performance.Enable(), chromedp.Navigate(args["url"]))
 
@@ -73,11 +74,11 @@ func selector2By(selector string) func(*chromedp.Selector) {
 
 // urlShouldBe implements the browser.urlShouldBe primitive.
 func (p *Browser) urlShouldBe(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); !ok {
+	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
 		return ctx, nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
 	var url string
 
@@ -96,11 +97,11 @@ func (p *Browser) urlShouldBe(ctx context.Context, args map[string]string) (cont
 
 // textShouldBe implements the browser.textShouldBe primitive.
 func (p *Browser) textShouldBe(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); !ok {
+	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
 		return ctx, nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
 	var text string
 
@@ -119,11 +120,11 @@ func (p *Browser) textShouldBe(ctx context.Context, args map[string]string) (con
 
 // sendKeys implements the browser.sendKeys primitive.
 func (p *Browser) sendKeys(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); !ok {
+	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
 		return ctx, nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
 	err := chromedp.Run(chromedpCtx, chromedp.SendKeys(args["selector"], args["keys"], selector2By(args["selectorBy"])))
 
@@ -132,11 +133,11 @@ func (p *Browser) sendKeys(ctx context.Context, args map[string]string) (context
 
 // waitVisible implements the browser.waitVisible primitive.
 func (p *Browser) waitVisible(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); !ok {
+	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
 		return ctx, nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
 	err := chromedp.Run(chromedpCtx, chromedp.WaitVisible(args["selector"], selector2By(args["selectorBy"])))
 
@@ -146,13 +147,13 @@ func (p *Browser) waitVisible(ctx context.Context, args map[string]string) (cont
 // onClose implements the browser.onClose primitive.
 func (p *Browser) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	var err error
-	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); ok {
-		chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
+	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); ok {
+		chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
 		err = chromedp.Stop().Do(chromedpCtx)
 
-		ctx.Value(plugins.ContextBrowserChromedpCancel).(context.CancelFunc)()
-		ctx.Value(plugins.ContextBrowserChromedpCancelTimeout).(context.CancelFunc)()
+		ctx.Value(misc.ContextBrowserChromedpCancel).(context.CancelFunc)()
+		ctx.Value(misc.ContextBrowserChromedpCancelTimeout).(context.CancelFunc)()
 	}
 
 	return ctx, nil, err
@@ -160,11 +161,11 @@ func (p *Browser) onClose(ctx context.Context, args map[string]string) (context.
 
 // click implements the browser.click primitive.
 func (p *Browser) click(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context); !ok {
+	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
 		return ctx, nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(plugins.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
 	err := chromedp.Run(chromedpCtx, chromedp.Click(args["selector"], selector2By(args["selectorBy"])))
 

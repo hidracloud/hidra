@@ -34,27 +34,27 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 	}
 
 	var clientJar http.CookieJar
-	if sharedJar, ok := ctx.Value(plugins.ContextSharedJar).(http.CookieJar); ok {
+	if sharedJar, ok := ctx.Value(misc.ContextSharedJar).(http.CookieJar); ok {
 		clientJar = sharedJar
 	} else {
-		ctx = context.WithValue(ctx, plugins.ContextSharedJar, clientJar)
+		ctx = context.WithValue(ctx, misc.ContextSharedJar, clientJar)
 	}
 
 	tlsSkipInsecure := false
 
-	if _, ok := ctx.Value(plugins.ContextHTTPTlsInsecureSkipVerify).(bool); ok {
-		tlsSkipInsecure = ctx.Value(plugins.ContextHTTPTlsInsecureSkipVerify).(bool)
+	if _, ok := ctx.Value(misc.ContextHTTPTlsInsecureSkipVerify).(bool); ok {
+		tlsSkipInsecure = ctx.Value(misc.ContextHTTPTlsInsecureSkipVerify).(bool)
 	}
 
 	var httpClient *http.Client
 
-	if _, ok := ctx.Value(plugins.ContextHTTPClient).(*http.Client); ok {
-		httpClient = ctx.Value(plugins.ContextHTTPClient).(*http.Client)
+	if _, ok := ctx.Value(misc.ContextHTTPClient).(*http.Client); ok {
+		httpClient = ctx.Value(misc.ContextHTTPClient).(*http.Client)
 	} else {
 		timeout := 30 * time.Second
 
-		if _, ok := ctx.Value(plugins.ContextTimeout).(time.Duration); ok {
-			timeout = ctx.Value(plugins.ContextTimeout).(time.Duration)
+		if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
+			timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
 		}
 
 		httpClient = &http.Client{
@@ -70,8 +70,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 					d := &net.Dialer{}
 
-					if _, ok := ctx.Value(plugins.ContextHTTPForceIP).(string); ok {
-						addr = fmt.Sprintf("%s:%s", ctx.Value(plugins.ContextHTTPForceIP), strings.Split(addr, ":")[1])
+					if _, ok := ctx.Value(misc.ContextHTTPForceIP).(string); ok {
+						addr = fmt.Sprintf("%s:%s", ctx.Value(misc.ContextHTTPForceIP), strings.Split(addr, ":")[1])
 					}
 
 					return d.DialContext(ctx, network, addr)
@@ -79,41 +79,41 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 			},
 		}
 
-		ctx = context.WithValue(ctx, plugins.ContextHTTPClient, httpClient)
+		ctx = context.WithValue(ctx, misc.ContextHTTPClient, httpClient)
 	}
 
 	clientTrace := &httptrace.ClientTrace{
 		GotConn: func(connInfo httptrace.GotConnInfo) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPConnInfo, connInfo)
+			ctx = context.WithValue(ctx, misc.ContextHTTPConnInfo, connInfo)
 		},
 		DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPDNSStartInfo, dnsInfo)
-			ctx = context.WithValue(ctx, plugins.ContextHTTPDNSStartTime, time.Now())
+			ctx = context.WithValue(ctx, misc.ContextHTTPDNSStartInfo, dnsInfo)
+			ctx = context.WithValue(ctx, misc.ContextHTTPDNSStartTime, time.Now())
 		},
 		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPDNSDoneInfo, dnsInfo)
-			ctx = context.WithValue(ctx, plugins.ContextHTTPDNSStopTime, time.Now())
+			ctx = context.WithValue(ctx, misc.ContextHTTPDNSDoneInfo, dnsInfo)
+			ctx = context.WithValue(ctx, misc.ContextHTTPDNSStopTime, time.Now())
 		},
 		ConnectStart: func(network, addr string) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPNetwork, network)
-			ctx = context.WithValue(ctx, plugins.ContextHTTPAddr, addr)
-			ctx = context.WithValue(ctx, plugins.ContextHTTPTcpConnectStartTime, time.Now())
+			ctx = context.WithValue(ctx, misc.ContextHTTPNetwork, network)
+			ctx = context.WithValue(ctx, misc.ContextHTTPAddr, addr)
+			ctx = context.WithValue(ctx, misc.ContextHTTPTcpConnectStartTime, time.Now())
 		},
 		ConnectDone: func(network, addr string, err error) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPNetwork, network)
-			ctx = context.WithValue(ctx, plugins.ContextHTTPAddr, addr)
-			ctx = context.WithValue(ctx, plugins.ContextHTTPTcpConnectStopTime, time.Now())
+			ctx = context.WithValue(ctx, misc.ContextHTTPNetwork, network)
+			ctx = context.WithValue(ctx, misc.ContextHTTPAddr, addr)
+			ctx = context.WithValue(ctx, misc.ContextHTTPTcpConnectStopTime, time.Now())
 		},
 		TLSHandshakeStart: func() {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPTlsHandshakeStartTime, time.Now())
+			ctx = context.WithValue(ctx, misc.ContextHTTPTlsHandshakeStartTime, time.Now())
 		},
 		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPTlsHandshakeStopTime, time.Now())
+			ctx = context.WithValue(ctx, misc.ContextHTTPTlsHandshakeStopTime, time.Now())
 		},
 	}
 
 	ctx = httptrace.WithClientTrace(ctx, clientTrace)
-	req, err := http.NewRequestWithContext(ctx, ctx.Value(plugins.ContextHTTPMethod).(string), ctx.Value(plugins.ContextHTTPURL).(string), bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequestWithContext(ctx, ctx.Value(misc.ContextHTTPMethod).(string), ctx.Value(misc.ContextHTTPURL).(string), bytes.NewBuffer([]byte(body)))
 
 	if err != nil {
 		return ctx, nil, err
@@ -121,7 +121,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 
 	req.Header.Set("User-Agent", fmt.Sprintf("hidra/monitoring %s", misc.Version))
 
-	if ctxHeaders, ok := ctx.Value(plugins.ContextHTTPHeaders).(map[string]string); ok {
+	if ctxHeaders, ok := ctx.Value(misc.ContextHTTPHeaders).(map[string]string); ok {
 		for k, v := range ctxHeaders {
 			req.Header.Set(k, v)
 		}
@@ -142,29 +142,29 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 
 	defer resp.Body.Close()
 
-	ctx = context.WithValue(ctx, plugins.ContextHTTPResponse, resp)
-	ctx = context.WithValue(ctx, plugins.ContextOutput, string(b))
+	ctx = context.WithValue(ctx, misc.ContextHTTPResponse, resp)
+	ctx = context.WithValue(ctx, misc.ContextOutput, string(b))
 
 	dnsTime := 0.0
 
-	if dnsStartTime, ok := ctx.Value(plugins.ContextHTTPDNSStartTime).(time.Time); ok {
-		if dnsStopTime, ok := ctx.Value(plugins.ContextHTTPDNSStopTime).(time.Time); ok {
+	if dnsStartTime, ok := ctx.Value(misc.ContextHTTPDNSStartTime).(time.Time); ok {
+		if dnsStopTime, ok := ctx.Value(misc.ContextHTTPDNSStopTime).(time.Time); ok {
 			dnsTime = dnsStopTime.Sub(dnsStartTime).Seconds()
 		}
 	}
 
 	tcpTime := 0.0
 
-	if tcpStartTime, ok := ctx.Value(plugins.ContextHTTPTcpConnectStartTime).(time.Time); ok {
-		if tcpStopTime, ok := ctx.Value(plugins.ContextHTTPTcpConnectStopTime).(time.Time); ok {
+	if tcpStartTime, ok := ctx.Value(misc.ContextHTTPTcpConnectStartTime).(time.Time); ok {
+		if tcpStopTime, ok := ctx.Value(misc.ContextHTTPTcpConnectStopTime).(time.Time); ok {
 			tcpTime = tcpStopTime.Sub(tcpStartTime).Seconds()
 		}
 	}
 
 	tlsTime := 0.0
 
-	if tlsStartTime, ok := ctx.Value(plugins.ContextHTTPTlsHandshakeStartTime).(time.Time); ok {
-		if tlsStopTime, ok := ctx.Value(plugins.ContextHTTPTlsHandshakeStopTime).(time.Time); ok {
+	if tlsStartTime, ok := ctx.Value(misc.ContextHTTPTlsHandshakeStartTime).(time.Time); ok {
+		if tlsStopTime, ok := ctx.Value(misc.ContextHTTPTlsHandshakeStopTime).(time.Time); ok {
 			tlsTime = tlsStopTime.Sub(tlsStartTime).Seconds()
 		}
 	}
@@ -175,8 +175,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 			Description: "The HTTP response status code",
 			Value:       float64(resp.StatusCode),
 			Labels: map[string]string{
-				"method": ctx.Value(plugins.ContextHTTPMethod).(string),
-				"url":    ctx.Value(plugins.ContextHTTPURL).(string),
+				"method": ctx.Value(misc.ContextHTTPMethod).(string),
+				"url":    ctx.Value(misc.ContextHTTPURL).(string),
 			},
 		},
 		{
@@ -184,8 +184,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 			Description: "The HTTP response content length",
 			Value:       float64(len(b)),
 			Labels: map[string]string{
-				"method": ctx.Value(plugins.ContextHTTPMethod).(string),
-				"url":    ctx.Value(plugins.ContextHTTPURL).(string),
+				"method": ctx.Value(misc.ContextHTTPMethod).(string),
+				"url":    ctx.Value(misc.ContextHTTPURL).(string),
 			},
 		},
 		{
@@ -193,8 +193,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 			Description: "The HTTP response time",
 			Value:       time.Since(startTime).Seconds(),
 			Labels: map[string]string{
-				"method": ctx.Value(plugins.ContextHTTPMethod).(string),
-				"url":    ctx.Value(plugins.ContextHTTPURL).(string),
+				"method": ctx.Value(misc.ContextHTTPMethod).(string),
+				"url":    ctx.Value(misc.ContextHTTPURL).(string),
 			},
 		},
 		{
@@ -202,8 +202,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 			Description: "The HTTP response DNS time",
 			Value:       dnsTime,
 			Labels: map[string]string{
-				"method": ctx.Value(plugins.ContextHTTPMethod).(string),
-				"url":    ctx.Value(plugins.ContextHTTPURL).(string),
+				"method": ctx.Value(misc.ContextHTTPMethod).(string),
+				"url":    ctx.Value(misc.ContextHTTPURL).(string),
 			},
 		},
 		{
@@ -211,8 +211,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 			Description: "The HTTP response TCP connect time",
 			Value:       tcpTime,
 			Labels: map[string]string{
-				"method": ctx.Value(plugins.ContextHTTPMethod).(string),
-				"url":    ctx.Value(plugins.ContextHTTPURL).(string),
+				"method": ctx.Value(misc.ContextHTTPMethod).(string),
+				"url":    ctx.Value(misc.ContextHTTPURL).(string),
 			},
 		},
 		{
@@ -220,8 +220,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 			Description: "The HTTP response TLS handshake time",
 			Value:       tlsTime,
 			Labels: map[string]string{
-				"method": ctx.Value(plugins.ContextHTTPMethod).(string),
-				"url":    ctx.Value(plugins.ContextHTTPURL).(string),
+				"method": ctx.Value(misc.ContextHTTPMethod).(string),
+				"url":    ctx.Value(misc.ContextHTTPURL).(string),
 			},
 		},
 	}
@@ -234,9 +234,9 @@ func (p *HTTP) request(ctx context.Context, args map[string]string) (context.Con
 		args["method"] = "GET"
 	}
 	// set context for current step
-	ctx = context.WithValue(ctx, plugins.ContextHTTPMethod, args["method"])
-	ctx = context.WithValue(ctx, plugins.ContextHTTPURL, args["url"])
-	ctx = context.WithValue(ctx, plugins.ContextHTTPBody, args["body"])
+	ctx = context.WithValue(ctx, misc.ContextHTTPMethod, args["method"])
+	ctx = context.WithValue(ctx, misc.ContextHTTPURL, args["url"])
+	ctx = context.WithValue(ctx, misc.ContextHTTPBody, args["body"])
 
 	return p.requestByMethod(ctx, args)
 }
@@ -247,11 +247,11 @@ func (p *HTTP) statusCodeShouldBe(ctx context.Context, args map[string]string) (
 
 	// get context for current step
 
-	if _, ok := ctx.Value(plugins.ContextHTTPResponse).(*http.Response); !ok {
-		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", plugins.ContextHTTPResponse.Name)
+	if _, ok := ctx.Value(misc.ContextHTTPResponse).(*http.Response); !ok {
+		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse.Name)
 	}
 
-	resp := ctx.Value(plugins.ContextHTTPResponse).(*http.Response)
+	resp := ctx.Value(misc.ContextHTTPResponse).(*http.Response)
 
 	expectedStatusCode, err := strconv.ParseInt(args["statusCode"], 10, 64)
 
@@ -272,11 +272,11 @@ func (p *HTTP) bodyShouldContain(ctx context.Context, args map[string]string) (c
 
 	// get context for current step
 
-	if _, ok := ctx.Value(plugins.ContextOutput).(string); !ok {
-		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", plugins.ContextHTTPResponse.Name)
+	if _, ok := ctx.Value(misc.ContextOutput).(string); !ok {
+		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse.Name)
 	}
 
-	output := ctx.Value(plugins.ContextOutput).(string)
+	output := ctx.Value(misc.ContextOutput).(string)
 
 	if !strings.Contains(output, args["search"]) {
 		return ctx, nil, fmt.Errorf("expected body to contain %s", args["search"])
@@ -290,11 +290,11 @@ func (p *HTTP) shouldRedirectTo(ctx context.Context, args map[string]string) (co
 	var err error
 
 	// get context for current step
-	if _, ok := ctx.Value(plugins.ContextHTTPResponse).(*http.Response); !ok {
-		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", plugins.ContextHTTPResponse.Name)
+	if _, ok := ctx.Value(misc.ContextHTTPResponse).(*http.Response); !ok {
+		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse.Name)
 	}
 
-	resp := ctx.Value(plugins.ContextHTTPResponse).(*http.Response)
+	resp := ctx.Value(misc.ContextHTTPResponse).(*http.Response)
 
 	if resp.Header.Get("Location") != args["url"] {
 		return ctx, nil, fmt.Errorf("expected redirect to %s but got %s", args["url"], resp.Header.Get("Location"))
@@ -308,11 +308,11 @@ func (p *HTTP) addHTTPHeader(ctx context.Context, args map[string]string) (conte
 	var err error
 
 	// get context for current step
-	if _, ok := ctx.Value(plugins.ContextHTTPHeaders).(map[string]string); !ok {
-		ctx = context.WithValue(ctx, plugins.ContextHTTPHeaders, map[string]string{})
+	if _, ok := ctx.Value(misc.ContextHTTPHeaders).(map[string]string); !ok {
+		ctx = context.WithValue(ctx, misc.ContextHTTPHeaders, map[string]string{})
 	}
 
-	headers := ctx.Value(plugins.ContextHTTPHeaders).(map[string]string)
+	headers := ctx.Value(misc.ContextHTTPHeaders).(map[string]string)
 
 	headers[args["key"]] = args["value"]
 
@@ -348,11 +348,11 @@ func (p *HTTP) Init() {
 		Fn: p.request,
 		ContextGenerator: []plugins.ContextGenerator{
 			{
-				Name:        plugins.ContextHTTPResponse.Name,
+				Name:        misc.ContextHTTPResponse.Name,
 				Description: "The HTTP response",
 			},
 			{
-				Name:        plugins.ContextOutput.Name,
+				Name:        misc.ContextOutput.Name,
 				Description: "The HTTP response body",
 			},
 		},
@@ -408,7 +408,7 @@ func (p *HTTP) Init() {
 		Name:        "allowInsecureTLS",
 		Description: "Allows insecure TLS connections. This is useful for testing purposes, but should not be used in production",
 		Fn: func(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPTlsInsecureSkipVerify, true)
+			ctx = context.WithValue(ctx, misc.ContextHTTPTlsInsecureSkipVerify, true)
 			return ctx, nil, nil
 		},
 	})
@@ -420,7 +420,7 @@ func (p *HTTP) Init() {
 			{Name: "ip", Description: "The IP address", Optional: false},
 		},
 		Fn: func(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-			ctx = context.WithValue(ctx, plugins.ContextHTTPForceIP, args["ip"])
+			ctx = context.WithValue(ctx, misc.ContextHTTPForceIP, args["ip"])
 			return ctx, nil, nil
 		},
 	})

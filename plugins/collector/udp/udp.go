@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/plugins"
 
 	b64 "encoding/base64"
@@ -30,18 +31,18 @@ func (p *UDP) connectTo(ctx context.Context, args map[string]string) (context.Co
 		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, plugins.ContextUDPConnection, conn)
+	ctx = context.WithValue(ctx, misc.ContextUDPConnection, conn)
 
 	return ctx, nil, nil
 }
 
 // write writes a file to the UDP server.
 func (p *UDP) write(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextUDPConnection).(*net.UDPConn); !ok {
+	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
 		return ctx, nil, fmt.Errorf("no udp connection found")
 	}
 
-	conn := ctx.Value(plugins.ContextUDPConnection).(*net.UDPConn)
+	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
 
 	data, err := b64.StdEncoding.DecodeString(args["data"])
 
@@ -76,11 +77,11 @@ func (p *UDP) write(ctx context.Context, args map[string]string) (context.Contex
 func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	var err error
 
-	if _, ok := ctx.Value(plugins.ContextUDPConnection).(*net.UDPConn); !ok {
+	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
 		return ctx, nil, fmt.Errorf("no UDP connection found")
 	}
 
-	conn := ctx.Value(plugins.ContextUDPConnection).(*net.UDPConn)
+	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
 
 	bytesToRead := 1024
 
@@ -102,7 +103,7 @@ func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context
 
 	rcvDataStr := string(rcvData[:n])
 
-	ctx = context.WithValue(ctx, plugins.ContextOutput, rcvDataStr)
+	ctx = context.WithValue(ctx, misc.ContextOutput, rcvDataStr)
 
 	customMetrics := []*metrics.Metric{
 		{
@@ -123,11 +124,11 @@ func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context
 // onClose closes the connection.
 func (p *UDP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 
-	if _, ok := ctx.Value(plugins.ContextUDPConnection).(*net.UDPConn); !ok {
+	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
 		return ctx, nil, fmt.Errorf("no FTP connection found")
 	}
 
-	conn := ctx.Value(plugins.ContextUDPConnection).(*net.UDPConn)
+	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
 
 	err := conn.Close()
 
@@ -180,7 +181,7 @@ func (p *UDP) Init() {
 		},
 		ContextGenerator: []plugins.ContextGenerator{
 			{
-				Name:        plugins.ContextOutput.Name,
+				Name:        misc.ContextOutput.Name,
 				Description: "The UDP read contents",
 			},
 		},

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/hidracloud/hidra/v3/plugins"
 )
@@ -21,8 +22,8 @@ type TLS struct {
 
 // connectTo connects to a TLS server.
 func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextTLSConnection).(*tls.Conn); ok {
-		err := ctx.Value(plugins.ContextTLSConnection).(*tls.Conn).Close()
+	if _, ok := ctx.Value(misc.ContextTLSConnection).(*tls.Conn); ok {
+		err := ctx.Value(misc.ContextTLSConnection).(*tls.Conn).Close()
 
 		if err != nil {
 			return ctx, nil, err
@@ -54,9 +55,9 @@ func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Co
 
 	certificates := conn.ConnectionState().PeerCertificates
 
-	ctx = context.WithValue(ctx, plugins.ContextTLSConnection, conn)
-	ctx = context.WithValue(ctx, plugins.ContextTLSHost, args["to"])
-	ctx = context.WithValue(ctx, plugins.ContextTLSCertificates, certificates)
+	ctx = context.WithValue(ctx, misc.ContextTLSConnection, conn)
+	ctx = context.WithValue(ctx, misc.ContextTLSHost, args["to"])
+	ctx = context.WithValue(ctx, misc.ContextTLSCertificates, certificates)
 
 	customMetrics := []*metrics.Metric{
 		{
@@ -119,8 +120,8 @@ func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Co
 
 // onClose closes the connection.
 func (p *TLS) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextTLSConnection).(*tls.Conn); ok {
-		err := ctx.Value(plugins.ContextTLSConnection).(*tls.Conn).Close()
+	if _, ok := ctx.Value(misc.ContextTLSConnection).(*tls.Conn); ok {
+		err := ctx.Value(misc.ContextTLSConnection).(*tls.Conn).Close()
 
 		if err != nil {
 			return ctx, nil, err
@@ -132,11 +133,11 @@ func (p *TLS) onClose(ctx context.Context, args map[string]string) (context.Cont
 
 // dnsShouldBePresent checks if a DNS record should be present.
 func (p *TLS) dnsShouldBePresent(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextTLSCertificates).([]*x509.Certificate); !ok {
+	if _, ok := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate); !ok {
 		return ctx, nil, fmt.Errorf("no TLS connection found")
 	}
 
-	certificates := ctx.Value(plugins.ContextTLSCertificates).([]*x509.Certificate)
+	certificates := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate)
 
 	for _, cert := range certificates {
 		for _, dns := range cert.DNSNames {
@@ -156,7 +157,7 @@ func (p *TLS) dnsShouldBePresent(ctx context.Context, args map[string]string) (c
 
 // shouldBeValidFor checks if a certificate is valid for a given host.
 func (p *TLS) shouldBeValidFor(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(plugins.ContextTLSCertificates).([]*x509.Certificate); !ok {
+	if _, ok := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate); !ok {
 		return ctx, nil, fmt.Errorf("no TLS connection found")
 	}
 
@@ -165,7 +166,7 @@ func (p *TLS) shouldBeValidFor(ctx context.Context, args map[string]string) (con
 		return ctx, nil, err
 	}
 
-	certificates := ctx.Value(plugins.ContextTLSCertificates).([]*x509.Certificate)
+	certificates := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate)
 	limitDate := time.Now().Add(duration)
 
 	for _, cert := range certificates {
