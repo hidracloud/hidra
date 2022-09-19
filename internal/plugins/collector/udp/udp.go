@@ -1,4 +1,4 @@
-package tcp
+package udp
 
 import (
 	"context"
@@ -9,40 +9,40 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
-	"github.com/hidracloud/hidra/v3/plugins"
+	"github.com/hidracloud/hidra/v3/internal/plugins"
 
 	b64 "encoding/base64"
 )
 
-// TCP represents a TCP plugin.
-type TCP struct {
+// UDP represents a UDP plugin.
+type UDP struct {
 	plugins.BasePlugin
 }
 
 // whoisFrom returns the whois information from a domain.
-func (p *TCP) connectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", args["to"])
+func (p *UDP) connectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	udpAddr, err := net.ResolveUDPAddr("udp", args["to"])
 	if err != nil {
 		return ctx, nil, err
 	}
 
-	conn, err := net.DialTCP("tcp4", nil, tcpAddr)
+	conn, err := net.DialUDP("udp", nil, udpAddr)
 	if err != nil {
 		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, misc.ContextTCPConnection, conn)
+	ctx = context.WithValue(ctx, misc.ContextUDPConnection, conn)
 
 	return ctx, nil, nil
 }
 
-// write writes a file to the TCP server.
-func (p *TCP) write(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn); !ok {
-		return ctx, nil, fmt.Errorf("no tcp connection found")
+// write writes a file to the UDP server.
+func (p *UDP) write(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
+		return ctx, nil, fmt.Errorf("no udp connection found")
 	}
 
-	conn := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn)
+	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
 
 	data, err := b64.StdEncoding.DecodeString(args["data"])
 
@@ -59,13 +59,13 @@ func (p *TCP) write(ctx context.Context, args map[string]string) (context.Contex
 
 	customMetrics := []*metrics.Metric{
 		{
-			Name:        "tcp_write_time",
-			Description: "The time it took to write the data to the TCP server",
+			Name:        "udp_write_time",
+			Description: "The time it took to write the data to the UDP server",
 			Value:       time.Since(startTime).Seconds(),
 		},
 		{
-			Name:        "tcp_write_size",
-			Description: "The size of the data written to the TCP server",
+			Name:        "udp_write_size",
+			Description: "The size of the data written to the UDP server",
 			Value:       float64(byteLen),
 		},
 	}
@@ -73,15 +73,15 @@ func (p *TCP) write(ctx context.Context, args map[string]string) (context.Contex
 	return ctx, customMetrics, nil
 }
 
-// read reads a file from the TCP server.
-func (p *TCP) read(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+// read reads a file from the UDP server.
+func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	var err error
 
-	if _, ok := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn); !ok {
-		return ctx, nil, fmt.Errorf("no TCP connection found")
+	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
+		return ctx, nil, fmt.Errorf("no UDP connection found")
 	}
 
-	conn := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn)
+	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
 
 	bytesToRead := 1024
 
@@ -107,13 +107,13 @@ func (p *TCP) read(ctx context.Context, args map[string]string) (context.Context
 
 	customMetrics := []*metrics.Metric{
 		{
-			Name:        "tcp_read_time",
-			Description: "The time it took to write the data to the TCP server",
+			Name:        "udp_read_time",
+			Description: "The time it took to write the data to the UDP server",
 			Value:       time.Since(startTime).Seconds(),
 		},
 		{
-			Name:        "tcp_read_size",
-			Description: "The size of the data written to the TCP server",
+			Name:        "udp_read_size",
+			Description: "The size of the data written to the UDP server",
 			Value:       float64(len(rcvDataStr)),
 		},
 	}
@@ -122,13 +122,13 @@ func (p *TCP) read(ctx context.Context, args map[string]string) (context.Context
 }
 
 // onClose closes the connection.
-func (p *TCP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *UDP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 
-	if _, ok := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn); !ok {
+	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
 		return ctx, nil, fmt.Errorf("no FTP connection found")
 	}
 
-	conn := ctx.Value(misc.ContextTCPConnection).(*net.TCPConn)
+	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
 
 	err := conn.Close()
 
@@ -140,12 +140,12 @@ func (p *TCP) onClose(ctx context.Context, args map[string]string) (context.Cont
 }
 
 // Init initializes the plugin.
-func (p *TCP) Init() {
+func (p *UDP) Init() {
 	p.Primitives()
 
 	p.RegisterStep(&plugins.StepDefinition{
 		Name:        "connectTo",
-		Description: "Connect to a TCP server",
+		Description: "Connect to a UDP server",
 		Params: []plugins.StepParam{
 			{
 				Name:        "to",
@@ -158,7 +158,7 @@ func (p *TCP) Init() {
 
 	p.RegisterStep(&plugins.StepDefinition{
 		Name:        "write",
-		Description: "Write a file to a TCP server",
+		Description: "Write a file to a UDP server",
 		Params: []plugins.StepParam{
 			{
 				Name:        "data",
@@ -182,7 +182,7 @@ func (p *TCP) Init() {
 		ContextGenerator: []plugins.ContextGenerator{
 			{
 				Name:        misc.ContextOutput.Name,
-				Description: "The TCP read contents",
+				Description: "The UDP read contents",
 			},
 		},
 		Fn: p.read,
@@ -198,7 +198,7 @@ func (p *TCP) Init() {
 
 // Init initializes the plugin.
 func init() {
-	h := &TCP{}
+	h := &UDP{}
 	h.Init()
-	plugins.AddPlugin("tcp", h)
+	plugins.AddPlugin("udp", h)
 }

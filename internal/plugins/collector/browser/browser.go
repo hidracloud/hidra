@@ -9,7 +9,7 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
-	"github.com/hidracloud/hidra/v3/plugins"
+	"github.com/hidracloud/hidra/v3/internal/plugins"
 
 	"github.com/chromedp/cdproto/performance"
 	"github.com/chromedp/chromedp"

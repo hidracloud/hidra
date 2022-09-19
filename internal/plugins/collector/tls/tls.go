@@ -11,8 +11,8 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
+	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/utils"
-	"github.com/hidracloud/hidra/v3/plugins"
 )
 
 // TLS represents a TLS plugin.

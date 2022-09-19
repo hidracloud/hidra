@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hidracloud/hidra/v3/plugins"
-	"github.com/hidracloud/hidra/v3/plugins/collector/tcp"
+	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/plugins/collector/tcp"
 )
 
 func TestScenario(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/exporter"
 	"github.com/hidracloud/hidra/v3/internal/migrate"
 	"github.com/hidracloud/hidra/v3/internal/misc"
+	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/utils"
-	"github.com/hidracloud/hidra/v3/plugins"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
