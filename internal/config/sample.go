@@ -12,6 +12,9 @@ type SampleConfig struct {
 	// Name is the sample name.
 	Name string `yaml:"name"`
 
+	// Path is the sample path.
+	Path string `yaml:"path"`
+
 	// Description is the description of the sample.
 	Description string `yaml:"description"`
 
@@ -72,5 +75,13 @@ func LoadSampleConfigFromFile(path string) (*SampleConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	return LoadSampleConfig(data)
+	cnf, err := LoadSampleConfig(data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	cnf.Path = path
+
+	return cnf, nil
 }

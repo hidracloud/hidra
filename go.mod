@@ -6,6 +6,7 @@ require (
 	github.com/StalkR/dnssec-analyzer v1.0.0
 	github.com/chromedp/chromedp v0.8.5
 	github.com/go-ping/ping v1.1.0
+	github.com/grokify/html-strip-tags-go v0.0.1
 	github.com/jlaffaye/ftp v0.1.0
 	github.com/likexian/gokit v0.25.9
 	github.com/likexian/whois v1.14.2

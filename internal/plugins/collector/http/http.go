@@ -67,7 +67,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: tlsSkipInsecure,
 				},
-				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				DialContext: func(_ context.Context, network, addr string) (net.Conn, error) {
 					d := &net.Dialer{}
 
 					if _, ok := ctx.Value(misc.ContextHTTPForceIP).(string); ok {
@@ -93,6 +93,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
 			ctx = context.WithValue(ctx, misc.ContextHTTPDNSDoneInfo, dnsInfo)
 			ctx = context.WithValue(ctx, misc.ContextHTTPDNSStopTime, time.Now())
+			ctx = context.WithValue(ctx, misc.ContextConnectionIP, dnsInfo.Addrs[0].String())
 		},
 		ConnectStart: func(network, addr string) {
 			ctx = context.WithValue(ctx, misc.ContextHTTPNetwork, network)

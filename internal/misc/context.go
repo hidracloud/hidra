@@ -142,6 +142,16 @@ var (
 		Name: "output",
 	}
 
+	// ContextConnectionIP is the context key for the connection IP.
+	ContextConnectionIP = ContextKey{
+		Name: "connection.ip",
+	}
+
+	// ContextAttachment is the context key for the attachment.
+	ContextAttachment = ContextKey{
+		Name: "attachment",
+	}
+
 	// LastError is the context key for the last error.
 	LastError = ContextKey{
 		Name: "last.error",

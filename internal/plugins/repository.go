@@ -11,6 +11,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
+	"github.com/hidracloud/hidra/v3/internal/report"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -73,7 +74,7 @@ func (s *StepParamTemplate) Replace(m map[string]string) (map[string]string, err
 }
 
 // RunWithVariables runs the step with variables.
-func RunWithVariables(ctx context.Context, variables map[string]string, sample *config.SampleConfig) (context.Context, []*metrics.Metric, error) {
+func RunWithVariables(ctx context.Context, variables map[string]string, sample *config.SampleConfig) (context.Context, []*metrics.Metric, *report.Report, error) {
 	var allMetrics, newMetrics []*metrics.Metric
 
 	depthSize := 1
@@ -89,11 +90,13 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 	variables, err := stepParamTemplate.Replace(variables)
 
 	if err != nil {
-		return ctx, nil, err
+		return ctx, nil, nil, err
 	}
 
 	stepParamTemplate.Variables = variables
 
+	startTime := time.Now()
+	stepCounter := 0
 	for _, step := range sample.Steps {
 		log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
 		log.Debugf("|_%s Action: %v", strings.Repeat("_", depthSize), step.Action)
@@ -104,7 +107,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		step.Parameters, err = stepParamTemplate.Replace(step.Parameters)
 
 		if err != nil {
-			return ctx, nil, err
+			return ctx, nil, nil, err
 		}
 
 		for k, v := range step.Parameters {
@@ -118,7 +121,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		plugin := GetPlugin(step.Plugin)
 
 		if plugin == nil {
-			return ctx, allMetrics, fmt.Errorf("plugin %s not found", step.Plugin)
+			return ctx, allMetrics, nil, fmt.Errorf("plugin %s not found", step.Plugin)
 		}
 
 		lastPlugin = step.Plugin
@@ -133,8 +136,11 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		allMetrics = append(allMetrics, newMetrics...)
 
 		if err != nil {
-			return ctx, allMetrics, err
+			err = fmt.Errorf("%s#%d: %s", sample.Path, stepCounter, err)
+			return ctx, allMetrics, report.NewReport(sample, allMetrics, time.Since(startTime), ctx, err), err
 		}
+
+		stepCounter++
 	}
 
 	// Clean up plugins
@@ -152,27 +158,28 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		}
 	}
 
-	return ctx, allMetrics, err
+	return ctx, allMetrics, nil, err
 }
 
 // RunSample runs a sample.
-func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Context, []*metrics.Metric, error) {
+func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Context, []*metrics.Metric, []*report.Report, error) {
 	var err error
 
 	allMetrics := []*metrics.Metric{}
+	allReports := []*report.Report{}
 
 	ctx = context.WithValue(ctx, misc.ContextTimeout, sample.Timeout)
 
 	for _, variables := range sample.Variables {
-		ctx, newMetrics, err := RunWithVariables(ctx, variables, sample)
+		ctx, newMetrics, report, err := RunWithVariables(ctx, variables, sample)
 
 		allMetrics = append(allMetrics, newMetrics...)
-
+		allReports = append(allReports, report)
 		if err != nil {
 			// TODO: DumpReport(ctx, sample, allMetrics, err)
-			return ctx, allMetrics, err
+			return ctx, allMetrics, allReports, err
 		}
 
 	}
-	return ctx, allMetrics, err
+	return ctx, allMetrics, allReports, err
 }

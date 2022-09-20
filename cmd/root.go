@@ -83,7 +83,7 @@ var testCmd = &cobra.Command{
 
 			ctx := context.TODO()
 
-			_, metrics, err := plugins.RunSample(ctx, sampleConf)
+			_, metrics, _, err := plugins.RunSample(ctx, sampleConf)
 
 			if err != nil {
 				exitCode = 1

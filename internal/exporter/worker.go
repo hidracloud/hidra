@@ -179,7 +179,7 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 				// Run the sample
 				ctx := context.Background()
-				_, allMetrics, err := plugins.RunSample(ctx, sample)
+				_, allMetrics, _, err := plugins.RunSample(ctx, sample)
 
 				// Update the metrics
 				updateMetrics(allMetrics, sample, err)

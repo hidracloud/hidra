@@ -1,12 +1,14 @@
 package utils
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
+	strip "github.com/grokify/html-strip-tags-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -317,4 +319,14 @@ func EnvToMap() map[string]string {
 	envToMapCache = envMap
 
 	return envMap
+}
+
+// HTMLStripTags removes all HTML tags from a string
+func HTMLStripTags(s string) string {
+	return strip.StripTags(s)
+}
+
+// Base64Encode encodes a string to base64
+func Base64Encode(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
 }
