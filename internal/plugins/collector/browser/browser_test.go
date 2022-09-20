@@ -1,5 +1,6 @@
 package browser_test
 
+/*
 import (
 	"context"
 	"testing"
@@ -87,3 +88,4 @@ func TestScenario(t *testing.T) {
 	})
 
 }
+*/
