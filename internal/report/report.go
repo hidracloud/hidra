@@ -41,6 +41,8 @@ type Report struct {
 	HttpInfo ReportHttpRespone `json:"http_info,omitempty"`
 	// Output is the output of the report.
 	Output string `json:"output,omitempty"`
+	// Variables is the variables of the report.
+	Variables map[string]string `json:"variables,omitempty"`
 }
 
 // ReportConnectionInfo is the connection info of the report.
@@ -58,7 +60,7 @@ type ReportHttpRespone struct {
 }
 
 // NewReport creates a new report.
-func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, duration time.Duration, ctx context.Context, err error) *Report {
+func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variables map[string]string, duration time.Duration, ctx context.Context, err error) *Report {
 	if !IsEnabled {
 		return nil
 	}
@@ -70,6 +72,7 @@ func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, durati
 		Metrics:   metrics.MetricsToMap(allMetrics),
 		LastError: err.Error(),
 		Tags:      sample.Tags,
+		Variables: variables,
 	}
 
 	report.GenerateConnectionInfo(ctx)
@@ -84,9 +87,7 @@ func (r *Report) GenerateConnectionInfo(ctx context.Context) {
 	lastIP := ""
 
 	tracerouteList := []string{}
-	if ok := ctx.Value(misc.ContextConnectionIP); ok != nil {
-		lastIP = ok.(string)
-
+	if lastIP, ok := ctx.Value(misc.ContextConnectionIP).(string); ok {
 		// nolint: errcheck
 		hops, _ := traceroute.Trace(net.ParseIP(lastIP))
 
@@ -103,7 +104,7 @@ func (r *Report) GenerateConnectionInfo(ctx context.Context) {
 
 // GenerateReportHttpRespone returns the HTTP response of the report.
 func (r *Report) GenerateReportHttpRespone(ctx context.Context) {
-	if httpResp := ctx.Value(misc.ContextHTTPResponse).(*http.Response); httpResp != nil {
+	if httpResp, ok := ctx.Value(misc.ContextHTTPResponse).(*http.Response); ok {
 		headers := map[string]string{}
 
 		for k, v := range httpResp.Header {
@@ -119,8 +120,8 @@ func (r *Report) GenerateReportHttpRespone(ctx context.Context) {
 
 // GenerateOutput set output into report
 func (r *Report) GenerateOutput(ctx context.Context) {
-	if output := ctx.Value(misc.ContextOutput); output != nil {
-		r.Output = utils.HTMLStripTags(output.(string))
+	if output, ok := ctx.Value(misc.ContextOutput).(string); ok {
+		r.Output = utils.HTMLStripTags(output)
 
 		// convert r.Output to base64
 		r.Output = utils.Base64Encode(r.Output)

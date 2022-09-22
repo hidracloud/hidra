@@ -137,7 +137,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 
 		if err != nil {
 			err = fmt.Errorf("%s#%d: %s", sample.Path, stepCounter, err)
-			return ctx, allMetrics, report.NewReport(sample, allMetrics, time.Since(startTime), ctx, err), err
+			return ctx, allMetrics, report.NewReport(sample, allMetrics, variables, time.Since(startTime), ctx, err), err
 		}
 
 		stepCounter++
