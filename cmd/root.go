@@ -10,6 +10,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/migrate"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/report"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -58,6 +59,22 @@ var exporterCmd = &cobra.Command{
 
 		// Set log level
 		utils.SetLogLevelFromStr(exporterConf.LogLevel)
+
+		// Set report mode
+		if exporterConf.ReportConfig.Enabled {
+			report.IsEnabled = true
+
+			if exporterConf.ReportConfig.S3Config.Enabled {
+				report.ConfigureS3(&report.ReportS3Config{
+					AccessKeyID:     exporterConf.ReportConfig.S3Config.AccessKeyID,
+					SecretAccessKey: exporterConf.ReportConfig.S3Config.SecretAccessKey,
+					Endpoint:        exporterConf.ReportConfig.S3Config.Endpoint,
+					Bucket:          exporterConf.ReportConfig.S3Config.Bucket,
+					Region:          exporterConf.ReportConfig.S3Config.Region,
+					ForcePathStyle:  exporterConf.ReportConfig.S3Config.ForcePathStyle,
+				})
+			}
+		}
 
 		// Start exporter
 		exporter.Initialize(exporterConf)

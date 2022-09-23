@@ -46,6 +46,29 @@ type ExporterConfig struct {
 		// Enable is the flag to enable screenshots.
 		Enabled bool `yaml:"enabled"`
 	} `yaml:"screenshots"`
+
+	// ReportConfig is the configuration for the report.
+	ReportConfig struct {
+		// Enabled is the flag to enable the report.
+		Enabled bool `yaml:"enabled"`
+		// S3Config is the configuration for the S3.
+		S3Config struct {
+			// Enabled is the flag to enable the S3.
+			Enabled bool `yaml:"enabled"`
+			// Bucket is the bucket name.
+			Bucket string `yaml:"bucket"`
+			// Region is the region.
+			Region string `yaml:"region"`
+			// AccessKeyID is the access key ID.
+			AccessKeyID string `yaml:"access_key_id"`
+			// SecretAccessKey is the secret access key.
+			SecretAccessKey string `yaml:"secret_access_key"`
+			// Endpoint is the endpoint.
+			Endpoint string `yaml:"endpoint"`
+			// ForcePathStyle is the flag to force path style.
+			ForcePathStyle bool `yaml:"force_path_style"`
+		} `yaml:"s3"`
+	} `yaml:"report"`
 }
 
 // LoadExporterConfig loads from byte array.

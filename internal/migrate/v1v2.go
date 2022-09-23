@@ -69,7 +69,6 @@ func LoadSampleV1V2ConfigFromFile(path string) (*SampleV1V2, error) {
 // Migrate converts a v1-v2 sample to a v3 sample
 func (s *SampleV1V2) Migrate() *config.SampleConfig {
 	sample := &config.SampleConfig{
-		Name:        s.Name,
 		Description: s.Description,
 		Tags:        s.Tags,
 		Interval:    s.ScrapeInterval,

@@ -10,40 +10,40 @@ import (
 // SampleConfig is the sample configuration.
 type SampleConfig struct {
 	// Name is the sample name.
-	Name string `yaml:"name"`
+	Name string `yaml:"name,omitempty"`
 
 	// Path is the sample path.
-	Path string `yaml:"path"`
+	Path string `yaml:"path,omitempty"`
 
 	// Description is the description of the sample.
-	Description string `yaml:"description"`
+	Description string `yaml:"description,omitempty"`
 
 	// Tags is the tags of the sample.
-	Tags map[string]string `yaml:"tags"`
+	Tags map[string]string `yaml:"tags,omitempty"`
 
 	// ScrapeInterval is the interval to scrape the sample.
-	Interval time.Duration `yaml:"interval"`
+	Interval time.Duration `yaml:"interval,omitempty"`
 
 	// Timeout is the timeout to scrape the sample.
-	Timeout time.Duration `yaml:"timeout"`
+	Timeout time.Duration `yaml:"timeout,omitempty"`
 
 	// Steps is the steps to scrape the sample.
-	Steps []StepConfig `yaml:"steps"`
+	Steps []StepConfig `yaml:"steps,omitempty"`
 
 	// Variables is the variables to scrape the sample
-	Variables []map[string]string `yaml:"variables"`
+	Variables []map[string]string `yaml:"variables,omitempty"`
 }
 
 // StepConfig is the step configuration.
 type StepConfig struct {
 	// Plugin is the plugin to scrape the sample. If not value given, the latest used plugin will be used.
-	Plugin string `yaml:"plugin"`
+	Plugin string `yaml:"plugin,omitempty"`
 	// Action is the action to scrape the sample
-	Action string `yaml:"action"`
+	Action string `yaml:"action,omitempty"`
 	// Parameters is the parameters to scrape the sample
-	Parameters map[string]string `yaml:"parameters"`
+	Parameters map[string]string `yaml:"parameters,omitempty"`
 	// Negate is the negate to scrape the sample
-	Negate bool `yaml:"negate"`
+	Negate bool `yaml:"negate,omitempty"`
 }
 
 // LoadSampleConfig loads from byte array.

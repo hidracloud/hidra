@@ -16,8 +16,12 @@ import (
 	"github.com/pixelbender/go-traceroute/traceroute"
 )
 
-// IsEnabled returns true if the report is enabled.
-var IsEnabled = true
+var (
+	// IsEnabled returns true if the report is enabled.
+	IsEnabled = true
+	// ReportS3Conf
+	ReportS3Conf *ReportS3Config
+)
 
 // Report is a report of a single test run.
 type Report struct {
@@ -57,6 +61,27 @@ type ReportHttpRespone struct {
 	Headers map[string]string `json:"headers,omitempty"`
 	// ResponseCode
 	ResponseCode int `json:"response_code,omitempty"`
+}
+
+// ReportS3Config is the S3 report configuration.
+type ReportS3Config struct {
+	// Bucket is the bucket name.
+	Bucket string `yaml:"bucket"`
+	// Region is the region.
+	Region string `yaml:"region"`
+	// AccessKeyID is the access key ID.
+	AccessKeyID string `yaml:"access_key_id"`
+	// SecretAccessKey is the secret access key.
+	SecretAccessKey string `yaml:"secret_access_key"`
+	// Endpoint is the endpoint.
+	Endpoint string `yaml:"endpoint"`
+	// ForcePathStyle is the flag to force path style.
+	ForcePathStyle bool `yaml:"force_path_style"`
+}
+
+// ConfigureS3 configures the S3 report.
+func ConfigureS3(reportS3Conf *ReportS3Config) {
+	ReportS3Conf = reportS3Conf
 }
 
 // NewReport creates a new report.
@@ -135,4 +160,30 @@ func (r *Report) Dump() string {
 		return ""
 	}
 	return string(e)
+}
+
+// SaveS3 saves the report to S3.
+func (r *Report) SaveS3() error {
+	return nil
+}
+
+// SaveFile saves the report to a file.
+func (r *Report) SaveFile() error {
+	return nil
+}
+
+// Save saves the report to a file.
+func (r *Report) Save() error {
+	if !IsEnabled {
+		return nil
+	}
+
+	if ReportS3Conf != nil {
+		err := r.SaveS3()
+		if err != nil {
+			return err
+		}
+	}
+
+	return r.SaveFile()
 }
