@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // ExporterConfig is the configuration for the exporter.
@@ -102,6 +104,10 @@ func LoadExporterConfig(data []byte) (*ExporterConfig, error) {
 
 	if config.WorkerConfig.ParallelJobs <= 0 {
 		config.WorkerConfig.ParallelJobs = runtime.GOMAXPROCS(0)
+	}
+
+	if config.WorkerConfig.ParallelJobs > runtime.GOMAXPROCS(0) {
+		log.Warn("Parallel jobs is greater than GOMAXPROCS, this may cause performance issues")
 	}
 
 	if config.ScreenshotsConfig.Timeout == 0 {

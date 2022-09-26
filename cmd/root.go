@@ -9,8 +9,8 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/exporter"
 	"github.com/hidracloud/hidra/v3/internal/migrate"
 	"github.com/hidracloud/hidra/v3/internal/misc"
-	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/report"
+	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -65,7 +65,7 @@ var exporterCmd = &cobra.Command{
 			report.IsEnabled = true
 
 			if exporterConf.ReportConfig.S3Config.Enabled {
-				report.ConfigureS3(&report.ReportS3Config{
+				report.SetS3Configuration(&report.ReportS3Config{
 					AccessKeyID:     exporterConf.ReportConfig.S3Config.AccessKeyID,
 					SecretAccessKey: exporterConf.ReportConfig.S3Config.SecretAccessKey,
 					Endpoint:        exporterConf.ReportConfig.S3Config.Endpoint,
@@ -100,7 +100,7 @@ var testCmd = &cobra.Command{
 
 			ctx := context.TODO()
 
-			_, metrics, _, err := plugins.RunSample(ctx, sampleConf)
+			_, metrics, _, err := runner.RunSample(ctx, sampleConf)
 
 			if err != nil {
 				exitCode = 1

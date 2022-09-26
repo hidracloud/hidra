@@ -1,11 +1,14 @@
 package report
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,13 +17,20 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/pixelbender/go-traceroute/traceroute"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
 	// IsEnabled returns true if the report is enabled.
-	IsEnabled = true
+	IsEnabled = false
 	// ReportS3Conf
 	ReportS3Conf *ReportS3Config
+	// BasePath is the base path of the report.
+	BasePath = "/tmp/hidra"
 )
 
 // Report is a report of a single test run.
@@ -36,7 +46,7 @@ type Report struct {
 	// LastError is the last error of the test.
 	LastError string `json:"last_error,omitempty"`
 	// Attachments is the attachments of the report.
-	Attachments map[string]string `json:"attachments,omitempty"`
+	Attachments map[string][]byte `json:"attachments,omitempty"`
 	// Tags is the tags of the report.
 	Tags map[string]string `json:"tags,omitempty"`
 	// ConnectionInfo is the connection info of the report.
@@ -77,11 +87,18 @@ type ReportS3Config struct {
 	Endpoint string `yaml:"endpoint"`
 	// ForcePathStyle is the flag to force path style.
 	ForcePathStyle bool `yaml:"force_path_style"`
+	// UseSSL is the flag to use SSL.
+	UseSSL bool `yaml:"use_ssl"`
 }
 
-// ConfigureS3 configures the S3 report.
-func ConfigureS3(reportS3Conf *ReportS3Config) {
+// SetS3Configuration configures the S3 report.
+func SetS3Configuration(reportS3Conf *ReportS3Config) {
 	ReportS3Conf = reportS3Conf
+}
+
+// SetBasePath set base path of report
+func SetBasePath(basePath string) {
+	BasePath = basePath
 }
 
 // NewReport creates a new report.
@@ -89,6 +106,8 @@ func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variab
 	if !IsEnabled {
 		return nil
 	}
+
+	log.Debug("Generating new report")
 
 	report := &Report{
 		Name:      sample.Name,
@@ -111,6 +130,7 @@ func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variab
 func (r *Report) GenerateConnectionInfo(ctx context.Context) {
 	lastIP := ""
 
+	log.Debug("Generating connection info with traceroute")
 	tracerouteList := []string{}
 	if lastIP, ok := ctx.Value(misc.ContextConnectionIP).(string); ok {
 		// nolint: errcheck
@@ -132,6 +152,7 @@ func (r *Report) GenerateReportHttpRespone(ctx context.Context) {
 	if httpResp, ok := ctx.Value(misc.ContextHTTPResponse).(*http.Response); ok {
 		headers := map[string]string{}
 
+		log.Debug("Generating HTTP response info")
 		for k, v := range httpResp.Header {
 			headers[k] = strings.Join(v, ",")
 		}
@@ -164,12 +185,72 @@ func (r *Report) Dump() string {
 
 // SaveS3 saves the report to S3.
 func (r *Report) SaveS3() error {
-	return nil
+	if ReportS3Conf == nil {
+		return nil
+	}
+
+	log.Debug("Saving report to S3")
+
+	minioClient, err := minio.New(ReportS3Conf.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(ReportS3Conf.AccessKeyID, ReportS3Conf.SecretAccessKey, ""),
+		Secure: ReportS3Conf.UseSSL,
+		Region: ReportS3Conf.Region,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	rDump := r.Dump()
+
+	_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name, strings.NewReader(rDump), int64(len(rDump)), minio.PutObjectOptions{
+		ContentType: "application/json",
+	})
+
+	// upload attachments to r.Name.more/ folder
+	for dest, content := range r.Attachments {
+		// create a reader from origin file
+		reader := bytes.NewReader(content)
+
+		_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name+".more/"+dest, reader, int64(len(content)), minio.PutObjectOptions{
+			ContentType: "application/json",
+		})
+
+		if err != nil {
+			log.Warn("Failed to upload attachment to S3: %s", err)
+			continue
+		}
+	}
+	return err
 }
 
 // SaveFile saves the report to a file.
 func (r *Report) SaveFile() error {
-	return nil
+	rDump := r.Dump()
+
+	if err := os.MkdirAll(BasePath, 0755); err != nil {
+		return err
+	}
+
+	filePath := filepath.Join(BasePath, r.Name)
+
+	log.Debugf("Saving report to file %s", filePath)
+
+	for dest, content := range r.Attachments {
+		attachmentPath := filepath.Join(BasePath, r.Name+".more", dest)
+
+		if err := os.MkdirAll(filepath.Dir(attachmentPath), 0755); err != nil {
+			log.Errorf("Error creating attachment directory %s: %s", filepath.Dir(attachmentPath), err)
+			continue
+		}
+
+		if err := os.WriteFile(attachmentPath, content, 0644); err != nil {
+			log.Errorf("Error writing attachment %s: %s", attachmentPath, err)
+			continue
+		}
+	}
+
+	return os.WriteFile(filePath, []byte(rDump), 0644)
 }
 
 // Save saves the report to a file.

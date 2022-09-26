@@ -11,7 +11,8 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
-	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/misc"
+	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -179,10 +180,18 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 				// Run the sample
 				ctx := context.Background()
-				_, allMetrics, _, err := plugins.RunSample(ctx, sample)
+				ctx = context.WithValue(ctx, misc.ContextAttachment, make(map[string][]byte))
+				_, allMetrics, reports, err := runner.RunSample(ctx, sample)
 
 				// Update the metrics
 				updateMetrics(allMetrics, sample, err)
+
+				if err != nil {
+					log.Debugf("Saving report %d for sample %s", len(reports), sample.Name)
+					for _, oneReport := range reports {
+						oneReport.Save()
+					}
+				}
 
 				runningTime.Add(uint64(time.Since(startTime).Milliseconds()))
 
