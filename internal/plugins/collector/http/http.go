@@ -146,10 +146,6 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 	ctx = context.WithValue(ctx, misc.ContextHTTPResponse, resp)
 	ctx = context.WithValue(ctx, misc.ContextOutput, string(b))
 
-	if _, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
-		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = b
-	}
-
 	dnsTime := 0.0
 
 	if dnsStartTime, ok := ctx.Value(misc.ContextHTTPDNSStartTime).(time.Time); ok {
@@ -334,6 +330,12 @@ func (p *HTTP) setUserAgent(ctx context.Context, args map[string]string) (contex
 
 // onFailure implements the plugins.Plugin interface.
 func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+
+	if _, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
+		// get output from context
+		output := ctx.Value(misc.ContextOutput).(string)
+		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = []byte(output)
+	}
 	// Generate an screenshot of current response
 	return ctx, nil, nil
 }
