@@ -16,6 +16,20 @@ services:
       - "19090:19090"
     expose:
       - 19090
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ACCESS_KEY=hidratest
+      - MINIO_SECRET_KEY=hidratest
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    expose:
+      - 9000
+      - 9001 
   prometheus:
     image: prom/prometheus:v2.38.0
     command: --config.file=/etc/prometheus/prometheus.yml
@@ -51,3 +65,4 @@ services:
 volumes:
   prometheus_data: {}
   grafana_data: {}
+  minio_data: {}

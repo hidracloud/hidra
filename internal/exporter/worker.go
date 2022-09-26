@@ -190,7 +190,10 @@ func RunWorkers(cnf *config.ExporterConfig) {
 					log.Debugf("Saving report %d for sample %s", len(reports), sample.Name)
 					for _, oneReport := range reports {
 						rErr := oneReport.Save()
-						log.Warnf("Error saving report: %s", rErr)
+
+						if rErr != nil {
+							log.Errorf("Error saving report: %s", rErr)
+						}
 					}
 				}
 

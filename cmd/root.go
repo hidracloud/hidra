@@ -72,6 +72,7 @@ var exporterCmd = &cobra.Command{
 					Bucket:          exporterConf.ReportConfig.S3Config.Bucket,
 					Region:          exporterConf.ReportConfig.S3Config.Region,
 					ForcePathStyle:  exporterConf.ReportConfig.S3Config.ForcePathStyle,
+					UseSSL:          exporterConf.ReportConfig.S3Config.UseSSL,
 				})
 			}
 		}

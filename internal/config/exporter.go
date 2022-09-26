@@ -69,6 +69,8 @@ type ExporterConfig struct {
 			Endpoint string `yaml:"endpoint"`
 			// ForcePathStyle is the flag to force path style.
 			ForcePathStyle bool `yaml:"force_path_style"`
+			// UseSSL is the flag to use SSL.
+			UseSSL bool `yaml:"use_ssl"`
 		} `yaml:"s3"`
 	} `yaml:"report"`
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"mime"
 	"net"
 	"net/http"
 	"os"
@@ -46,7 +47,9 @@ type Report struct {
 	// LastError is the last error of the test.
 	LastError string `json:"last_error,omitempty"`
 	// Attachments is the attachments of the report.
-	Attachments map[string][]byte `json:"attachments,omitempty"`
+	Attachments map[string][]byte `json:"-"`
+	// AttachmentList is the list of attachments.
+	AttachmentList []string `json:"attachments,omitempty"`
 	// Tags is the tags of the report.
 	Tags map[string]string `json:"tags,omitempty"`
 	// ConnectionInfo is the connection info of the report.
@@ -122,6 +125,7 @@ func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variab
 	report.GenerateConnectionInfo(ctx)
 	report.GenerateReportHttpRespone(ctx)
 	report.GenerateOutput(ctx)
+	report.GenerateAttachments(ctx)
 
 	return report
 }
@@ -144,6 +148,17 @@ func (r *Report) GenerateConnectionInfo(ctx context.Context) {
 	r.ConnectionInfo = ReportConnectionInfo{
 		IP:         lastIP,
 		Traceroute: tracerouteList,
+	}
+}
+
+// GenerateAttachments generates all attachnments of the report.
+func (r *Report) GenerateAttachments(ctx context.Context) {
+	if attachments, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
+		r.Attachments = attachments
+		r.AttachmentList = []string{}
+		for k := range attachments {
+			r.AttachmentList = append(r.AttachmentList, k)
+		}
 	}
 }
 
@@ -203,7 +218,7 @@ func (r *Report) SaveS3() error {
 
 	rDump := r.Dump()
 
-	_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name, strings.NewReader(rDump), int64(len(rDump)), minio.PutObjectOptions{
+	_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name+".json", strings.NewReader(rDump), int64(len(rDump)), minio.PutObjectOptions{
 		ContentType: "application/json",
 	})
 
@@ -212,8 +227,21 @@ func (r *Report) SaveS3() error {
 		// create a reader from origin file
 		reader := bytes.NewReader(content)
 
+		contentType := "application/octet-stream"
+
+		// get content type from file extension
+		if ext := filepath.Ext(dest); ext != "" {
+			if ct := mime.TypeByExtension(ext); ct != "" {
+				contentType = ct
+				// remove encoding from content type
+				if i := strings.Index(contentType, ";"); i != -1 {
+					contentType = contentType[:i]
+				}
+			}
+		}
+
 		_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name+".more/"+dest, reader, int64(len(content)), minio.PutObjectOptions{
-			ContentType: "application/json",
+			ContentType: contentType,
 		})
 
 		if err != nil {
@@ -221,7 +249,42 @@ func (r *Report) SaveS3() error {
 			continue
 		}
 	}
+
+	if len(r.Attachments) > 0 {
+		indexHTML := r.GenerateMoreIndexHTML()
+
+		_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name+".more/index.html", strings.NewReader(indexHTML), int64(len(indexHTML)), minio.PutObjectOptions{
+			ContentType: "text/html",
+		})
+
+		if err != nil {
+			log.Warnf("Failed to upload index.html to S3: %s", err)
+		}
+	}
 	return err
+}
+
+// GenerateMoreIndexHTML generates the index.html for the report.
+func (r *Report) GenerateMoreIndexHTML() string {
+	ulHTML := ""
+	for _, dest := range r.AttachmentList {
+		ulHTML += fmt.Sprintf("<li><a href=\"%s\">%s</a></li>", dest, dest)
+	}
+
+	indexHTML := fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+	<title>Attachments</title>
+</head>
+<body>
+	<h1>Attachments</h1>
+	<ul>
+		%s
+	</ul>
+</body>
+</html>`, ulHTML)
+
+	return indexHTML
 }
 
 // SaveFile saves the report to a file.
@@ -232,7 +295,7 @@ func (r *Report) SaveFile() error {
 		return err
 	}
 
-	filePath := filepath.Join(BasePath, r.Name)
+	filePath := filepath.Join(BasePath, r.Name+".json")
 
 	log.Debugf("Saving report to file %s", filePath)
 

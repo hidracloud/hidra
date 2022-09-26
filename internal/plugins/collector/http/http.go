@@ -146,6 +146,10 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 	ctx = context.WithValue(ctx, misc.ContextHTTPResponse, resp)
 	ctx = context.WithValue(ctx, misc.ContextOutput, string(b))
 
+	if _, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
+		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = b
+	}
+
 	dnsTime := 0.0
 
 	if dnsStartTime, ok := ctx.Value(misc.ContextHTTPDNSStartTime).(time.Time); ok {
