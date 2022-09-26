@@ -217,7 +217,7 @@ func (r *Report) SaveS3() error {
 		})
 
 		if err != nil {
-			log.Warn("Failed to upload attachment to S3: %s", err)
+			log.Warnf("Failed to upload attachment to S3: %s", err)
 			continue
 		}
 	}
