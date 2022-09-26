@@ -1,4 +1,4 @@
-log_level: debug
+log_level: info
 http_server:
   listen_address: :19090
 samples_path: ./configs/hidra/samples

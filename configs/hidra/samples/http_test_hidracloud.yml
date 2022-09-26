@@ -16,4 +16,4 @@ steps:
   - plugin: http
     action: statusCodeShouldBe
     parameters:
-      statusCode: 201
+      statusCode: 200

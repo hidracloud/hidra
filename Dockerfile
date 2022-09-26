@@ -18,7 +18,7 @@ FROM golang:${GOLANG_VERSION}-buster as release-maker
 
 FROM alpine:${ALPINE_VERSION} AS production
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates chromium-chromedriver
 
 COPY --from=builder /app/hidra /usr/local/bin/hidra
 

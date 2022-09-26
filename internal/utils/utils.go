@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chromedp/chromedp"
 	strip "github.com/grokify/html-strip-tags-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -329,4 +331,41 @@ func HTMLStripTags(s string) string {
 // Base64Encode encodes a string to base64
 func Base64Encode(s string) string {
 	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+// fullScreenshot takes a screenshot of the entire browser viewport.
+//
+// Note: chromedp.FullScreenshot overrides the device's emulation settings. Use
+// device.Reset to reset the emulation and viewport settings.
+func fullScreenshot(urlstr string, quality int, res *[]byte) chromedp.Tasks {
+	return chromedp.Tasks{
+		chromedp.Navigate(urlstr),
+		chromedp.Sleep(time.Second),
+		chromedp.FullScreenshot(res, quality),
+	}
+}
+
+// TakeScreenshotWithChromedp takes a screenshot of the current browser window.
+func TakeScreenshotWithChromedp(url, file string) error {
+	// create context
+	ctx, cancel := chromedp.NewContext(
+		context.Background(),
+	)
+
+	// add a timeout
+	ctx, cancelTimeout := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	defer cancelTimeout()
+
+	var buf []byte
+
+	// capture entire browser viewport, returning png with quality=90
+	if err := chromedp.Run(ctx, fullScreenshot(url, 90, &buf)); err != nil {
+		return err
+	}
+	if err := os.WriteFile(file, buf, 0o644); err != nil {
+		return err
+	}
+
+	return nil
 }

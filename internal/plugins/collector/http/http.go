@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptrace"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/utils"
 )
 
 // HTTP represents a HTTP plugin.
@@ -335,6 +337,38 @@ func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.C
 		// get output from context
 		output := ctx.Value(misc.ContextOutput).(string)
 		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = []byte(output)
+
+		// create a tmp file
+
+		tmpFile, err := os.CreateTemp("", "screenshot-*.png")
+
+		if err != nil {
+			return ctx, nil, err
+		}
+
+		// take an screenshot an save to tmp file
+		err = utils.TakeScreenshotWithChromedp(ctx.Value(misc.ContextHTTPURL).(string), tmpFile.Name())
+
+		if err != nil {
+			return ctx, nil, err
+		}
+
+		// read tmp file
+		data, err := os.ReadFile(tmpFile.Name())
+
+		if err != nil {
+			return ctx, nil, err
+		}
+
+		// add screenshot to attachments
+		ctx.Value(misc.ContextAttachment).(map[string][]byte)["screenshot.png"] = data
+
+		// remove tmp file
+		err = os.Remove(tmpFile.Name())
+
+		if err != nil {
+			return ctx, nil, err
+		}
 	}
 	// Generate an screenshot of current response
 	return ctx, nil, nil
