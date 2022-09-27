@@ -106,8 +106,6 @@ func refreshSampleCommonTags() {
 
 // scheduleDecide decides if a sample should be scheduled
 func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, executionDurationStd float64) bool {
-	samplesMutex.Lock()
-	defer samplesMutex.Unlock()
 	lastSampleRun, exists := lastRun[sample.Name]
 
 	if !exists {
