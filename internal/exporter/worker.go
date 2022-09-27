@@ -60,17 +60,17 @@ func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, er
 		labels := createLabels(metric, sample)
 
 		prometheusMetric.With(labels).Set(metric.Value)
-
-		statusLabels := createLabelsForStatus(sample)
-
-		if err != nil {
-			prometheusStatusMetric.With(statusLabels).Set(0)
-		} else {
-			prometheusStatusMetric.With(statusLabels).Set(1)
-		}
-
-		prometheusLastUpdate.With(statusLabels).Set(float64(time.Now().Unix()))
 	}
+
+	statusLabels := createLabelsForStatus(sample)
+
+	if err != nil {
+		prometheusStatusMetric.With(statusLabels).Set(0)
+	} else {
+		prometheusStatusMetric.With(statusLabels).Set(1)
+	}
+
+	prometheusLastUpdate.With(statusLabels).Set(float64(time.Now().Unix()))
 }
 
 // createLabelsForStatus creates the labels for status
