@@ -106,7 +106,9 @@ func refreshSampleCommonTags() {
 
 // scheduleDecide decides if a sample should be scheduled
 func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, executionDurationStd float64) bool {
+	lastRunMutex.RLock()
 	lastSampleRun, exists := lastRun[sample.Name]
+	lastRunMutex.RUnlock()
 
 	if !exists {
 		log.Debugf("Sample %s has never been scheduled, scheduling...", sample.Name)
@@ -156,8 +158,6 @@ func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, execution
 // EnqueueSamples enqueues the samples.
 func enqueueSamples(config *config.ExporterConfig) {
 	log.Debug("Enqueuing samples...")
-	samplesMutex.Lock()
-	defer samplesMutex.Unlock()
 
 	executionDurationAvg := float64(runningTime.Load()) / float64(len(configSamples))
 	executionDurationStd := 0.0
@@ -171,7 +171,9 @@ func enqueueSamples(config *config.ExporterConfig) {
 	for _, sample := range configSamples {
 		if scheduleDecide(sample, executionDurationAvg, executionDurationStd) {
 			log.Debugf("Enqueuing sample %s", sample.Name)
+			lastRunMutex.Lock()
 			lastRun[sample.Name] = time.Now().Add(time.Hour * 24 * 365)
+			lastRunMutex.Unlock()
 			samplesJobs <- sample
 		}
 	}
