@@ -93,7 +93,14 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
 			ctx = context.WithValue(ctx, misc.ContextHTTPDNSDoneInfo, dnsInfo)
 			ctx = context.WithValue(ctx, misc.ContextHTTPDNSStopTime, time.Now())
-			ctx = context.WithValue(ctx, misc.ContextConnectionIP, dnsInfo.Addrs[0].String())
+
+			dnsAddr := ""
+
+			if len(dnsInfo.Addrs) > 0 {
+				dnsAddr = dnsInfo.Addrs[0].String()
+			}
+
+			ctx = context.WithValue(ctx, misc.ContextConnectionIP, dnsAddr)
 		},
 		ConnectStart: func(network, addr string) {
 			ctx = context.WithValue(ctx, misc.ContextHTTPNetwork, network)
