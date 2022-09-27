@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"mime"
 	"net"
@@ -218,7 +219,14 @@ func (r *Report) SaveS3() error {
 
 	rDump := r.Dump()
 
-	_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name+".json", strings.NewReader(rDump), int64(len(rDump)), minio.PutObjectOptions{
+	// rDump to reader
+	reader := strings.NewReader(rDump)
+
+	if reader == nil {
+		return errors.New("reader is nil")
+	}
+
+	_, err = minioClient.PutObject(context.Background(), ReportS3Conf.Bucket, r.Name+".json", reader, int64(len(rDump)), minio.PutObjectOptions{
 		ContentType: "application/json",
 	})
 

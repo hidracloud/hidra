@@ -279,7 +279,7 @@ func (p *HTTP) bodyShouldContain(ctx context.Context, args map[string]string) (c
 
 	output := strings.ToLower(ctx.Value(misc.ContextOutput).(string))
 
-	if !strings.Contains(output, args["search"]) {
+	if !strings.Contains(output, strings.ToLower(args["search"])) {
 		return ctx, nil, fmt.Errorf("expected body to contain %s", args["search"])
 	}
 
