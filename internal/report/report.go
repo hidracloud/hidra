@@ -334,6 +334,10 @@ func (r *Report) Save() error {
 		return nil
 	}
 
+	if r == nil {
+		return nil
+	}
+
 	if ReportS3Conf != nil {
 		err := r.SaveS3()
 		if err != nil {

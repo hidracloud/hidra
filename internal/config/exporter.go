@@ -2,12 +2,9 @@ package config
 
 import (
 	"os"
-	"runtime"
 	"time"
 
 	"gopkg.in/yaml.v3"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // ExporterConfig is the configuration for the exporter.
@@ -40,14 +37,6 @@ type ExporterConfig struct {
 		// SleepBetweenJobs is the sleep between jobs.
 		SleepBetweenJobs time.Duration `yaml:"sleep_between_jobs"`
 	} `yaml:"worker"`
-
-	// ScreenshotsConfig is the configuration for the screenshots.
-	ScreenshotsConfig struct {
-		// Timeout is the timeout for the screenshots.
-		Timeout time.Duration `yaml:"timeout"`
-		// Enable is the flag to enable screenshots.
-		Enabled bool `yaml:"enabled"`
-	} `yaml:"screenshots"`
 
 	// ReportConfig is the configuration for the report.
 	ReportConfig struct {
@@ -105,15 +94,7 @@ func LoadExporterConfig(data []byte) (*ExporterConfig, error) {
 	}
 
 	if config.WorkerConfig.ParallelJobs <= 0 {
-		config.WorkerConfig.ParallelJobs = runtime.GOMAXPROCS(0)
-	}
-
-	if config.WorkerConfig.ParallelJobs > runtime.GOMAXPROCS(0) {
-		log.Warn("Parallel jobs is greater than GOMAXPROCS, this may cause performance issues")
-	}
-
-	if config.ScreenshotsConfig.Timeout == 0 {
-		config.ScreenshotsConfig.Timeout = 15 * time.Second
+		config.WorkerConfig.ParallelJobs = 16
 	}
 
 	if config.WorkerConfig.MaxQueueSize <= 0 {

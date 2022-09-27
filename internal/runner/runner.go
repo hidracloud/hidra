@@ -26,6 +26,14 @@ type StepParamTemplate struct {
 	Variables map[string]string
 }
 
+// RunnerResult represents the result of a runner.
+type RunnerResult struct {
+	Context context.Context
+	Metrics []*metrics.Metric
+	Reports []*report.Report
+	Error   error
+}
+
 // GetContext return context value by key
 func (s *StepParamTemplate) GetContext(key string) string {
 	if s.Context == nil {
@@ -150,7 +158,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 }
 
 // RunSample runs a sample.
-func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Context, []*metrics.Metric, []*report.Report, error) {
+func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 	var err error
 
 	allMetrics := []*metrics.Metric{}
@@ -164,10 +172,19 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) (context.Contex
 		allMetrics = append(allMetrics, newMetrics...)
 		allReports = append(allReports, report)
 		if err != nil {
-			// TODO: DumpReport(ctx, sample, allMetrics, err)
-			return ctx, allMetrics, allReports, err
+			return &RunnerResult{
+				Context: ctx,
+				Metrics: allMetrics,
+				Reports: allReports,
+				Error:   err,
+			}
 		}
 
 	}
-	return ctx, allMetrics, allReports, err
+	return &RunnerResult{
+		Context: ctx,
+		Metrics: allMetrics,
+		Reports: allReports,
+		Error:   err,
+	}
 }

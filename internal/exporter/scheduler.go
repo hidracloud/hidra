@@ -2,6 +2,7 @@ package exporter
 
 import (
 	"math"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -68,6 +69,10 @@ func refreshSamples(cnf *config.ExporterConfig) {
 
 		configSamples = append(configSamples, sample)
 	}
+
+	// user used to create similar samples near each other, so we shuffle them
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(configSamples), func(i, j int) { configSamples[i], configSamples[j] = configSamples[j], configSamples[i] })
 
 	for _, metric := range prometheusMetricStore {
 		metric.Reset()
@@ -173,11 +178,13 @@ func enqueueSamples(config *config.ExporterConfig) {
 }
 
 // InitializeScheduler initializes the scheduler
-func InitializeScheduler(config *config.ExporterConfig) {
+func InitializeScheduler(cnf *config.ExporterConfig) {
 	lastRun = make(map[string]time.Time)
 	samplesMutex = &sync.RWMutex{}
-	refreshSamples(config)
+	refreshSamples(cnf)
 	refreshSampleCommonTags()
+
+	samplesJobs = make(chan *config.SampleConfig, cnf.WorkerConfig.MaxQueueSize)
 }
 
 // TickScheduler ticks the scheduler

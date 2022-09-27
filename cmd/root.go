@@ -101,14 +101,14 @@ var testCmd = &cobra.Command{
 
 			ctx := context.TODO()
 
-			_, metrics, _, err := runner.RunSample(ctx, sampleConf)
+			result := runner.RunSample(ctx, sampleConf)
 
-			if err != nil {
+			if result.Error != nil {
 				exitCode = 1
 			}
 
 			resultEmoji := "✅"
-			if err != nil {
+			if result.Error != nil {
 				resultEmoji = "❌"
 			}
 
@@ -118,7 +118,7 @@ var testCmd = &cobra.Command{
 				{"Result", resultEmoji},
 			}
 
-			for _, metric := range metrics {
+			for _, metric := range result.Metrics {
 				infoTable = append(infoTable, []string{fmt.Sprintf("%s (%s) (%v)", metric.Description, metric.Name, metric.Labels), fmt.Sprintf("%f", metric.Value)})
 			}
 

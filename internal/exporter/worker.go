@@ -2,6 +2,7 @@ package exporter
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 	"sort"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
+	"github.com/hidracloud/hidra/v3/internal/report"
 	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -143,12 +145,34 @@ func initializePrometheusMetrics(metric *metrics.Metric) *prometheus.GaugeVec {
 	return prometheusMetricStore[metric.Name]
 }
 
+// RunSampleWithTimeout runs the sample with timeout
+func RunSampleWithTimeout(ctx context.Context, sample *config.SampleConfig, timeout time.Duration) *runner.RunnerResult {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	result := make(chan *runner.RunnerResult, 1)
+	go func() {
+		result <- runner.RunSample(ctx, sample)
+	}()
+	select {
+	case <-time.After(timeout):
+		timeoutResult := &runner.RunnerResult{
+			Error:   errors.New("timeout"),
+			Reports: make([]*report.Report, 0),
+		}
+
+		timeoutResult.Reports = append(timeoutResult.Reports, report.NewReport(sample, nil, nil, timeout, ctx, timeoutResult.Error))
+		log.Warnf("Sample %s timed out after %s", sample.Name, timeout)
+		return timeoutResult
+	case result := <-result:
+		return result
+	}
+}
+
 // RunWorkers runs the workers
 func RunWorkers(cnf *config.ExporterConfig) {
 
-	log.Debugf("Initializing %d workers...", cnf.WorkerConfig.ParallelJobs)
-
-	samplesJobs = make(chan *config.SampleConfig, cnf.WorkerConfig.MaxQueueSize)
+	log.Infof("Initializing %d workers...", cnf.WorkerConfig.ParallelJobs)
 
 	prometheusStatusMetric = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -181,14 +205,15 @@ func RunWorkers(cnf *config.ExporterConfig) {
 				// Run the sample
 				ctx := context.Background()
 				ctx = context.WithValue(ctx, misc.ContextAttachment, make(map[string][]byte))
-				_, allMetrics, reports, err := runner.RunSample(ctx, sample)
+
+				result := RunSampleWithTimeout(ctx, sample, sample.Timeout)
 
 				// Update the metrics
-				updateMetrics(allMetrics, sample, err)
+				updateMetrics(result.Metrics, sample, result.Error)
 
-				if err != nil {
-					log.Debugf("Saving report %d for sample %s", len(reports), sample.Name)
-					for _, oneReport := range reports {
+				if result.Error != nil {
+					log.Debugf("Saving report %d for sample %s", len(result.Reports), sample.Name)
+					for _, oneReport := range result.Reports {
 						rErr := oneReport.Save()
 
 						if rErr != nil {
