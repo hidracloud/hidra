@@ -116,6 +116,10 @@ func LoadExporterConfig(data []byte) (*ExporterConfig, error) {
 		config.ScreenshotsConfig.Timeout = 15 * time.Second
 	}
 
+	if config.WorkerConfig.MaxQueueSize <= 0 {
+		config.WorkerConfig.MaxQueueSize = 1000
+	}
+
 	return &config, nil
 }
 

@@ -210,6 +210,10 @@ func RunWorkers(cnf *config.ExporterConfig) {
 				lastRun[sample.Name] = time.Now().Add(randomOffset)
 				lastRunMutex.Unlock()
 
+				if time.Since(startTime) > 30*time.Second {
+					log.Warnf("Sample %s took more than a minute from worker %d", sample.Name, worker)
+				}
+
 				time.Sleep(cnf.WorkerConfig.SleepBetweenJobs)
 			}
 		}(i)

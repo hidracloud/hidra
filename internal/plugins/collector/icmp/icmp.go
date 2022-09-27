@@ -19,7 +19,7 @@ import (
 
 const (
 	// PingerCount is the number of pings to send.
-	PingerCount = 10
+	PingerCount = 3
 )
 
 // ICMP represents a ICMP plugin.
