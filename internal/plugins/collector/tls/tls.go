@@ -47,6 +47,11 @@ func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Co
 
 	startTime := time.Now()
 
+	// if a port is not specified, use 443
+	if !strings.Contains(args["to"], ":") {
+		args["to"] = args["to"] + ":443"
+	}
+
 	conn, err := tls.Dial("tcp", args["to"], conf)
 
 	if err != nil {
