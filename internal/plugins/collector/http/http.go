@@ -279,7 +279,7 @@ func (p *HTTP) bodyShouldContain(ctx context.Context, args map[string]string) (c
 		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse.Name)
 	}
 
-	output := ctx.Value(misc.ContextOutput).(string)
+	output := strings.ToLower(ctx.Value(misc.ContextOutput).(string))
 
 	if !strings.Contains(output, args["search"]) {
 		return ctx, nil, fmt.Errorf("expected body to contain %s", args["search"])
@@ -335,6 +335,10 @@ func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.C
 
 	if _, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
 		// get output from context
+		if _, ok := ctx.Value(misc.ContextOutput).(string); !ok {
+			return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextOutput.Name)
+		}
+
 		output := ctx.Value(misc.ContextOutput).(string)
 		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = []byte(output)
 

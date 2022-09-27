@@ -23,6 +23,12 @@ var (
 
 	// penaltiesSamples is the penalties
 	penaltiesSamples = make(map[string]time.Duration)
+
+	// refreshSampleInProgress is the refresh sample in progress
+	refreshSampleInProgress = false
+
+	// enqueueSamplesInProgress  is the enqueue samples in progress
+	enqueueSamplesInProgress = false
 )
 
 // RefreshSamples refreshes the samples.
@@ -52,12 +58,11 @@ func refreshSamples(cnf *config.ExporterConfig) {
 	for _, samplePath := range samplesPath {
 		sample, err := config.LoadSampleConfigFromFile(samplePath)
 
-		sample.Name = utils.ExtractFileNameWithoutExtension(samplePath)
-
 		if err != nil {
 			log.Fatalf("error while loading sample: %s", err)
 			return
 		}
+		sample.Name = utils.ExtractFileNameWithoutExtension(samplePath)
 
 		log.Debugf("New sample loaded: %s", sample.Name)
 
@@ -184,9 +189,17 @@ func TickScheduler(config *config.ExporterConfig) {
 		for {
 			select {
 			case <-tickerRefreshSamples.C:
-				refreshSamples(config)
+				if !refreshSampleInProgress {
+					refreshSampleInProgress = true
+					refreshSamples(config)
+					refreshSampleInProgress = false
+				}
 			case <-tickerEnqueueSamples.C:
-				enqueueSamples(config)
+				if !enqueueSamplesInProgress {
+					enqueueSamplesInProgress = true
+					enqueueSamples(config)
+					enqueueSamplesInProgress = false
+				}
 			}
 		}
 	}()

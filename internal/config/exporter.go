@@ -101,7 +101,7 @@ func LoadExporterConfig(data []byte) (*ExporterConfig, error) {
 	}
 
 	if config.WorkerConfig.SleepBetweenJobs == 0 {
-		config.WorkerConfig.SleepBetweenJobs = 5 * time.Second
+		config.WorkerConfig.SleepBetweenJobs = 1 * time.Second
 	}
 
 	if config.WorkerConfig.ParallelJobs <= 0 {

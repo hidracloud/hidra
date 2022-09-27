@@ -289,6 +289,10 @@ func (r *Report) GenerateMoreIndexHTML() string {
 
 // SaveFile saves the report to a file.
 func (r *Report) SaveFile() error {
+	if r == nil {
+		return nil
+	}
+
 	rDump := r.Dump()
 
 	if err := os.MkdirAll(BasePath, 0755); err != nil {
