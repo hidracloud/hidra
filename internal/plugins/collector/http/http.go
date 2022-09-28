@@ -27,6 +27,26 @@ type HTTP struct {
 var (
 	// Missing context key
 	ErrMissingContextKey = fmt.Errorf("missing context key")
+	// httpClient is the HTTP client used to make requests.
+	httpClient = &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Transport: &http.Transport{
+			MaxIdleConns:    100,
+			MaxConnsPerHost: 100,
+
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				d := &net.Dialer{}
+
+				if _, ok := ctx.Value(misc.ContextHTTPForceIP).(string); ok {
+					addr = fmt.Sprintf("%s:%s", ctx.Value(misc.ContextHTTPForceIP), strings.Split(addr, ":")[1])
+				}
+
+				return d.DialContext(ctx, network, addr)
+			},
+		},
+	}
 )
 
 // RequestByMethod makes a HTTP request by method.
@@ -52,41 +72,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 		tlsSkipInsecure = ctx.Value(misc.ContextHTTPTlsInsecureSkipVerify).(bool)
 	}
 
-	var httpClient *http.Client
-
-	if _, ok := ctx.Value(misc.ContextHTTPClient).(*http.Client); ok {
-		httpClient = ctx.Value(misc.ContextHTTPClient).(*http.Client)
-	} else {
-		timeout := 30 * time.Second
-
-		if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
-			timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
-		}
-
-		httpClient = &http.Client{
-			Jar: clientJar,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-			Timeout: timeout,
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: tlsSkipInsecure,
-				},
-				DialContext: func(_ context.Context, network, addr string) (net.Conn, error) {
-					d := &net.Dialer{}
-
-					if _, ok := ctx.Value(misc.ContextHTTPForceIP).(string); ok {
-						addr = fmt.Sprintf("%s:%s", ctx.Value(misc.ContextHTTPForceIP), strings.Split(addr, ":")[1])
-					}
-
-					return d.DialContext(ctx, network, addr)
-				},
-			},
-		}
-
-		ctx = context.WithValue(ctx, misc.ContextHTTPClient, httpClient)
-	}
+	httpClient.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: tlsSkipInsecure}
+	httpClient.Jar = clientJar
 
 	clientTrace := &httptrace.ClientTrace{
 		GotConn: func(connInfo httptrace.GotConnInfo) {
@@ -396,14 +383,6 @@ func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.C
 	return ctx, nil, nil
 }
 
-// onClose implements the plugins.Plugin interface.
-func (p *HTTP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if client, ok := ctx.Value(misc.ContextHTTPClient).(*http.Client); ok {
-		client.CloseIdleConnections()
-	}
-	return ctx, nil, nil
-}
-
 // Init initializes the plugin.
 func (p *HTTP) Init() {
 	p.Primitives()
@@ -501,13 +480,6 @@ func (p *HTTP) Init() {
 		Description: "Executes the steps if the previous step failed",
 		Fn:          p.onFailure,
 	})
-
-	p.RegisterStep(&plugins.StepDefinition{
-		Name:        "onClose",
-		Description: "Executes the steps if the previous step succeeded",
-		Fn:          p.onClose,
-	})
-
 }
 
 // Init initializes the plugin.

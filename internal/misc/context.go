@@ -168,11 +168,6 @@ var (
 		Name: "timeout",
 	}
 
-	// ContextHTTPClient is the context key for the HTTP client.
-	ContextHTTPClient = ContextKey{
-		Name: "http.client",
-	}
-
 	// ContextBrowserChromedpCtx is the context key for the browser chromedp context.
 	ContextBrowserChromedpCtx = ContextKey{
 		Name: "browser.chromedpctx",
@@ -193,11 +188,6 @@ func (c *ContextKey) String() string {
 	return c.Name
 }
 
-// CleanupHTTP cleans up the HTTP context.
-func CleanupHTTPCtx(ctx context.Context) {
-	// TODO
-}
-
 // CleanupFunc is the cleanup function type.
 func CleanupContext(ctx context.Context) {
 	if ctx == nil {
@@ -207,6 +197,4 @@ func CleanupContext(ctx context.Context) {
 	if output, ok := ctx.Value(ContextOutput).(io.ReadCloser); ok {
 		output.Close()
 	}
-
-	CleanupHTTPCtx(ctx)
 }

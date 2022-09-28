@@ -133,6 +133,11 @@ func (p *TLS) onClose(ctx context.Context, args map[string]string) (context.Cont
 		}
 	}
 
+	// clear context
+	ctx = context.WithValue(ctx, misc.ContextTLSConnection, nil)
+	ctx = context.WithValue(ctx, misc.ContextTLSHost, nil)
+	ctx = context.WithValue(ctx, misc.ContextTLSCertificates, nil)
+
 	return ctx, nil, nil
 }
 
