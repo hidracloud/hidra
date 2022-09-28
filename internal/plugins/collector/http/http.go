@@ -24,11 +24,6 @@ type HTTP struct {
 	plugins.BasePlugin
 }
 
-var (
-	// Missing context key
-	ErrMissingContextKey = fmt.Errorf("missing context key")
-)
-
 // RequestByMethod makes a HTTP request by method.
 func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (context.Context, []*metrics.Metric, error) {
 	var err error
@@ -148,8 +143,16 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 		return ctx, nil, err
 	}
 
+	b, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	defer resp.Body.Close()
+
 	ctx = context.WithValue(ctx, misc.ContextHTTPResponse, resp)
-	ctx = context.WithValue(ctx, misc.ContextOutput, resp.Body)
+	ctx = context.WithValue(ctx, misc.ContextOutput, b)
 
 	dnsTime := 0.0
 
@@ -188,7 +191,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 		{
 			Name:        "http_response_content_length",
 			Description: "The HTTP response content length",
-			Value:       float64(resp.ContentLength),
+			Value:       float64(len(b)),
 			Labels: map[string]string{
 				"method": ctx.Value(misc.ContextHTTPMethod).(string),
 				"url":    ctx.Value(misc.ContextHTTPURL).(string),
@@ -278,20 +281,13 @@ func (p *HTTP) bodyShouldContain(ctx context.Context, args map[string]string) (c
 
 	// get context for current step
 
-	if _, ok := ctx.Value(misc.ContextOutput).(io.ReadCloser); !ok {
+	if _, ok := ctx.Value(misc.ContextOutput).([]byte); !ok {
 		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse.Name)
 	}
 
-	output := ctx.Value(misc.ContextOutput).(io.ReadCloser)
+	output := utils.BytesToLowerCase(ctx.Value(misc.ContextOutput).([]byte))
 
-	// get output as bytes
-	outputBytes, err := io.ReadAll(output)
-
-	if err != nil {
-		return ctx, nil, err
-	}
-
-	if !utils.BytesContainsString(utils.BytesToLowerCase(outputBytes), strings.ToLower(args["search"])) {
+	if !utils.BytesContainsString(output, strings.ToLower(args["search"])) {
 		return ctx, nil, fmt.Errorf("expected body to contain %s", args["search"])
 	}
 
@@ -345,19 +341,12 @@ func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.C
 
 	if _, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
 		// get output from context
-		if _, ok := ctx.Value(misc.ContextOutput).(io.ReadCloser); !ok {
-			return ctx, nil, ErrMissingContextKey
+		if _, ok := ctx.Value(misc.ContextOutput).([]byte); !ok {
+			return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextOutput.Name)
 		}
 
-		output := ctx.Value(misc.ContextOutput).(io.ReadCloser)
-
-		// get output as bytes
-		outputBytes, err := io.ReadAll(output)
-		if err != nil {
-			return ctx, nil, err
-		}
-
-		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = outputBytes
+		output := ctx.Value(misc.ContextOutput).([]byte)
+		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = output
 
 		// create a tmp file
 		/*

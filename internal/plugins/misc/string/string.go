@@ -3,7 +3,6 @@ package str
 import (
 	"context"
 	"fmt"
-	"io"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
@@ -20,20 +19,13 @@ type Strings struct {
 func (p *Strings) outputShouldContain(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	search := args["search"]
 
-	if _, ok := ctx.Value(misc.ContextOutput).(io.ReadCloser); !ok {
+	if _, ok := ctx.Value(misc.ContextOutput).([]byte); !ok {
 		return ctx, nil, fmt.Errorf("output is not a string")
 	}
 
-	output := ctx.Value(misc.ContextOutput).(io.ReadCloser)
+	output := ctx.Value(misc.ContextOutput).([]byte)
 
-	// get output as bytes
-	outputBytes, err := io.ReadAll(output)
-
-	if err != nil {
-		return ctx, nil, err
-	}
-
-	if utils.BytesContainsString(outputBytes, search) {
+	if utils.BytesContainsString(output, search) {
 		return ctx, []*metrics.Metric{}, nil
 	}
 
