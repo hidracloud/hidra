@@ -3,11 +3,11 @@ package str
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/utils"
 )
 
 // HTTP represents a HTTP plugin.
@@ -19,13 +19,13 @@ type Strings struct {
 func (p *Strings) outputShouldContain(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
 	search := args["search"]
 
-	if _, ok := ctx.Value(misc.ContextOutput).(string); !ok {
+	if _, ok := ctx.Value(misc.ContextOutput).([]byte); !ok {
 		return ctx, nil, fmt.Errorf("output is not a string")
 	}
 
-	output := ctx.Value(misc.ContextOutput).(string)
+	output := ctx.Value(misc.ContextOutput).([]byte)
 
-	if strings.Contains(output, search) {
+	if utils.BytesContainsString(output, search) {
 		return ctx, []*metrics.Metric{}, nil
 	}
 

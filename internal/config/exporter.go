@@ -27,6 +27,8 @@ type ExporterConfig struct {
 		RefreshSamplesInterval time.Duration `yaml:"refresh_samples_interval"`
 		// EnqueueSamplesInterval is the interval to enqueue the samples.
 		EnqueueSamplesInterval time.Duration `yaml:"enqueue_samples_interval"`
+		// GCInterval is the interval to run the garbage collector.
+		GCInterval time.Duration `yaml:"gc_interval"`
 	} `yaml:"scheduler"`
 
 	WorkerConfig struct {
@@ -79,6 +81,10 @@ func LoadExporterConfig(data []byte) (*ExporterConfig, error) {
 
 	if config.SchedulerConfig.EnqueueSamplesInterval == 0 {
 		config.SchedulerConfig.EnqueueSamplesInterval = 5 * time.Second
+	}
+
+	if config.SchedulerConfig.GCInterval == 0 {
+		config.SchedulerConfig.GCInterval = 5 * time.Minute
 	}
 
 	if len(config.HTTPServerConfig.ListenAddress) == 0 {

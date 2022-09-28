@@ -126,7 +126,10 @@ func (p *Browser) sendKeys(ctx context.Context, args map[string]string) (context
 
 	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
 
-	err := chromedp.Run(chromedpCtx, chromedp.SendKeys(args["selector"], args["keys"], selector2By(args["selectorBy"])))
+	err := chromedp.Run(
+		chromedpCtx,
+		chromedp.SendKeys(args["selector"], args["keys"], selector2By(args["selectorBy"])),
+	)
 
 	return ctx, nil, err
 }

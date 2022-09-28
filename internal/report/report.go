@@ -17,7 +17,6 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
-	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/pixelbender/go-traceroute/traceroute"
 
 	"github.com/minio/minio-go/v7"
@@ -57,8 +56,6 @@ type Report struct {
 	ConnectionInfo ReportConnectionInfo `json:"connection_info,omitempty"`
 	// HttpInfo is the HTTP info of the report.
 	HttpInfo ReportHttpRespone `json:"http_info,omitempty"`
-	// Output is the output of the report.
-	Output string `json:"output,omitempty"`
 	// Variables is the variables of the report.
 	Variables map[string]string `json:"variables,omitempty"`
 }
@@ -125,7 +122,6 @@ func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variab
 
 	report.GenerateConnectionInfo(ctx)
 	report.GenerateReportHttpRespone(ctx)
-	report.GenerateOutput(ctx)
 	report.GenerateAttachments(ctx)
 
 	return report
@@ -177,16 +173,6 @@ func (r *Report) GenerateReportHttpRespone(ctx context.Context) {
 			Headers:      headers,
 			ResponseCode: httpResp.StatusCode,
 		}
-	}
-}
-
-// GenerateOutput set output into report
-func (r *Report) GenerateOutput(ctx context.Context) {
-	if output, ok := ctx.Value(misc.ContextOutput).(string); ok {
-		r.Output = utils.HTMLStripTags(output)
-
-		// convert r.Output to base64
-		r.Output = utils.Base64Encode(r.Output)
 	}
 }
 

@@ -1,5 +1,9 @@
 package misc
 
+import (
+	"context"
+)
+
 // ContextKey represents a context key.
 type ContextKey struct {
 	// Name is the name of the context key.
@@ -185,4 +189,17 @@ var (
 
 func (c *ContextKey) String() string {
 	return c.Name
+}
+
+// CleanupHTTP cleans up the HTTP context.
+func CleanupHTTPCtx(ctx context.Context) {
+	// TODO
+}
+
+// CleanupFunc is the cleanup function type.
+func CleanupContext(ctx context.Context) {
+	if ctx == nil {
+		return
+	}
+	CleanupHTTPCtx(ctx)
 }

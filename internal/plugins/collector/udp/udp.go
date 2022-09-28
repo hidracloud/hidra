@@ -101,9 +101,7 @@ func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context
 		return ctx, nil, err
 	}
 
-	rcvDataStr := string(rcvData[:n])
-
-	ctx = context.WithValue(ctx, misc.ContextOutput, rcvDataStr)
+	ctx = context.WithValue(ctx, misc.ContextOutput, rcvData[:n])
 
 	customMetrics := []*metrics.Metric{
 		{
@@ -114,7 +112,7 @@ func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context
 		{
 			Name:        "udp_read_size",
 			Description: "The size of the data written to the UDP server",
-			Value:       float64(len(rcvDataStr)),
+			Value:       float64(n),
 		},
 	}
 

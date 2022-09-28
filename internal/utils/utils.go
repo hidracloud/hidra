@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -343,6 +344,19 @@ func fullScreenshot(urlstr string, quality int, res *[]byte) chromedp.Tasks {
 		chromedp.Sleep(time.Second),
 		chromedp.FullScreenshot(res, quality),
 	}
+}
+
+// BytesToLowerCase converts all bytes in a byte slice to lowercase
+func BytesToLowerCase(b []byte) []byte {
+	for i := 0; i < len(b); i++ {
+		b[i] = bytes.ToLower([]byte{b[i]})[0]
+	}
+	return b
+}
+
+// BytesContainsString checks if a byte slice contains a string
+func BytesContainsString(b []byte, s string) bool {
+	return bytes.Contains(b, []byte(s))
 }
 
 // TakeScreenshotWithChromedp takes a screenshot of the current browser window.

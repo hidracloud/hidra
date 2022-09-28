@@ -2,6 +2,8 @@ package exporter
 
 import (
 	"net/http"
+	"net/http/pprof"
+	"os"
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -35,10 +37,19 @@ func Initialize(config *config.ExporterConfig) {
 	InitializeWorker(config)
 	go RunWorkers(config)
 
-	http.Handle(config.HTTPServerConfig.MetricsPath, promhttp.Handler())
+	myMux := http.NewServeMux()
+
+	myMux.Handle(config.HTTPServerConfig.MetricsPath, promhttp.Handler())
 	log.Infof("Listening on %s and path %s", config.HTTPServerConfig.ListenAddress, config.HTTPServerConfig.MetricsPath)
 
-	err := http.ListenAndServe(config.HTTPServerConfig.ListenAddress, nil)
+	if os.Getenv("DEBUG") == "true" {
+		log.Info("Debug mode enabled")
+		myMux.HandleFunc("/debug/pprof/", pprof.Index)
+		myMux.HandleFunc("/debug/pprof/{action}", pprof.Index)
+		myMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	}
+
+	err := http.ListenAndServe(config.HTTPServerConfig.ListenAddress, myMux)
 
 	if err != nil {
 		panic(err)

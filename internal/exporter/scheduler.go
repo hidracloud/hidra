@@ -3,6 +3,7 @@ package exporter
 import (
 	"math"
 	"math/rand"
+	"runtime"
 	"sync"
 	"time"
 
@@ -30,6 +31,9 @@ var (
 
 	// enqueueSamplesInProgress  is the enqueue samples in progress
 	enqueueSamplesInProgress = false
+
+	// gcInProgress is the gc in progress
+	gcInProgress = false
 )
 
 // RefreshSamples refreshes the samples.
@@ -193,7 +197,7 @@ func InitializeScheduler(cnf *config.ExporterConfig) {
 func TickScheduler(config *config.ExporterConfig) {
 	tickerRefreshSamples := time.NewTicker(config.SchedulerConfig.RefreshSamplesInterval)
 	tickerEnqueueSamples := time.NewTicker(config.SchedulerConfig.EnqueueSamplesInterval)
-
+	tickerGC := time.NewTicker(config.SchedulerConfig.GCInterval)
 	go func() {
 		for {
 			select {
@@ -208,6 +212,12 @@ func TickScheduler(config *config.ExporterConfig) {
 					enqueueSamplesInProgress = true
 					enqueueSamples(config)
 					enqueueSamplesInProgress = false
+				}
+			case <-tickerGC.C:
+				if !gcInProgress {
+					gcInProgress = true
+					runtime.GC()
+					gcInProgress = false
 				}
 			}
 		}

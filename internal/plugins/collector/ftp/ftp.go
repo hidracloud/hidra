@@ -130,7 +130,7 @@ func (p *FTP) read(ctx context.Context, args map[string]string) (context.Context
 		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, misc.ContextOutput, buf.String())
+	ctx = context.WithValue(ctx, misc.ContextOutput, buf.Bytes())
 
 	customMetrics := []*metrics.Metric{
 		{

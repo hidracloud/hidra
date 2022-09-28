@@ -91,9 +91,34 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 
 	stepParamTemplate.Variables = variables
 
+	// cleanup
+	defer func() {
+		for _, plugin := range pluginsByNames {
+			if plugin.StepExists("onClose") {
+				ctx, _, err = plugin.RunStep(ctx, &plugins.Step{
+					Name: "onClose",
+					Args: map[string]string{},
+				})
+
+				if err != nil {
+					log.Warnf("Error closing plugin: %v", err)
+					err = nil
+				}
+			}
+		}
+
+		misc.CleanupContext(ctx)
+	}()
+
 	startTime := time.Now()
 	stepCounter := 0
 	for _, step := range sample.Steps {
+		// Check if timeout is reached in context, if so, stop the execution
+		if ctx.Err() != nil {
+			log.Warnf("Timeout reached, stopping execution of sample %s", sample.Name)
+			return ctx, allMetrics, nil, ctx.Err()
+		}
+
 		log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
 		log.Debugf("|_%s Action: %v", strings.Repeat("_", depthSize), step.Action)
 		log.Debugf("|_%s Parameters: ", strings.Repeat("_", depthSize))
@@ -137,21 +162,6 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		}
 
 		stepCounter++
-	}
-
-	// Clean up plugins
-	for _, plugin := range pluginsByNames {
-		if plugin.StepExists("onClose") {
-			_, _, err = plugin.RunStep(ctx, &plugins.Step{
-				Name: "onClose",
-				Args: map[string]string{},
-			})
-
-			if err != nil {
-				log.Warnf("Error closing plugin: %v", err)
-				err = nil
-			}
-		}
 	}
 
 	return ctx, allMetrics, nil, err

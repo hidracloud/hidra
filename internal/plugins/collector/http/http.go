@@ -16,6 +16,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/utils"
 )
 
 // HTTP represents a HTTP plugin.
@@ -151,7 +152,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string) (contex
 	defer resp.Body.Close()
 
 	ctx = context.WithValue(ctx, misc.ContextHTTPResponse, resp)
-	ctx = context.WithValue(ctx, misc.ContextOutput, string(b))
+	ctx = context.WithValue(ctx, misc.ContextOutput, b)
 
 	dnsTime := 0.0
 
@@ -280,13 +281,13 @@ func (p *HTTP) bodyShouldContain(ctx context.Context, args map[string]string) (c
 
 	// get context for current step
 
-	if _, ok := ctx.Value(misc.ContextOutput).(string); !ok {
+	if _, ok := ctx.Value(misc.ContextOutput).([]byte); !ok {
 		return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse.Name)
 	}
 
-	output := strings.ToLower(ctx.Value(misc.ContextOutput).(string))
+	output := utils.BytesToLowerCase(ctx.Value(misc.ContextOutput).([]byte))
 
-	if !strings.Contains(output, strings.ToLower(args["search"])) {
+	if !utils.BytesContainsString(output, strings.ToLower(args["search"])) {
 		return ctx, nil, fmt.Errorf("expected body to contain %s", args["search"])
 	}
 
@@ -340,12 +341,12 @@ func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.C
 
 	if _, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
 		// get output from context
-		if _, ok := ctx.Value(misc.ContextOutput).(string); !ok {
+		if _, ok := ctx.Value(misc.ContextOutput).([]byte); !ok {
 			return ctx, nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextOutput.Name)
 		}
 
-		output := ctx.Value(misc.ContextOutput).(string)
-		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = []byte(output)
+		output := ctx.Value(misc.ContextOutput).([]byte)
+		ctx.Value(misc.ContextAttachment).(map[string][]byte)["response.html"] = output
 
 		// create a tmp file
 		/*
@@ -381,6 +382,14 @@ func (p *HTTP) onFailure(ctx context.Context, args map[string]string) (context.C
 			}*/
 	}
 	// Generate an screenshot of current response
+	return ctx, nil, nil
+}
+
+// onClose implements the plugins.Plugin interface.
+func (p *HTTP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+	if client, ok := ctx.Value(misc.ContextHTTPClient).(*http.Client); ok {
+		client.CloseIdleConnections()
+	}
 	return ctx, nil, nil
 }
 
@@ -480,6 +489,12 @@ func (p *HTTP) Init() {
 		Name:        "onFailure",
 		Description: "Executes the steps if the previous step failed",
 		Fn:          p.onFailure,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "onClose",
+		Description: "Executes the steps if the previous step succeeded",
+		Fn:          p.onClose,
 	})
 
 }
