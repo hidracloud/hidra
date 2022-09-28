@@ -2,6 +2,7 @@ package misc
 
 import (
 	"context"
+	"io"
 )
 
 // ContextKey represents a context key.
@@ -31,6 +32,7 @@ var (
 	ContextHTTPHeaders = ContextKey{
 		Name: "http.headers",
 	}
+
 	// ContextHTTPResponse is the context key for the HTTP response.
 	ContextHTTPResponse = ContextKey{
 		Name: "http.response",
@@ -201,5 +203,10 @@ func CleanupContext(ctx context.Context) {
 	if ctx == nil {
 		return
 	}
+
+	if output, ok := ctx.Value(ContextOutput).(io.ReadCloser); ok {
+		output.Close()
+	}
+
 	CleanupHTTPCtx(ctx)
 }
