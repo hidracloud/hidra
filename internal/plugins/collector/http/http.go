@@ -128,12 +128,18 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", fmt.Sprintf("hidra/monitoring %s", misc.Version))
-
+	userAgentSet := false
 	if ctxHeaders, ok := stepsgen[misc.ContextHTTPHeaders].(map[string]string); ok {
 		for k, v := range ctxHeaders {
+			if strings.ToLower(k) == "user-agent" {
+				userAgentSet = true
+			}
 			req.Header.Set(k, v)
 		}
+	}
+
+	if !userAgentSet {
+		req.Header.Set("User-Agent", fmt.Sprintf("hidra/monitoring %s", misc.Version))
 	}
 
 	startTime := time.Now()
