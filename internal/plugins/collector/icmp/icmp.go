@@ -28,16 +28,16 @@ type ICMP struct {
 }
 
 // ping sends a ping to a host.
-func (p *ICMP) ping(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *ICMP) ping(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	pinger, err := ping.NewPinger(args["hostname"])
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	timeout := 30 * time.Second
 
-	if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
-		timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
 	}
 
 	pinger.Count = PingerCount
@@ -46,7 +46,7 @@ func (p *ICMP) ping(ctx context.Context, args map[string]string) (context.Contex
 	currentUser, err := user.Current()
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	if currentUser.Uid == "0" {
@@ -55,7 +55,7 @@ func (p *ICMP) ping(ctx context.Context, args map[string]string) (context.Contex
 
 	err = pinger.Run() // Blocks until finished.
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	stats := pinger.Statistics()
@@ -125,27 +125,27 @@ func (p *ICMP) ping(ctx context.Context, args map[string]string) (context.Contex
 		},
 	})
 
-	return ctx, customMetrics, nil
+	return customMetrics, nil
 }
 
 // traceroute sends a traceroute to a host.
-func (p *ICMP) traceroute(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	ipAddresses, err := net.LookupIP(args["hostname"])
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	timeout := 30 * time.Second
 
-	if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
-		timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
 	}
 
 	traceroute.DefaultConfig.Timeout = timeout
 
 	hops, err := traceroute.Trace(ipAddresses[0])
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	maxDistance := 0
@@ -211,7 +211,7 @@ func (p *ICMP) traceroute(ctx context.Context, args map[string]string) (context.
 		},
 	})
 
-	return ctx, customMetrics, nil
+	return customMetrics, nil
 }
 
 // Init initializes the plugin.

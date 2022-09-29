@@ -28,7 +28,6 @@ type StepParamTemplate struct {
 
 // RunnerResult represents the result of a runner.
 type RunnerResult struct {
-	Context context.Context
 	Metrics []*metrics.Metric
 	Reports []*report.Report
 	Error   error
@@ -70,7 +69,7 @@ func (s *StepParamTemplate) Replace(m map[string]string) (map[string]string, err
 }
 
 // RunWithVariables runs the step with variables.
-func RunWithVariables(ctx context.Context, variables map[string]string, sample *config.SampleConfig) (context.Context, []*metrics.Metric, *report.Report, error) {
+func RunWithVariables(ctx context.Context, variables map[string]string, stepsgen map[string]any, sample *config.SampleConfig) ([]*metrics.Metric, *report.Report, error) {
 	var allMetrics, newMetrics []*metrics.Metric
 
 	depthSize := 1
@@ -86,7 +85,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 	variables, err := stepParamTemplate.Replace(variables)
 
 	if err != nil {
-		return ctx, nil, nil, err
+		return nil, nil, err
 	}
 
 	stepParamTemplate.Variables = variables
@@ -95,7 +94,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 	defer func() {
 		for _, plugin := range pluginsByNames {
 			if plugin.StepExists("onClose") {
-				ctx, _, err = plugin.RunStep(ctx, &plugins.Step{
+				_, err = plugin.RunStep(ctx, stepsgen, &plugins.Step{
 					Name: "onClose",
 					Args: map[string]string{},
 				})
@@ -107,7 +106,9 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 			}
 		}
 
-		misc.CleanupContext(ctx)
+		for step := range stepsgen {
+			delete(stepsgen, step)
+		}
 	}()
 
 	startTime := time.Now()
@@ -116,7 +117,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		// Check if timeout is reached in context, if so, stop the execution
 		if ctx.Err() != nil {
 			log.Warnf("Timeout reached, stopping execution of sample %s", sample.Name)
-			return ctx, allMetrics, nil, ctx.Err()
+			return allMetrics, nil, ctx.Err()
 		}
 
 		log.Debugf("|%s Running plugin %s", strings.Repeat("_", depthSize), step.Plugin)
@@ -128,7 +129,7 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		step.Parameters, err = stepParamTemplate.Replace(step.Parameters)
 
 		if err != nil {
-			return ctx, nil, nil, err
+			return nil, nil, err
 		}
 
 		for k, v := range step.Parameters {
@@ -142,13 +143,13 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 		plugin := plugins.GetPlugin(step.Plugin)
 
 		if plugin == nil {
-			return ctx, allMetrics, nil, fmt.Errorf("plugin %s not found", step.Plugin)
+			return allMetrics, nil, fmt.Errorf("plugin %s not found", step.Plugin)
 		}
 
 		lastPlugin = step.Plugin
 		pluginsByNames[step.Plugin] = plugin
 
-		ctx, newMetrics, err = plugin.RunStep(ctx, &plugins.Step{
+		newMetrics, err = plugin.RunStep(ctx, stepsgen, &plugins.Step{
 			Name:   step.Action,
 			Args:   step.Parameters,
 			Negate: step.Negate,
@@ -158,13 +159,13 @@ func RunWithVariables(ctx context.Context, variables map[string]string, sample *
 
 		if err != nil {
 			err = fmt.Errorf("%s#%d: %s", sample.Path, stepCounter, err)
-			return ctx, allMetrics, report.NewReport(sample, allMetrics, variables, time.Since(startTime), ctx, err), err
+			return allMetrics, report.NewReport(sample, allMetrics, variables, time.Since(startTime), stepsgen, err), err
 		}
 
 		stepCounter++
 	}
 
-	return ctx, allMetrics, nil, err
+	return allMetrics, nil, err
 }
 
 // RunSample runs a sample.
@@ -174,16 +175,16 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 	allMetrics := []*metrics.Metric{}
 	allReports := []*report.Report{}
 
-	ctx = context.WithValue(ctx, misc.ContextTimeout, sample.Timeout)
+	stepsgen := make(map[string]any, 0)
+	stepsgen[misc.ContextTimeout] = sample.Timeout
 
 	for _, variables := range sample.Variables {
-		ctx, newMetrics, report, err := RunWithVariables(ctx, variables, sample)
+		newMetrics, report, err := RunWithVariables(ctx, variables, stepsgen, sample)
 
 		allMetrics = append(allMetrics, newMetrics...)
 		allReports = append(allReports, report)
 		if err != nil {
 			return &RunnerResult{
-				Context: ctx,
 				Metrics: allMetrics,
 				Reports: allReports,
 				Error:   err,
@@ -192,7 +193,6 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 
 	}
 	return &RunnerResult{
-		Context: ctx,
 		Metrics: allMetrics,
 		Reports: allReports,
 		Error:   err,

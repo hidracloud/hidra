@@ -15,7 +15,9 @@ func TestScenario(t *testing.T) {
 
 	ctx := context.TODO()
 
-	ctx, _, err := h.RunStep(ctx, &plugins.Step{
+	previous := make(map[string]any, 0)
+
+	_, err := h.RunStep(ctx, previous, &plugins.Step{
 		Name: "connectTo",
 		Args: map[string]string{
 			"to": "google.com:443",
@@ -26,7 +28,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "dnsShouldBePresent",
 		Args: map[string]string{
 			"dns": "google.com",
@@ -37,7 +39,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "shouldBeValidFor",
 		Args: map[string]string{
 			"for": "7d",

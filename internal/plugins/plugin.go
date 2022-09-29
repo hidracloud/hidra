@@ -15,7 +15,7 @@ type PluginInterface interface {
 	// Primitives returns the plugin primitives.
 	Primitives()
 	// RunStep runs a step.
-	RunStep(context.Context, *Step) (context.Context, []*metrics.Metric, error)
+	RunStep(context.Context, map[string]any, *Step) ([]*metrics.Metric, error)
 	// RegisterStep registers a step.
 	RegisterStep(*StepDefinition)
 	// StepExists returns true if the step exists.
@@ -34,7 +34,7 @@ type Step struct {
 	Negate bool
 }
 
-type stepFn func(context.Context, map[string]string) (context.Context, []*metrics.Metric, error)
+type stepFn func(context.Context, map[string]string, map[string]any) ([]*metrics.Metric, error)
 
 // StepParam returns the value of a step parameter
 type StepParam struct {
@@ -71,44 +71,44 @@ func (p *BasePlugin) Primitives() {
 }
 
 // RunStep runs a step.
-func (p *BasePlugin) RunStep(ctx context.Context, step *Step) (context.Context, []*metrics.Metric, error) {
+func (p *BasePlugin) RunStep(ctx context.Context, stepsgen map[string]any, step *Step) ([]*metrics.Metric, error) {
 	// get step definition
 	stepDefinition, ok := p.StepDefinitions[step.Name]
 
 	if !ok && step.Name == "onFailure" {
-		return ctx, nil, ctx.Value(misc.LastError).(error)
+		return nil, stepsgen[misc.ContextLastError].(error)
 	}
 
 	if !ok {
-		return ctx, nil, fmt.Errorf("step %s not found", step.Name)
+		return nil, fmt.Errorf("step %s not found", step.Name)
 	}
 
 	// validate step arguments
 	for _, param := range stepDefinition.Params {
 		if _, ok := step.Args[param.Name]; !ok && !param.Optional {
-			return ctx, nil, fmt.Errorf("missing argument %s", param.Name)
+			return nil, fmt.Errorf("missing argument %s", param.Name)
 		}
 	}
 
 	// run step
-	ctx, metrics, err := stepDefinition.Fn(ctx, step.Args)
+	metrics, err := stepDefinition.Fn(ctx, step.Args, stepsgen)
 
 	if err != nil && step.Negate {
-		return ctx, metrics, nil
+		return metrics, nil
 	} else if err == nil && step.Negate {
-		return ctx, metrics, fmt.Errorf("step %s should have failed", step.Name)
+		return metrics, fmt.Errorf("step %s should have failed", step.Name)
 	}
 
 	if err != nil {
-		ctx = context.WithValue(ctx, misc.LastError, err)
+		stepsgen[misc.ContextLastError] = err
 		step.Name = "onFailure"
 
-		ctx, metrics, _ = p.RunStep(ctx, step)
+		metrics, _ = p.RunStep(ctx, stepsgen, step)
 
-		return ctx, metrics, err
+		return metrics, err
 	}
 
-	return ctx, metrics, nil
+	return metrics, nil
 }
 
 // StepExists returns true if the step exists.

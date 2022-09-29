@@ -1,205 +1,52 @@
 package misc
 
-import (
-	"context"
-)
-
-// ContextKey represents a context key.
-type ContextKey struct {
-	// Name is the name of the context key.
-	Name string
-}
-
 var (
-	// ContextHTTPMethod is the context key for the HTTP method.
-	ContextHTTPMethod = ContextKey{
-		Name: "http.method",
-	}
-	// ContextHTTPURL is the context key for the HTTP URL.
-	ContextHTTPURL = ContextKey{
-		Name: "http.url",
-	}
-	// ContextHTTPBody is the context key for the HTTP body.
-	ContextHTTPBody = ContextKey{
-		Name: "http.body",
-	}
-	// ContextSharedJar is the context key for the shared jar.
-	ContextSharedJar = ContextKey{
-		Name: "http.sharedjar",
-	}
-	// ContextHTTPHeaders is the context key for the HTTP headers.
-	ContextHTTPHeaders = ContextKey{
-		Name: "http.headers",
-	}
-	// ContextHTTPResponse is the context key for the HTTP response.
-	ContextHTTPResponse = ContextKey{
-		Name: "http.response",
-	}
-
-	// ContextHTTPConnInfo is the context key for the HTTP connection info.
-	ContextHTTPConnInfo = ContextKey{
-		Name: "http.conninfo",
-	}
-
-	// ContextHTTPDNSStartInfo is the context key for the HTTP DNS start info.
-	ContextHTTPDNSStartInfo = ContextKey{
-		Name: "http.dnsstartinfo",
-	}
-
-	// ContextHTTPDNSStartTime is the context key for the HTTP DNS start time.
-	ContextHTTPDNSStartTime = ContextKey{
-		Name: "http.dnsstarttime",
-	}
-
-	// ContextHTTPDNSStopTime is the context key for the HTTP DNS stop time.
-	ContextHTTPDNSStopTime = ContextKey{
-		Name: "http.dnsstoptime",
-	}
-
-	// ContextHTTPTcpConnectStartTime is the context key for the HTTP TCP connect start time.
-	ContextHTTPTcpConnectStartTime = ContextKey{
-		Name: "http.tcpconnectstarttime",
-	}
-
-	// ContextHTTPTcpConnectStopTime is the context key for the HTTP TCP connect stop time.
-	ContextHTTPTcpConnectStopTime = ContextKey{
-		Name: "http.tcpconnectstoptime",
-	}
-
-	// ContextHTTPTlsHandshakeStartTime is the context key for the HTTP TLS handshake start time.
-	ContextHTTPTlsHandshakeStartTime = ContextKey{
-		Name: "http.tlshandshakestarttime",
-	}
-
-	// ContextHTTPTlsHandshakeStopTime is the context key for the HTTP TLS handshake stop time.
-	ContextHTTPTlsHandshakeStopTime = ContextKey{
-		Name: "http.tlshandshakestoptime",
-	}
-
-	// ContextHTTPDNSDoneInfo is the context key for the HTTP DNS done info.
-	ContextHTTPDNSDoneInfo = ContextKey{
-		Name: "http.dnsdoneinfo",
-	}
-
-	// ContextHTTPTlsInsecureSkipVerify is the context key for the HTTP TLS insecure skip verify.
-	ContextHTTPTlsInsecureSkipVerify = ContextKey{
-		Name: "http.tlsinsecureskipverify",
-	}
-
-	// ContextHTTPForceIP is the context key for the HTTP force IP.
-	ContextHTTPForceIP = ContextKey{
-		Name: "http.forceip",
-	}
-
-	// ContextHTTPNetwork is the context key for the HTTP network.
-	ContextHTTPNetwork = ContextKey{
-		Name: "http.network",
-	}
-
-	// ContextHTTPAddr is the context key for the HTTP address.
-	ContextHTTPAddr = ContextKey{
-		Name: "http.addr",
-	}
-
-	// ContextDNSInfo is the context key for the DNS info.
-	ContextDNSInfo = ContextKey{
-		Name: "dns.info",
-	}
-
+	// ContextBrowserChromedpCancel is the context key for the chromedp cancel function.
+	ContextBrowserChromedpCancel = "browser.chromedpcancel"
+	// ContextBrowserChromedpCtx is the context key for the chromedp context.
+	ContextBrowserChromedpCtx = "browser.chromedpctx"
+	// PreviousTimeouts is the context key for the timeouts.
+	ContextTimeout = "timeouts"
+	// ContextDNSInfo
+	ContextDNSInfo = "dns.info"
 	// ContextFTPConnection is the context key for the FTP connection.
-	ContextFTPConnection = ContextKey{
-		Name: "ftp.connection",
-	}
-
+	ContextFTPConnection = "ftp.connection"
 	// ContextFTPHost is the context key for the FTP host.
-	ContextFTPHost = ContextKey{
-		Name: "ftp.host",
-	}
-
-	// ContextTCPConnection is the context key for the TCP connection.
-	ContextTCPConnection = ContextKey{
-		Name: "tcp.connection",
-	}
-
-	// ContextUDPConnection is the context key for the TCP connection.
-	ContextUDPConnection = ContextKey{
-		Name: "udp.connection",
-	}
-
-	// ContextTLSConnection is the context key for the TLS connection.
-	ContextTLSConnection = ContextKey{
-		Name: "tls.connection",
-	}
-
-	// ContextTLSHost is the context key for the TLS host.
-	ContextTLSHost = ContextKey{
-		Name: "tls.host",
-	}
-
-	// ContextTLSCertificates is the context key for the TLS certificates.
-	ContextTLSCertificates = ContextKey{
-		Name: "tls.certificates",
-	}
-
+	ContextFTPHost = "ftp.host"
 	// ContextOutput is the context key for the output.
-	ContextOutput = ContextKey{
-		Name: "output",
-	}
-
-	// ContextConnectionIP is the context key for the connection IP.
-	ContextConnectionIP = ContextKey{
-		Name: "connection.ip",
-	}
-
-	// ContextAttachment is the context key for the attachment.
-	ContextAttachment = ContextKey{
-		Name: "attachment",
-	}
-
-	// LastError is the context key for the last error.
-	LastError = ContextKey{
-		Name: "last.error",
-	}
-
-	// ContextTimeout is the context key for the timeout.
-	ContextTimeout = ContextKey{
-		Name: "timeout",
-	}
-
+	ContextOutput = "output"
+	// ContextSharedJar is the context key for the shared jar.
+	ContextSharedJar = "http.sharedjar"
+	// ContextHTTPTlsInsecureSkipVerify is the context key for the TLS insecure skip verify.
+	ContextHTTPTlsInsecureSkipVerify = "http.tlsinsecureskipverify"
 	// ContextHTTPClient is the context key for the HTTP client.
-	ContextHTTPClient = ContextKey{
-		Name: "http.client",
-	}
-
-	// ContextBrowserChromedpCtx is the context key for the browser chromedp context.
-	ContextBrowserChromedpCtx = ContextKey{
-		Name: "browser.chromedpctx",
-	}
-
-	// ContextBrowserChromedpCancel is the context key for the browser chromedp cancel.
-	ContextBrowserChromedpCancel = ContextKey{
-		Name: "browser.chromedpcancel",
-	}
-
-	// ContextBrowserChromedpTimeoutCancel is the context key for the browser chromedp cancel.
-	ContextBrowserChromedpCancelTimeout = ContextKey{
-		Name: "browser.chromedptimeoutcancel",
-	}
+	ContextHTTPClient = "http.client"
+	// ContextHTTPForceIP is the context key for the HTTP force IP.
+	ContextHTTPForceIP = "http.forceip"
+	// ContextConnectionIP is the context key for the connection IP.
+	ContextConnectionIP = "connection.ip"
+	// ContextHTTPHeaders is the context key for the HTTP headers.
+	ContextHTTPHeaders = "http.headers"
+	// ContextHTTPMethod is the context key for the HTTP method.
+	ContextHTTPMethod = "http.method"
+	// ContextHTTPURL is the context key for the HTTP URL.
+	ContextHTTPURL = "http.url"
+	// ContextHTTPResponse is the context key for the HTTP response.
+	ContextHTTPResponse = "http.response"
+	// ContextHTTPBody is the context key for the HTTP body.
+	ContextHTTPBody = "http.body"
+	// ContextAttachment is the context key for the attachment.
+	ContextAttachment = "attachment"
+	// ContextTCPConnection is the context key for the TCP connection.
+	ContextTCPConnection = "tcp.connection"
+	// ContextTLSConnection is the context key for the TLS connection.
+	ContextTLSConnection = "tls.connection"
+	// ContextTLSHost is the context key for the TLS host.
+	ContextTLSHost = "tls.host"
+	// ContextTLSCertificates is the context key for the TLS certificates.
+	ContextTLSCertificates = "tls.certificates"
+	// ContextUDPConnection is the context key for the UDP connection.
+	ContextUDPConnection = "udp.connection"
+	// LastError is the context key for the last error.
+	ContextLastError = "last.error"
 )
-
-func (c *ContextKey) String() string {
-	return c.Name
-}
-
-// CleanupHTTP cleans up the HTTP context.
-func CleanupHTTPCtx(ctx context.Context) {
-	// TODO
-}
-
-// CleanupFunc is the cleanup function type.
-func CleanupContext(ctx context.Context) {
-	if ctx == nil {
-		return
-	}
-	CleanupHTTPCtx(ctx)
-}

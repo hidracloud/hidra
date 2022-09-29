@@ -14,8 +14,9 @@ func TestHTTPRequestParameters(t *testing.T) {
 	h.Init()
 
 	ctx := context.TODO()
+	previous := make(map[string]any, 0)
 
-	_, _, err := h.RunStep(ctx, &plugins.Step{
+	_, err := h.RunStep(ctx, previous, &plugins.Step{
 		Name: "ping",
 		Args: map[string]string{
 			"hostname": "8.8.8.8",

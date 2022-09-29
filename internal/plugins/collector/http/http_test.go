@@ -14,8 +14,9 @@ func TestHTTPRequestParameters(t *testing.T) {
 	h.Init()
 
 	ctx := context.TODO()
+	previous := make(map[string]any, 0)
 
-	ctx, _, err := h.RunStep(ctx, &plugins.Step{
+	_, err := h.RunStep(ctx, previous, &plugins.Step{
 		Name: "request",
 		Args: map[string]string{
 			"method": "GET",
@@ -27,7 +28,7 @@ func TestHTTPRequestParameters(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "statusCodeShouldBe",
 		Args: map[string]string{
 			"statusCode": "200",
@@ -38,7 +39,7 @@ func TestHTTPRequestParameters(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "statusCodeShouldBe",
 		Args: map[string]string{
 			"statusCode": "201",

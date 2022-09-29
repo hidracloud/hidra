@@ -20,41 +20,41 @@ type UDP struct {
 }
 
 // whoisFrom returns the whois information from a domain.
-func (p *UDP) connectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	udpAddr, err := net.ResolveUDPAddr("udp", args["to"])
+func (p *UDP) connectTo(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	UDPAddr, err := net.ResolveUDPAddr("udp", args["to"])
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
-	conn, err := net.DialUDP("udp", nil, udpAddr)
+	conn, err := net.DialUDP("udp", nil, UDPAddr)
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
-	ctx = context.WithValue(ctx, misc.ContextUDPConnection, conn)
+	stepsgen[misc.ContextUDPConnection] = conn
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // write writes a file to the UDP server.
-func (p *UDP) write(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
-		return ctx, nil, fmt.Errorf("no udp connection found")
+func (p *UDP) write(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextUDPConnection].(*net.UDPConn); !ok {
+		return nil, fmt.Errorf("no UDP connection found")
 	}
 
-	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
+	conn := stepsgen[misc.ContextUDPConnection].(*net.UDPConn)
 
 	data, err := b64.StdEncoding.DecodeString(args["data"])
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	startTime := time.Now()
 
 	byteLen, err := conn.Write(data)
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	customMetrics := []*metrics.Metric{
@@ -70,25 +70,25 @@ func (p *UDP) write(ctx context.Context, args map[string]string) (context.Contex
 		},
 	}
 
-	return ctx, customMetrics, nil
+	return customMetrics, nil
 }
 
 // read reads a file from the UDP server.
-func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *UDP) read(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	var err error
 
-	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
-		return ctx, nil, fmt.Errorf("no UDP connection found")
+	if _, ok := stepsgen[misc.ContextUDPConnection].(*net.UDPConn); !ok {
+		return nil, fmt.Errorf("no UDP connection found")
 	}
 
-	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
+	conn := stepsgen[misc.ContextUDPConnection].(*net.UDPConn)
 
 	bytesToRead := 1024
 
 	if args["bytesToRead"] != "" {
 		bytesToRead, err = strconv.Atoi(args["bytesToRead"])
 		if err != nil {
-			return ctx, nil, err
+			return nil, err
 		}
 	}
 
@@ -98,10 +98,10 @@ func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context
 
 	n, err := conn.Read(rcvData)
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
-	ctx = context.WithValue(ctx, misc.ContextOutput, rcvData[:n])
+	stepsgen[misc.ContextOutput] = rcvData[:n]
 
 	customMetrics := []*metrics.Metric{
 		{
@@ -116,25 +116,25 @@ func (p *UDP) read(ctx context.Context, args map[string]string) (context.Context
 		},
 	}
 
-	return ctx, customMetrics, nil
+	return customMetrics, nil
 }
 
 // onClose closes the connection.
-func (p *UDP) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *UDP) onClose(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 
-	if _, ok := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn); !ok {
-		return ctx, nil, fmt.Errorf("no FTP connection found")
+	if _, ok := stepsgen[misc.ContextUDPConnection].(*net.UDPConn); !ok {
+		return nil, fmt.Errorf("no FTP connection found")
 	}
 
-	conn := ctx.Value(misc.ContextUDPConnection).(*net.UDPConn)
+	conn := stepsgen[misc.ContextUDPConnection].(*net.UDPConn)
 
 	err := conn.Close()
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // Init initializes the plugin.
@@ -175,12 +175,6 @@ func (p *UDP) Init() {
 				Name:        "bytesToRead",
 				Description: "Number of bytes to read",
 				Optional:    true,
-			},
-		},
-		ContextGenerator: []plugins.ContextGenerator{
-			{
-				Name:        misc.ContextOutput.Name,
-				Description: "The UDP read contents",
 			},
 		},
 		Fn: p.read,

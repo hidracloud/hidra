@@ -13,8 +13,9 @@ func TestScenario(t *testing.T) {
 	h.Init()
 
 	ctx := context.TODO()
+	previous := make(map[string]any, 0)
 
-	ctx, _, err := h.RunStep(ctx, &plugins.Step{
+	_, err := h.RunStep(ctx, previous, &plugins.Step{
 		Name: "connectTo",
 		Args: map[string]string{
 			"to": "ftp.dlptest.com:21",
@@ -25,7 +26,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "login",
 		Args: map[string]string{
 			"user":     "dlpuser",
@@ -37,7 +38,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "write",
 		Args: map[string]string{
 			"data": "test",
@@ -49,7 +50,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "read",
 		Args: map[string]string{
 			"file": "test.txt",
@@ -60,7 +61,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "delete",
 		Args: map[string]string{
 			"file": "test.txt",

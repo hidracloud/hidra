@@ -16,20 +16,20 @@ type Strings struct {
 }
 
 // outputShouldContain returns true if the output contains the expected value.
-func (p *Strings) outputShouldContain(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *Strings) outputShouldContain(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	search := args["search"]
 
-	if _, ok := ctx.Value(misc.ContextOutput).([]byte); !ok {
-		return ctx, nil, fmt.Errorf("output is not a string")
+	if _, ok := stepsgen[misc.ContextOutput].([]byte); !ok {
+		return nil, fmt.Errorf("output is not a string")
 	}
 
-	output := ctx.Value(misc.ContextOutput).([]byte)
+	output := stepsgen[misc.ContextOutput].([]byte)
 
 	if utils.BytesContainsString(output, search) {
-		return ctx, []*metrics.Metric{}, nil
+		return []*metrics.Metric{}, nil
 	}
 
-	return ctx, []*metrics.Metric{}, fmt.Errorf("output does not contain %s", search)
+	return []*metrics.Metric{}, fmt.Errorf("output does not contain %s", search)
 }
 
 // Init initializes the plugin.

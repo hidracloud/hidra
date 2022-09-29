@@ -25,14 +25,8 @@ type Browser struct {
 }
 
 // navigateTo implements the browser.navigateTo primitive.
-func (p *Browser) navigateTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
-		timeout := 120 * time.Second
-
-		if _, ok := ctx.Value(misc.ContextTimeout).(time.Duration); ok {
-			timeout = ctx.Value(misc.ContextTimeout).(time.Duration)
-		}
-
+func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
 		// initialize chromedp
 		initialCtx := context.Background()
 
@@ -41,18 +35,16 @@ func (p *Browser) navigateTo(ctx context.Context, args map[string]string) (conte
 		}
 
 		chromedpCtx, cancel := chromedp.NewContext(initialCtx)
-		chromedpCtx, cancelTimeout := context.WithTimeout(chromedpCtx, timeout)
 
-		ctx = context.WithValue(ctx, misc.ContextBrowserChromedpCtx, chromedpCtx)
-		ctx = context.WithValue(ctx, misc.ContextBrowserChromedpCancel, cancel)
-		ctx = context.WithValue(ctx, misc.ContextBrowserChromedpCancelTimeout, cancelTimeout)
+		stepsgen[misc.ContextBrowserChromedpCtx] = chromedpCtx
+		stepsgen[misc.ContextBrowserChromedpCancel] = cancel
 	}
 
-	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
 	err := chromedp.Run(chromedpCtx, performance.Enable(), chromedp.Navigate(args["url"]))
 
-	return ctx, nil, err
+	return nil, err
 }
 
 func selector2By(selector string) func(*chromedp.Selector) {
@@ -73,119 +65,119 @@ func selector2By(selector string) func(*chromedp.Selector) {
 }
 
 // urlShouldBe implements the browser.urlShouldBe primitive.
-func (p *Browser) urlShouldBe(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
-		return ctx, nil, errPluginNotInitialized
+func (p *Browser) urlShouldBe(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+		return nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
 	var url string
 
 	err := chromedp.Run(chromedpCtx, chromedp.Location(&url))
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	if url != args["url"] {
-		return ctx, nil, fmt.Errorf("url is not %s is %s", args["url"], url)
+		return nil, fmt.Errorf("url is not %s is %s", args["url"], url)
 	}
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // textShouldBe implements the browser.textShouldBe primitive.
-func (p *Browser) textShouldBe(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
-		return ctx, nil, errPluginNotInitialized
+func (p *Browser) textShouldBe(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+		return nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
 	var text string
 
 	err := chromedp.Run(chromedpCtx, chromedp.Text(args["selector"], &text, selector2By(args["selectorBy"])))
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	if text != args["text"] {
-		return ctx, nil, fmt.Errorf("text is not %s is %s", args["text"], text)
+		return nil, fmt.Errorf("text is not %s is %s", args["text"], text)
 	}
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // sendKeys implements the browser.sendKeys primitive.
-func (p *Browser) sendKeys(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
-		return ctx, nil, errPluginNotInitialized
+func (p *Browser) sendKeys(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+		return nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
 	err := chromedp.Run(
 		chromedpCtx,
 		chromedp.SendKeys(args["selector"], args["keys"], selector2By(args["selectorBy"])),
 	)
 
-	return ctx, nil, err
+	return nil, err
 }
 
 // waitVisible implements the browser.waitVisible primitive.
-func (p *Browser) waitVisible(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
-		return ctx, nil, errPluginNotInitialized
+func (p *Browser) waitVisible(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+		return nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
 	err := chromedp.Run(chromedpCtx, chromedp.WaitVisible(args["selector"], selector2By(args["selectorBy"])))
 
-	return ctx, nil, err
+	return nil, err
 }
 
 // onClose implements the browser.onClose primitive.
-func (p *Browser) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *Browser) onClose(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	var err error
-	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); ok {
-		chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+		chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
+		cancel := stepsgen[misc.ContextBrowserChromedpCancel].(context.CancelFunc)
 
 		err = chromedp.Stop().Do(chromedpCtx)
 
-		ctx.Value(misc.ContextBrowserChromedpCancel).(context.CancelFunc)()
-		ctx.Value(misc.ContextBrowserChromedpCancelTimeout).(context.CancelFunc)()
+		cancel()
 	}
 
-	return ctx, nil, err
+	return nil, err
 }
 
 // click implements the browser.click primitive.
-func (p *Browser) click(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context); !ok {
-		return ctx, nil, errPluginNotInitialized
+func (p *Browser) click(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+		return nil, errPluginNotInitialized
 	}
 
-	chromedpCtx := ctx.Value(misc.ContextBrowserChromedpCtx).(context.Context)
+	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
 	err := chromedp.Run(chromedpCtx, chromedp.Click(args["selector"], selector2By(args["selectorBy"])))
 
-	return ctx, nil, err
+	return nil, err
 }
 
 // wait implements the browser.wait primitive.
-func (p *Browser) wait(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *Browser) wait(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	duration, err := time.ParseDuration(args["duration"])
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	time.Sleep(duration)
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // Init initializes the plugin.

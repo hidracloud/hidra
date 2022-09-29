@@ -21,12 +21,12 @@ type TLS struct {
 }
 
 // connectTo connects to a TLS server.
-func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextTLSConnection).(*tls.Conn); ok {
-		err := ctx.Value(misc.ContextTLSConnection).(*tls.Conn).Close()
+func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextTLSConnection].(*tls.Conn); ok {
+		err := stepsgen[misc.ContextTLSConnection].(*tls.Conn).Close()
 
 		if err != nil {
-			return ctx, nil, err
+			return nil, err
 		}
 	}
 
@@ -55,14 +55,14 @@ func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Co
 	conn, err := tls.Dial("tcp", args["to"], conf)
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	certificates := conn.ConnectionState().PeerCertificates
 
-	ctx = context.WithValue(ctx, misc.ContextTLSConnection, conn)
-	ctx = context.WithValue(ctx, misc.ContextTLSHost, args["to"])
-	ctx = context.WithValue(ctx, misc.ContextTLSCertificates, certificates)
+	stepsgen[misc.ContextTLSConnection] = conn
+	stepsgen[misc.ContextTLSCertificates] = certificates
+	stepsgen[misc.ContextTLSHost] = args["to"]
 
 	customMetrics := []*metrics.Metric{
 		{
@@ -120,67 +120,67 @@ func (p *TLS) connectTo(ctx context.Context, args map[string]string) (context.Co
 		})
 	}
 
-	return ctx, customMetrics, nil
+	return customMetrics, nil
 }
 
 // onClose closes the connection.
-func (p *TLS) onClose(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextTLSConnection).(*tls.Conn); ok {
-		err := ctx.Value(misc.ContextTLSConnection).(*tls.Conn).Close()
+func (p *TLS) onClose(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextTLSConnection].(*tls.Conn); ok {
+		err := stepsgen[misc.ContextTLSConnection].(*tls.Conn).Close()
 
 		if err != nil {
-			return ctx, nil, err
+			return nil, err
 		}
 	}
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // dnsShouldBePresent checks if a DNS record should be present.
-func (p *TLS) dnsShouldBePresent(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate); !ok {
-		return ctx, nil, fmt.Errorf("no TLS connection found")
+func (p *TLS) dnsShouldBePresent(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextTLSCertificates].([]*x509.Certificate); !ok {
+		return nil, fmt.Errorf("no TLS connection found")
 	}
 
-	certificates := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate)
+	certificates := stepsgen[misc.ContextTLSCertificates].([]*x509.Certificate)
 
 	for _, cert := range certificates {
 		for _, dns := range cert.DNSNames {
 			matched, err := filepath.Match(dns, args["dns"])
 
 			if err != nil {
-				return ctx, nil, err
+				return nil, err
 			}
 
 			if matched {
-				return ctx, nil, nil
+				return nil, nil
 			}
 		}
 	}
-	return ctx, nil, fmt.Errorf("DNS name %s should not be present", args["dns"])
+	return nil, fmt.Errorf("DNS name %s should not be present", args["dns"])
 }
 
 // shouldBeValidFor checks if a certificate is valid for a given host.
-func (p *TLS) shouldBeValidFor(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
-	if _, ok := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate); !ok {
-		return ctx, nil, fmt.Errorf("no TLS connection found")
+func (p *TLS) shouldBeValidFor(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextTLSCertificates].([]*x509.Certificate); !ok {
+		return nil, fmt.Errorf("no TLS connection found")
 	}
 
 	duration, err := utils.ParseDuration(args["for"])
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
-	certificates := ctx.Value(misc.ContextTLSCertificates).([]*x509.Certificate)
+	certificates := stepsgen[misc.ContextTLSCertificates].([]*x509.Certificate)
 	limitDate := time.Now().Add(duration)
 
 	for _, cert := range certificates {
 		if limitDate.After(cert.NotAfter) {
-			return ctx, nil, fmt.Errorf("certificate will be invalid after %s, and your limit date is %s", cert.NotAfter, limitDate)
+			return nil, fmt.Errorf("certificate will be invalid after %s, and your limit date is %s", cert.NotAfter, limitDate)
 		}
 	}
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // Init initializes the plugin.

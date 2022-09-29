@@ -103,7 +103,7 @@ func SetBasePath(basePath string) {
 }
 
 // NewReport creates a new report.
-func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variables map[string]string, duration time.Duration, ctx context.Context, err error) *Report {
+func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variables map[string]string, duration time.Duration, stepsgen map[string]any, err error) *Report {
 	if !IsEnabled {
 		return nil
 	}
@@ -120,20 +120,20 @@ func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variab
 		Variables: variables,
 	}
 
-	report.GenerateConnectionInfo(ctx)
-	report.GenerateReportHttpRespone(ctx)
-	report.GenerateAttachments(ctx)
+	report.GenerateConnectionInfo(stepsgen)
+	report.GenerateReportHttpRespone(stepsgen)
+	report.GenerateAttachments(stepsgen)
 
 	return report
 }
 
 // GenerateConnectionInfo returns the connection info of the report.
-func (r *Report) GenerateConnectionInfo(ctx context.Context) {
+func (r *Report) GenerateConnectionInfo(stepsgen map[string]any) {
 	lastIP := ""
 
 	log.Debug("Generating connection info with traceroute")
 	tracerouteList := []string{}
-	if lastIP, ok := ctx.Value(misc.ContextConnectionIP).(string); ok {
+	if lastIP, ok := stepsgen[misc.ContextConnectionIP].(string); ok {
 		// nolint: errcheck
 		hops, _ := traceroute.Trace(net.ParseIP(lastIP))
 
@@ -149,8 +149,8 @@ func (r *Report) GenerateConnectionInfo(ctx context.Context) {
 }
 
 // GenerateAttachments generates all attachnments of the report.
-func (r *Report) GenerateAttachments(ctx context.Context) {
-	if attachments, ok := ctx.Value(misc.ContextAttachment).(map[string][]byte); ok {
+func (r *Report) GenerateAttachments(stepsgen map[string]any) {
+	if attachments, ok := stepsgen[misc.ContextAttachment].(map[string][]byte); ok {
 		r.Attachments = attachments
 		r.AttachmentList = []string{}
 		for k := range attachments {
@@ -160,8 +160,8 @@ func (r *Report) GenerateAttachments(ctx context.Context) {
 }
 
 // GenerateReportHttpRespone returns the HTTP response of the report.
-func (r *Report) GenerateReportHttpRespone(ctx context.Context) {
-	if httpResp, ok := ctx.Value(misc.ContextHTTPResponse).(*http.Response); ok {
+func (r *Report) GenerateReportHttpRespone(stepsgen map[string]any) {
+	if httpResp, ok := stepsgen[misc.ContextHTTPResponse].(*http.Response); ok {
 		headers := map[string]string{}
 
 		log.Debug("Generating HTTP response info")

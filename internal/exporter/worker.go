@@ -11,7 +11,6 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
-	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -187,8 +186,6 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 				// Run the sample
 				ctx, cancel := context.WithCancel(context.Background())
-				ctx = context.WithValue(ctx, misc.ContextAttachment, make(map[string][]byte))
-
 				result := RunSampleWithTimeout(ctx, sample, sample.Timeout)
 
 				// Update the metrics

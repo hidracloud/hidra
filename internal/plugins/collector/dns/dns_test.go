@@ -14,8 +14,9 @@ func TestHTTPRequestParameters(t *testing.T) {
 	h.Init()
 
 	ctx := context.TODO()
+	previous := make(map[string]any, 0)
 
-	ctx, _, err := h.RunStep(ctx, &plugins.Step{
+	_, err := h.RunStep(ctx, previous, &plugins.Step{
 		Name: "whoisFrom",
 		Args: map[string]string{
 			"domain": "google.com",
@@ -26,7 +27,7 @@ func TestHTTPRequestParameters(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "shouldBeValidFor",
 		Args: map[string]string{
 			"for": "7d",

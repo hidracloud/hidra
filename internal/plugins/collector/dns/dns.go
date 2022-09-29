@@ -23,20 +23,20 @@ type DNS struct {
 }
 
 // whoisFrom returns the whois information from a domain.
-func (p *DNS) whoisFrom(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *DNS) whoisFrom(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	whoisResult, err := whois.Whois(args["domain"])
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	result, err := whoisparser.Parse(whoisResult)
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
-	ctx = context.WithValue(ctx, misc.ContextDNSInfo, &result)
+	stepsgen[misc.ContextDNSInfo] = &result
 
 	dateFormat := "2006-01-02T15:04:05.999Z"
 
@@ -47,7 +47,7 @@ func (p *DNS) whoisFrom(ctx context.Context, args map[string]string) (context.Co
 	expirationDate, err := time.Parse(dateFormat, result.Domain.ExpirationDate)
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	customMetrics := []*metrics.Metric{
@@ -60,15 +60,15 @@ func (p *DNS) whoisFrom(ctx context.Context, args map[string]string) (context.Co
 		},
 	}
 
-	return ctx, customMetrics, nil
+	return customMetrics, nil
 }
 
 // shouldBeValidFor checks if the domain is valid for a given number of duration.
-func (p *DNS) shouldBeValidFor(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *DNS) shouldBeValidFor(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	duration, err := utils.ParseDuration(args["for"])
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	dateFormat := "2006-01-02T15:04:05.999Z"
@@ -77,42 +77,42 @@ func (p *DNS) shouldBeValidFor(ctx context.Context, args map[string]string) (con
 		dateFormat = args["dateFormat"]
 	}
 
-	result := ctx.Value(misc.ContextDNSInfo).(*whoisparser.WhoisInfo)
+	result := stepsgen[misc.ContextDNSInfo].(*whoisparser.WhoisInfo)
 
 	if result == nil {
-		return ctx, nil, fmt.Errorf("whois info not found")
+		return nil, fmt.Errorf("whois info not found")
 	}
 
 	expirationDate, err := time.Parse(dateFormat, result.Domain.ExpirationDate)
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	if expirationDate.Before(time.Now().Add(duration)) {
-		return ctx, nil, fmt.Errorf("domain is not valid for %d days", duration)
+		return nil, fmt.Errorf("domain is not valid for %d days", duration)
 	}
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // dnsSecShouldBeValid checks if the domain has DNSSEC enabled.
-func (p *DNS) dnsSecShouldBeValid(ctx context.Context, args map[string]string) (context.Context, []*metrics.Metric, error) {
+func (p *DNS) dnsSecShouldBeValid(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	analysis, err := dnssec.Analyze(args["domain"])
 
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	if strings.Contains(analysis.String(), "No DNSKEY records found") {
-		return ctx, nil, nil
+		return nil, nil
 	}
 
 	if analysis.Status() != dnssec.OK {
-		return ctx, nil, fmt.Errorf("domain has invalid dnssec configuration")
+		return nil, fmt.Errorf("domain has invalid dnssec configuration")
 	}
 
-	return ctx, nil, nil
+	return nil, nil
 }
 
 // Init initializes the plugin.

@@ -15,7 +15,7 @@ func TestScenario(t *testing.T) {
 
 	ctx := context.TODO()
 
-	ctx, _, err := h.RunStep(ctx, &plugins.Step{
+	_, err := h.RunStep(ctx, previous, &plugins.Step{
 		Name: "navigateTo",
 		Args: map[string]string{
 			"url": "https://hidra.cloud",
@@ -26,7 +26,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "urlShouldBe",
 		Args: map[string]string{
 			"url": "https://hidra.cloud/",
@@ -37,7 +37,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "textShouldBe",
 		Args: map[string]string{
 			"selector": "#td-cover-block-0 > div > div > div > div > h1",
@@ -49,7 +49,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "waitVisible",
 		Args: map[string]string{
 			"selector": "#td-cover-block-0 > div > div > div > div > div > div > a.btn.btn-lg.btn-primary.mr-3.mb-4",
@@ -60,7 +60,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	ctx, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "click",
 		Args: map[string]string{
 			"selector": "#td-cover-block-0 > div > div > div > div > div > div > a.btn.btn-lg.btn-primary.mr-3.mb-4",
@@ -71,7 +71,7 @@ func TestScenario(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, _, err = h.RunStep(ctx, &plugins.Step{
+	_, err  = h.RunStep(ctx, previous, &plugins.Step{
 		Name: "urlShouldBe",
 		Args: map[string]string{
 			"url": "https://hidra.cloud/docs/",
@@ -83,7 +83,7 @@ func TestScenario(t *testing.T) {
 	}
 
 	// nolint: errcheck
-	h.RunStep(ctx, &plugins.Step{
+	h.RunStep(ctx, previous, &plugins.Step{
 		Name: "onClose",
 	})
 
