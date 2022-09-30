@@ -192,5 +192,5 @@ func (p *TCP) Init() {
 func init() {
 	h := &TCP{}
 	h.Init()
-	plugins.AddPlugin("tcp", h)
+	plugins.AddPlugin("tcp", "TCP plugin is used to connect to a TCP server", h)
 }

@@ -317,5 +317,5 @@ func (p *Browser) Init() {
 func init() {
 	h := &Browser{}
 	h.Init()
-	plugins.AddPlugin("browser", h)
+	plugins.AddPlugin("browser", "Browser plugin is used to interact with a browser", h)
 }

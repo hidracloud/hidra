@@ -488,5 +488,5 @@ func (p *HTTP) Init() {
 func init() {
 	h := &HTTP{}
 	h.Init()
-	plugins.AddPlugin("http", h)
+	plugins.AddPlugin("http", "HTTP plugin is used to make HTTP requests", h)
 }

@@ -192,5 +192,5 @@ func (p *UDP) Init() {
 func init() {
 	h := &UDP{}
 	h.Init()
-	plugins.AddPlugin("udp", h)
+	plugins.AddPlugin("udp", "UDP plugin is used to connect to a UDP server", h)
 }

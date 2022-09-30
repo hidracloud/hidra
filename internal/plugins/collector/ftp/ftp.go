@@ -290,5 +290,5 @@ func (p *FTP) Init() {
 func init() {
 	h := &FTP{}
 	h.Init()
-	plugins.AddPlugin("ftp", h)
+	plugins.AddPlugin("ftp", "FTP plugin is used to connect to a FTP server", h)
 }

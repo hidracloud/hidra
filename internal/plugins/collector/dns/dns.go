@@ -174,5 +174,5 @@ func (p *DNS) Init() {
 func init() {
 	h := &DNS{}
 	h.Init()
-	plugins.AddPlugin("dns", h)
+	plugins.AddPlugin("dns", "DNS plugin is used to check DNS information", h)
 }

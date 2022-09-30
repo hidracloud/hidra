@@ -55,5 +55,5 @@ func (p *Strings) Init() {
 func init() {
 	h := &Strings{}
 	h.Init()
-	plugins.AddPlugin("string", h)
+	plugins.AddPlugin("string", "String plugin is used to check strings", h)
 }

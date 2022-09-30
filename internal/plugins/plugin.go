@@ -20,6 +20,8 @@ type PluginInterface interface {
 	RegisterStep(*StepDefinition)
 	// StepExists returns true if the step exists.
 	StepExists(string) bool
+	// GetSteps returns all steps.
+	GetSteps() map[string]*StepDefinition
 }
 
 // Step represents a step.
@@ -38,26 +40,17 @@ type stepFn func(context.Context, map[string]string, map[string]any) ([]*metrics
 
 // StepParam returns the value of a step parameter
 type StepParam struct {
-	Name        string
-	Description string
-	Optional    bool
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Optional    bool   `json:"optional"`
 }
 
 // StepDefinition represents a step definition.
 type StepDefinition struct {
-	Name             string
-	Description      string
-	Params           []StepParam
-	Fn               stepFn `json:"-"`
-	ContextGenerator []ContextGenerator
-}
-
-// ContextGenerator represents a context generator.
-type ContextGenerator struct {
-	// Name is the name of the context generator.
-	Name string
-	// Description is the description of the context generator.
-	Description string
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	Params      []StepParam `json:"params"`
+	Fn          stepFn      `json:"-"`
 }
 
 // BasePlugin represents a base plugin.
@@ -116,6 +109,11 @@ func (p *BasePlugin) StepExists(name string) bool {
 	_, ok := p.StepDefinitions[name]
 
 	return ok
+}
+
+// GetSteps returns all steps.
+func (p *BasePlugin) GetSteps() map[string]*StepDefinition {
+	return p.StepDefinitions
 }
 
 // RegisterStep registers a step.

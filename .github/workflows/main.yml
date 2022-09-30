@@ -141,6 +141,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate plugin_definitions.json
+        run: |
+          go run tools/plugin_definitions/main.go > plugin_definitions.json
+
+      - name: Upload to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: plugin_definitions.json
+          asset_name: plugin_definitions.json
+          tag: ${{ env.GIT_TAG }}
+          overwrite: true
+
       # - uses: "marvinpinto/action-automatic-releases@latest"
       #   with:
       #     repo_token: "${{ secrets.GITHUB_TOKEN }}"

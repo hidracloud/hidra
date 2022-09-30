@@ -238,5 +238,5 @@ func (p *TLS) Init() {
 func init() {
 	h := &TLS{}
 	h.Init()
-	plugins.AddPlugin("tls", h)
+	plugins.AddPlugin("tls", "TLS plugin is used to check TLS certificates", h)
 }

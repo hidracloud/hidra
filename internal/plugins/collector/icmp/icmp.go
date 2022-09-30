@@ -249,5 +249,5 @@ func (p *ICMP) Init() {
 func init() {
 	h := &ICMP{}
 	h.Init()
-	plugins.AddPlugin("icmp", h)
+	plugins.AddPlugin("icmp", "ICMP plugin is used to ping and traceroute hosts", h)
 }
