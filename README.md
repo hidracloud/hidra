@@ -65,5 +65,30 @@ You can find some sample examples [here](https://github.com/hidracloud/hidra/blo
 ### Docker compose
 You can find an example of a docker compose file [here](https://github.com/hidracloud/hidra/blob/main/docker-compose.yml)
 
-## Plugins
-TODO
+## Samples
+Samples are the way Hidra knows what to do. A sample is a YAML file that contains the information needed to run a test. You can find some sample examples [here](https://github.com/hidracloud/hidra/blob/main/configs/hidra/samples). You can also find a sample example below:
+
+```yaml
+# Description of the sample
+description: "This is a sample to test the HTTP plugin"
+# Tags is a key-value list of tags that will be added to the sample. You can add here whatever you want.
+tags:
+  tenant: "hidra"
+# Interval is the time between each execution of the sample.
+interval: "1m"
+# Timeout is the time that Hidra will wait for the sample to finish.
+timeout: "10s"
+# Steps is a list of steps that will be executed in order.
+steps:
+    # Plugin is the name of the plugin that will be used to execute the step.
+  - plugin: http
+    # Action is the action that will be executed by the plugin.
+    action: request
+    # Parameters is a key-value list of parameters that will be passed to the plugin.
+    parameters:
+      url: https://google.com/
+  - plugin: http
+    action: statusCodeShouldBe
+    parameters:
+      statusCode: 301
+```
