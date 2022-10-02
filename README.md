@@ -92,3 +92,16 @@ steps:
     parameters:
       statusCode: 301
 ```
+
+You can find more information about plugins in next section.
+
+## Plugins
+- [browser](https://github.com/hidracloud/hidra/blob/main/plugins/collector/browser/README.md)
+- [dns](https://github.com/hidracloud/hidra/blob/main/plugins/collector/dns/README.md)
+- [ftp](https://github.com/hidracloud/hidra/blob/main/plugins/collector/ftp/README.md)
+- [http](https://github.com/hidracloud/hidra/blob/main/plugins/collector/http/README.md)
+- [icmp](https://github.com/hidracloud/hidra/blob/main/plugins/collector/icmp/README.md)
+- [tcp](https://github.com/hidracloud/hidra/blob/main/plugins/collector/tcp/README.md)
+- [tls](https://github.com/hidracloud/hidra/blob/main/plugins/collector/tls/README.md)
+- [udp](https://github.com/hidracloud/hidra/blob/main/plugins/collector/udp/README.md)
+- [string](https://github.com/hidracloud/hidra/blob/main/plugins/misc/string/README.md)
