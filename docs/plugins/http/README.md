@@ -1,26 +1,16 @@
 # http
 HTTP plugin is used to make HTTP requests
 ## Available actions
-### bodyShouldContain
-[DEPRECATED] Please use outputShouldContain from string plugin. Checks if the body contains the expected value
+### shouldRedirectTo
+Checks if the response redirects to the expected URL
 #### Parameters
-- search: The expected value
+- url: The expected URL
 ### setUserAgent
 Sets the User-Agent header
 #### Parameters
 - user-agent: The User-Agent value
-### allowInsecureTLS
-Allows insecure TLS connections. This is useful for testing purposes, but should not be used in production
-#### Parameters
 ### onFailure
 Executes the steps if the previous step failed
-#### Parameters
-### forceIP
-Forces the IP address to use for the request
-#### Parameters
-- ip: The IP address
-### onClose
-Executes the steps if the previous step succeeded
 #### Parameters
 ### request
 Makes a HTTP request
@@ -32,10 +22,20 @@ Makes a HTTP request
 Checks if the status code is equal to the expected value
 #### Parameters
 - statusCode: The expected status code
-### shouldRedirectTo
-Checks if the response redirects to the expected URL
+### allowInsecureTLS
+Allows insecure TLS connections. This is useful for testing purposes, but should not be used in production
 #### Parameters
-- url: The expected URL
+### forceIP
+Forces the IP address to use for the request
+#### Parameters
+- ip: The IP address
+### onClose
+Executes the steps if the previous step succeeded
+#### Parameters
+### bodyShouldContain
+[DEPRECATED] Please use outputShouldContain from string plugin. Checks if the body contains the expected value
+#### Parameters
+- search: The expected value
 ### addHTTPHeader
 Adds a HTTP header to the request. If the header already exists, it will be overwritten
 #### Parameters

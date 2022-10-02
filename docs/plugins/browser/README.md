@@ -1,6 +1,20 @@
 # browser
 Browser plugin is used to interact with a browser
 ## Available actions
+### waitVisible
+Waits for an element to be visible
+#### Parameters
+- selector: Selector of the element
+-  (optional) selectorBy: Selector type
+### click
+Clicks on an element
+#### Parameters
+- selector: Selector of the element
+-  (optional) selectorBy: Selector type
+### wait
+Waits for a duration
+#### Parameters
+- duration: Duration to wait
 ### onClose
 Close the connection
 #### Parameters
@@ -24,17 +38,3 @@ Sends keys to an element
 - selector: Selector of the element
 -  (optional) selectorBy: Selector type
 - keys: Keys to send
-### waitVisible
-Waits for an element to be visible
-#### Parameters
-- selector: Selector of the element
--  (optional) selectorBy: Selector type
-### click
-Clicks on an element
-#### Parameters
-- selector: Selector of the element
--  (optional) selectorBy: Selector type
-### wait
-Waits for a duration
-#### Parameters
-- duration: Duration to wait
