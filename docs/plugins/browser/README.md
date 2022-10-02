@@ -1,10 +1,6 @@
 # browser
 Browser plugin is used to interact with a browser
 ## Available actions
-### wait
-Waits for a duration
-#### Parameters
-- duration: Duration to wait
 ### onClose
 Close the connection
 #### Parameters
@@ -38,3 +34,7 @@ Clicks on an element
 #### Parameters
 - selector: Selector of the element
 -  (optional) selectorBy: Selector type
+### wait
+Waits for a duration
+#### Parameters
+- duration: Duration to wait

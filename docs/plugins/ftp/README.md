@@ -1,6 +1,10 @@
 # ftp
 FTP plugin is used to connect to a FTP server
 ## Available actions
+### read
+Read a file from a FTP server
+#### Parameters
+- file: File to read
 ### delete
 Delete a file from a FTP server
 #### Parameters
@@ -22,7 +26,3 @@ Write a file to a FTP server
 #### Parameters
 - file: File to write
 - data: Data to write
-### read
-Read a file from a FTP server
-#### Parameters
-- file: File to read
