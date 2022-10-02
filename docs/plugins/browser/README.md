@@ -1,6 +1,12 @@
 # browser
 Browser plugin is used to interact with a browser
 ## Available actions
+### sendKeys
+Sends keys to an element
+#### Parameters
+- selector: Selector of the element
+-  (optional) selectorBy: Selector type
+- keys: Keys to send
 ### waitVisible
 Waits for an element to be visible
 #### Parameters
@@ -32,9 +38,3 @@ Checks if the text of an element is the expected one
 - selector: Selector of the element
 -  (optional) selectorBy: Selector type
 - text: Expected text
-### sendKeys
-Sends keys to an element
-#### Parameters
-- selector: Selector of the element
--  (optional) selectorBy: Selector type
-- keys: Keys to send
