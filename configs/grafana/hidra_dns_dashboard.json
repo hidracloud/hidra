@@ -1,31 +1,72 @@
 {
+    "__inputs": [
+        {
+            "name": "DS_PROMETHEUS",
+            "label": "prometheus",
+            "description": "",
+            "type": "datasource",
+            "pluginId": "prometheus",
+            "pluginName": "Prometheus"
+        }
+    ],
+    "__elements": [],
+    "__requires": [
+        {
+            "type": "panel",
+            "id": "gauge",
+            "name": "Gauge",
+            "version": ""
+        },
+        {
+            "type": "grafana",
+            "id": "grafana",
+            "name": "Grafana",
+            "version": "9.0.0"
+        },
+        {
+            "type": "datasource",
+            "id": "prometheus",
+            "name": "Prometheus",
+            "version": "1.0.0"
+        },
+        {
+            "type": "panel",
+            "id": "status-history",
+            "name": "Status history",
+            "version": ""
+        }
+    ],
     "annotations": {
-        "list": [{
-            "builtIn": 1,
-            "datasource": {
-                "type": "grafana",
-                "uid": "-- Grafana --"
-            },
-            "enable": true,
-            "hide": true,
-            "iconColor": "rgba(0, 211, 255, 1)",
-            "name": "Annotations & Alerts",
-            "target": {
-                "limit": 100,
-                "matchAny": false,
-                "tags": [],
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "target": {
+                    "limit": 100,
+                    "matchAny": false,
+                    "tags": [],
+                    "type": "dashboard"
+                },
                 "type": "dashboard"
-            },
-            "type": "dashboard"
-        }]
+            }
+        ]
     },
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 3,
+    "id": null,
+    "iteration": 1664962190221,
     "links": [],
     "liveNow": false,
-    "panels": [{
+    "panels": [
+        {
             "collapsed": false,
             "gridPos": {
                 "h": 1,
@@ -43,7 +84,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "XejnKaG4k"
+                "uid": "${DS_PROMETHEUS}"
             },
             "fieldConfig": {
                 "defaults": {
@@ -53,10 +94,12 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [{
-                            "color": "green",
-                            "value": null
-                        }]
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
                     },
                     "unit": "dateTimeAsLocal"
                 },
@@ -81,25 +124,27 @@
                 "showThresholdLabels": false,
                 "showThresholdMarkers": true
             },
-            "pluginVersion": "9.1.3",
-            "targets": [{
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "XejnKaG4k"
-                },
-                "editorMode": "code",
-                "expr": "hidra_whois_expiration_date{sample_name=\"$sample\", job=\"$job\"} * 1000",
-                "legendFormat": "{{ domain }}",
-                "range": true,
-                "refId": "A"
-            }],
+            "pluginVersion": "9.0.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    },
+                    "editorMode": "code",
+                    "expr": "hidra_whois_expiration_date{sample_name=\"$sample\", job=\"$job\"} * 1000",
+                    "legendFormat": "{{ domain }}",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
             "title": "Expiration date",
             "type": "gauge"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "XejnKaG4k"
+                "uid": "${DS_PROMETHEUS}"
             },
             "fieldConfig": {
                 "defaults": {
@@ -109,10 +154,12 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [{
-                            "color": "green",
-                            "value": null
-                        }]
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
                     },
                     "unit": "s"
                 },
@@ -137,25 +184,27 @@
                 "showThresholdLabels": false,
                 "showThresholdMarkers": true
             },
-            "pluginVersion": "9.1.3",
-            "targets": [{
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "XejnKaG4k"
-                },
-                "editorMode": "code",
-                "expr": "hidra_whois_expiration_date{sample_name=\"$sample\", job=\"$job\"}- time()",
-                "legendFormat": "{{ domain }}",
-                "range": true,
-                "refId": "A"
-            }],
+            "pluginVersion": "9.0.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    },
+                    "editorMode": "code",
+                    "expr": "hidra_whois_expiration_date{sample_name=\"$sample\", job=\"$job\"}- time()",
+                    "legendFormat": "{{ domain }}",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
             "title": "Time to expiration",
             "type": "gauge"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "XejnKaG4k"
+                "uid": "${DS_PROMETHEUS}"
             },
             "fieldConfig": {
                 "defaults": {
@@ -169,7 +218,8 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [{
+                        "steps": [
+                            {
                                 "color": "dark-red",
                                 "value": null
                             },
@@ -203,34 +253,33 @@
                     "sort": "none"
                 }
             },
-            "targets": [{
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "XejnKaG4k"
-                },
-                "editorMode": "builder",
-                "expr": "hidra_sample_status{job=\"$job\", sample_name=\"$sample\"}",
-                "legendFormat": " ",
-                "range": true,
-                "refId": "A"
-            }],
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    },
+                    "editorMode": "builder",
+                    "expr": "hidra_sample_status{job=\"$job\", sample_name=\"$sample\"}",
+                    "legendFormat": " ",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
             "title": "Statuses",
             "type": "status-history"
         }
     ],
-    "schemaVersion": 37,
+    "schemaVersion": 36,
     "style": "dark",
     "tags": [],
     "templating": {
-        "list": [{
-                "current": {
-                    "selected": false,
-                    "text": "dns_test",
-                    "value": "dns_test"
-                },
+        "list": [
+            {
+                "current": {},
                 "datasource": {
                     "type": "prometheus",
-                    "uid": "XejnKaG4k"
+                    "uid": "${DS_PROMETHEUS}"
                 },
                 "definition": "label_values(hidra_whois_expiration_date, sample_name)",
                 "hide": 0,
@@ -249,14 +298,10 @@
                 "type": "query"
             },
             {
-                "current": {
-                    "selected": false,
-                    "text": "hidra-exporter",
-                    "value": "hidra-exporter"
-                },
+                "current": {},
                 "datasource": {
                     "type": "prometheus",
-                    "uid": "XejnKaG4k"
+                    "uid": "${DS_PROMETHEUS}"
                 },
                 "definition": "label_values(hidra_whois_expiration_date, job)",
                 "hide": 0,
@@ -284,6 +329,6 @@
     "timezone": "",
     "title": "Hidra DNS",
     "uid": "uzYPpaM4z",
-    "version": 6,
+    "version": 1,
     "weekStart": ""
 }
