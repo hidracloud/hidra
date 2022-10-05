@@ -1,25 +1,23 @@
 {
     "annotations": {
-        "list": [
-            {
-                "builtIn": 1,
-                "datasource": {
-                    "type": "grafana",
-                    "uid": "-- Grafana --"
-                },
-                "enable": true,
-                "hide": true,
-                "iconColor": "rgba(0, 211, 255, 1)",
-                "name": "Annotations & Alerts",
-                "target": {
-                    "limit": 100,
-                    "matchAny": false,
-                    "tags": [],
-                    "type": "dashboard"
-                },
+        "list": [{
+            "builtIn": 1,
+            "datasource": {
+                "type": "grafana",
+                "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "target": {
+                "limit": 100,
+                "matchAny": false,
+                "tags": [],
                 "type": "dashboard"
-            }
-        ]
+            },
+            "type": "dashboard"
+        }]
     },
     "editable": true,
     "fiscalYearStartMonth": 0,
@@ -27,8 +25,7 @@
     "id": 4,
     "links": [],
     "liveNow": false,
-    "panels": [
-        {
+    "panels": [{
             "collapsed": false,
             "gridPos": {
                 "h": 1,
@@ -46,7 +43,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -60,8 +57,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "dark-red",
                                 "value": null
                             },
@@ -95,26 +91,24 @@
                     "sort": "none"
                 }
             },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "builder",
-                    "expr": "hidra_sample_status{job=\"$job\", sample_name=\"$sample\"}",
-                    "legendFormat": " ",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "builder",
+                "expr": "hidra_sample_status{job=\"$job\", sample_name=\"$sample\"}",
+                "legendFormat": " ",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Statuses",
             "type": "status-history"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -154,8 +148,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "green",
                                 "value": null
                             },
@@ -193,26 +186,24 @@
                     "sort": "none"
                 }
             },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "code",
-                    "expr": "hidra_ftp_write_size{sample_name=\"$sample\", job=\"$job\"} / hidra_ftp_write_time{sample_name=\"$sample\", job=\"$job\"}",
-                    "legendFormat": "{{host}} | {{ description }} ({{sample_name}})",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "code",
+                "expr": "hidra_ftp_write_size{sample_name=\"$sample\", job=\"$job\"} / hidra_ftp_write_time{sample_name=\"$sample\", job=\"$job\"}",
+                "legendFormat": "{{host}} | {{ description }} ({{sample_name}})",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Upload speed",
             "type": "timeseries"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -252,8 +243,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "green",
                                 "value": null
                             },
@@ -291,19 +281,17 @@
                     "sort": "none"
                 }
             },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "code",
-                    "expr": "hidra_ftp_read_size{sample_name=\"$sample\", job=\"$job\"} / hidra_ftp_read_time{sample_name=\"$sample\", job=\"$job\"}",
-                    "legendFormat": "{{host}} | {{ description }} ({{sample_name}})",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "code",
+                "expr": "hidra_ftp_read_size{sample_name=\"$sample\", job=\"$job\"} / hidra_ftp_read_time{sample_name=\"$sample\", job=\"$job\"}",
+                "legendFormat": "{{host}} | {{ description }} ({{sample_name}})",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Download speed",
             "type": "timeseries"
         }
@@ -312,8 +300,7 @@
     "style": "dark",
     "tags": [],
     "templating": {
-        "list": [
-            {
+        "list": [{
                 "current": {
                     "selected": true,
                     "text": [
@@ -325,7 +312,7 @@
                 },
                 "datasource": {
                     "type": "prometheus",
-                    "uid": ""
+                    "uid": "XejnKaG4k"
                 },
                 "definition": "label_values(hidra_ftp_write_time{job=\"$job\"}, sample_name)",
                 "hide": 0,
@@ -351,7 +338,7 @@
                 },
                 "datasource": {
                     "type": "prometheus",
-                    "uid": ""
+                    "uid": "XejnKaG4k"
                 },
                 "definition": "label_values(hidra_ftp_write_time, job)",
                 "hide": 0,

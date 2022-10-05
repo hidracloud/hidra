@@ -1,25 +1,23 @@
 {
     "annotations": {
-        "list": [
-            {
-                "builtIn": 1,
-                "datasource": {
-                    "type": "grafana",
-                    "uid": "-- Grafana --"
-                },
-                "enable": true,
-                "hide": true,
-                "iconColor": "rgba(0, 211, 255, 1)",
-                "name": "Annotations & Alerts",
-                "target": {
-                    "limit": 100,
-                    "matchAny": false,
-                    "tags": [],
-                    "type": "dashboard"
-                },
+        "list": [{
+            "builtIn": 1,
+            "datasource": {
+                "type": "grafana",
+                "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "target": {
+                "limit": 100,
+                "matchAny": false,
+                "tags": [],
                 "type": "dashboard"
-            }
-        ]
+            },
+            "type": "dashboard"
+        }]
     },
     "editable": true,
     "fiscalYearStartMonth": 0,
@@ -27,8 +25,7 @@
     "id": 5,
     "links": [],
     "liveNow": false,
-    "panels": [
-        {
+    "panels": [{
             "collapsed": false,
             "gridPos": {
                 "h": 1,
@@ -46,7 +43,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -60,8 +57,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "dark-red",
                                 "value": null
                             },
@@ -95,26 +91,24 @@
                     "sort": "none"
                 }
             },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "builder",
-                    "expr": "hidra_sample_status{job=\"$job\", sample_name=\"$sample\"}",
-                    "legendFormat": " ",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "builder",
+                "expr": "hidra_sample_status{job=\"$job\", sample_name=\"$sample\"}",
+                "legendFormat": " ",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Statuses",
             "type": "status-history"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -124,8 +118,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "dark-red",
                                 "value": null
                             },
@@ -167,26 +160,24 @@
                 "showThresholdMarkers": true
             },
             "pluginVersion": "9.1.3",
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "code",
-                    "expr": "hidra_tls_certificate_not_after{sample_name=\"$sample\", job=\"$job\"} - time()",
-                    "legendFormat": "{{host}} | {{ subject }}",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "code",
+                "expr": "hidra_tls_certificate_not_after{sample_name=\"$sample\", job=\"$job\"} - time()",
+                "legendFormat": "{{host}} | {{ subject }}",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Time for certificate to expire",
             "type": "gauge"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -229,8 +220,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "green",
                                 "value": null
                             },
@@ -268,27 +258,25 @@
                     "sort": "none"
                 }
             },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "builder",
-                    "expr": "hidra_tls_handshake_duration_seconds{sample_name=\"$sample\", job=\"$job\"}",
-                    "hide": false,
-                    "legendFormat": "{{host}} | {{ description }} ({{sample_name}})",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "builder",
+                "expr": "hidra_tls_handshake_duration_seconds{sample_name=\"$sample\", job=\"$job\"}",
+                "hide": false,
+                "legendFormat": "{{host}} | {{ description }} ({{sample_name}})",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Handshake duration",
             "type": "timeseries"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -331,8 +319,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "green",
                                 "value": null
                             },
@@ -367,27 +354,25 @@
                     "sort": "none"
                 }
             },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "code",
-                    "expr": "hidra_tls_certificate_not_after{sample_name=\"$sample\", job=\"$job\"} * 1000",
-                    "hide": false,
-                    "legendFormat": "{{host}} | {{ subject }} | {{ description }} ({{sample_name}})",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "code",
+                "expr": "hidra_tls_certificate_not_after{sample_name=\"$sample\", job=\"$job\"} * 1000",
+                "hide": false,
+                "legendFormat": "{{host}} | {{ subject }} | {{ description }} ({{sample_name}})",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Certificate not after",
             "type": "timeseries"
         },
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": ""
+                "uid": "XejnKaG4k"
             },
             "fieldConfig": {
                 "defaults": {
@@ -430,8 +415,7 @@
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
-                        "steps": [
-                            {
+                        "steps": [{
                                 "color": "green",
                                 "value": null
                             },
@@ -466,20 +450,18 @@
                     "sort": "none"
                 }
             },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": ""
-                    },
-                    "editorMode": "code",
-                    "expr": "hidra_tls_certificate_not_before{sample_name=\"$sample\", job=\"$job\"} * 1000",
-                    "hide": false,
-                    "legendFormat": "{{host}} | {{ subject }} | {{ description }} ({{sample_name}})",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "XejnKaG4k"
+                },
+                "editorMode": "code",
+                "expr": "hidra_tls_certificate_not_before{sample_name=\"$sample\", job=\"$job\"} * 1000",
+                "hide": false,
+                "legendFormat": "{{host}} | {{ subject }} | {{ description }} ({{sample_name}})",
+                "range": true,
+                "refId": "A"
+            }],
             "title": "Certificate not before",
             "type": "timeseries"
         }
@@ -488,8 +470,7 @@
     "style": "dark",
     "tags": [],
     "templating": {
-        "list": [
-            {
+        "list": [{
                 "current": {
                     "selected": true,
                     "text": [
@@ -501,7 +482,7 @@
                 },
                 "datasource": {
                     "type": "prometheus",
-                    "uid": ""
+                    "uid": "XejnKaG4k"
                 },
                 "definition": "label_values(hidra_tls_version{job=\"$job\"}, sample_name)",
                 "hide": 0,
@@ -527,7 +508,7 @@
                 },
                 "datasource": {
                     "type": "prometheus",
-                    "uid": ""
+                    "uid": "XejnKaG4k"
                 },
                 "definition": "label_values(hidra_tls_version, job)",
                 "hide": 0,
