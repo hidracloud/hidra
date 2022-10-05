@@ -11,6 +11,7 @@ require (
 	github.com/likexian/gokit v0.25.9
 	github.com/likexian/whois v1.14.2
 	github.com/likexian/whois-parser v1.24.1
+	github.com/lixiangzhong/dnsutil v1.4.0
 	github.com/minio/minio-go/v7 v7.0.38
 	github.com/pixelbender/go-traceroute v0.0.0-20190414152342-e631ab553a80
 	github.com/prometheus/client_golang v1.13.0
@@ -25,6 +26,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
+	github.com/miekg/dns v1.1.40 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

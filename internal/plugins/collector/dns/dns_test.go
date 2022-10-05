@@ -37,4 +37,17 @@ func TestHTTPRequestParameters(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	_, err = h.RunStep(ctx, previous, &plugins.Step{
+		Name: "askRegisterToNS",
+		Args: map[string]string{
+			"ns":   "10.0.0.0",
+			"type": "a",
+			"host": "testss",
+		},
+	})
+
+	if err == nil {
+		t.Error("Should return error")
+	}
 }

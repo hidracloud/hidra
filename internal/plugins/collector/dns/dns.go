@@ -15,6 +15,8 @@ import (
 	whoisparser "github.com/likexian/whois-parser"
 
 	"github.com/StalkR/dnssec-analyzer/dnssec"
+
+	"github.com/lixiangzhong/dnsutil"
 )
 
 // DNS represents a DNS plugin.
@@ -115,6 +117,58 @@ func (p *DNS) dnsSecShouldBeValid(ctx2 context.Context, args map[string]string, 
 	return nil, nil
 }
 
+// askRegisterToNS registers the plugin to the plugin manager.
+func (p *DNS) askRegisterToNS(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	var dig dnsutil.Dig
+
+	ns := args["ns"]
+	ntype := strings.ToLower(args["type"])
+	host := args["host"]
+
+	err := dig.At(ns)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch ntype {
+	case "a":
+		a, err := dig.A(host)
+		if err != nil {
+			return nil, err
+		}
+		if len(a) == 0 {
+			return nil, fmt.Errorf("no A record found")
+		}
+	case "aaaa":
+		aaaa, err := dig.AAAA(host)
+		if err != nil {
+			return nil, err
+		}
+		if len(aaaa) == 0 {
+			return nil, fmt.Errorf("no AAAA record found")
+		}
+	case "cname":
+		cname, err := dig.CNAME(host)
+		if err != nil {
+			return nil, err
+		}
+		if len(cname) == 0 {
+			return nil, fmt.Errorf("no CNAME record found")
+		}
+	case "mx":
+		mx, err := dig.MX(host)
+		if err != nil {
+			return nil, err
+		}
+		if len(mx) == 0 {
+			return nil, fmt.Errorf("no MX record found")
+		}
+	}
+	return nil, fmt.Errorf("invalid type")
+
+}
+
 // Init initializes the plugin.
 func (p *DNS) Init() {
 	p.Primitives()
@@ -166,6 +220,29 @@ func (p *DNS) Init() {
 			},
 		},
 		Fn: p.dnsSecShouldBeValid,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "askRegisterToNS",
+		Description: "Ask NS about the domain",
+		Params: []plugins.StepParam{
+			{
+				Name:        "ns",
+				Description: "The NS to ask",
+				Optional:    false,
+			},
+			{
+				Name:        "type",
+				Description: "The type of the query",
+				Optional:    false,
+			},
+			{
+				Name:        "host",
+				Description: "The host to ask",
+				Optional:    false,
+			},
+		},
+		Fn: p.askRegisterToNS,
 	})
 
 }
