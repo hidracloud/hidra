@@ -117,8 +117,8 @@ func (p *DNS) dnsSecShouldBeValid(ctx2 context.Context, args map[string]string, 
 	return nil, nil
 }
 
-// askRegisterToNS registers the plugin to the plugin manager.
-func (p *DNS) askRegisterToNS(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+// dig registers the plugin to the plugin manager.
+func (p *DNS) dig(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	var dig dnsutil.Dig
 
 	ns := args["ns"]
@@ -164,8 +164,10 @@ func (p *DNS) askRegisterToNS(ctx2 context.Context, args map[string]string, step
 		if len(mx) == 0 {
 			return nil, fmt.Errorf("no MX record found")
 		}
+	default:
+		return nil, fmt.Errorf("invalid type %s", ntype)
 	}
-	return nil, fmt.Errorf("invalid type")
+	return nil, nil
 
 }
 
@@ -223,7 +225,7 @@ func (p *DNS) Init() {
 	})
 
 	p.RegisterStep(&plugins.StepDefinition{
-		Name:        "askRegisterToNS",
+		Name:        "dig",
 		Description: "Ask NS about the domain",
 		Params: []plugins.StepParam{
 			{
@@ -242,7 +244,7 @@ func (p *DNS) Init() {
 				Optional:    false,
 			},
 		},
-		Fn: p.askRegisterToNS,
+		Fn: p.dig,
 	})
 
 }

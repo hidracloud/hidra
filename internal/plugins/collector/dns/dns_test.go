@@ -39,7 +39,7 @@ func TestHTTPRequestParameters(t *testing.T) {
 	}
 
 	_, err = h.RunStep(ctx, previous, &plugins.Step{
-		Name: "askRegisterToNS",
+		Name: "dig",
 		Args: map[string]string{
 			"ns":   "10.0.0.0",
 			"type": "a",

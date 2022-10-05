@@ -1,0 +1,15 @@
+description: "This is a sample to test the DNS plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+variables:
+  - ns: 1.1.1.1
+  - ns: 8.8.8.8
+steps:
+  - plugin: dns
+    action: dig
+    parameters:
+      ns: "{{ .Variables.ns }}"
+      type: A
+      host: hidra.cloud
