@@ -114,7 +114,7 @@ var testCmd = &cobra.Command{
 
 			infoTable := [][]string{
 				{"Sample", sample},
-				{"Error", fmt.Sprintf("%v", err)},
+				{"Error", fmt.Sprintf("%v", result.Error)},
 				{"Result", resultEmoji},
 			}
 

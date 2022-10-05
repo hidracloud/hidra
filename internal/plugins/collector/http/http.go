@@ -327,7 +327,7 @@ func (p *HTTP) addHTTPHeader(ctx2 context.Context, args map[string]string, steps
 func (p *HTTP) setUserAgent(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	return p.addHTTPHeader(ctx, map[string]string{
 		"key":   "User-Agent",
-		"value": args["userAgent"],
+		"value": args["user-agent"],
 	}, stepsgen)
 }
 
