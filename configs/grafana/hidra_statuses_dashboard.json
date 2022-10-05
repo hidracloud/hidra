@@ -1,23 +1,25 @@
 {
     "annotations": {
-        "list": [{
-            "builtIn": 1,
-            "datasource": {
-                "type": "grafana",
-                "uid": "-- Grafana --"
-            },
-            "enable": true,
-            "hide": true,
-            "iconColor": "rgba(0, 211, 255, 1)",
-            "name": "Annotations & Alerts",
-            "target": {
-                "limit": 100,
-                "matchAny": false,
-                "tags": [],
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "target": {
+                    "limit": 100,
+                    "matchAny": false,
+                    "tags": [],
+                    "type": "dashboard"
+                },
                 "type": "dashboard"
-            },
-            "type": "dashboard"
-        }]
+            }
+        ]
     },
     "editable": true,
     "fiscalYearStartMonth": 0,
@@ -25,71 +27,76 @@
     "id": 1,
     "links": [],
     "liveNow": false,
-    "panels": [{
-        "datasource": {
-            "type": "prometheus",
-            "uid": "XejnKaG4k"
-        },
-        "fieldConfig": {
-            "defaults": {
-                "color": {
-                    "mode": "thresholds"
-                },
-                "custom": {
-                    "fillOpacity": 70,
-                    "lineWidth": 1
-                },
-                "mappings": [],
-                "thresholds": {
-                    "mode": "absolute",
-                    "steps": [{
-                            "color": "dark-red",
-                            "value": null
-                        },
-                        {
-                            "color": "dark-green",
-                            "value": 1
-                        }
-                    ]
-                }
-            },
-            "overrides": []
-        },
-        "gridPos": {
-            "h": 18,
-            "w": 24,
-            "x": 0,
-            "y": 0
-        },
-        "id": 2,
-        "options": {
-            "colWidth": 0.9,
-            "legend": {
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-            },
-            "rowHeight": 0.9,
-            "showValue": "never",
-            "tooltip": {
-                "mode": "single",
-                "sort": "none"
-            }
-        },
-        "targets": [{
+    "panels": [
+        {
             "datasource": {
                 "type": "prometheus",
-                "uid": "XejnKaG4k"
+                "uid": ""
             },
-            "editorMode": "builder",
-            "expr": "hidra_sample_status",
-            "legendFormat": "{{description}} ({{sample_name}})",
-            "range": true,
-            "refId": "A"
-        }],
-        "title": "Statuses",
-        "type": "status-history"
-    }],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "fillOpacity": 70,
+                        "lineWidth": 1
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "dark-red",
+                                "value": null
+                            },
+                            {
+                                "color": "dark-green",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 18,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 2,
+            "options": {
+                "colWidth": 0.9,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "rowHeight": 0.9,
+                "showValue": "never",
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": ""
+                    },
+                    "editorMode": "builder",
+                    "expr": "hidra_sample_status",
+                    "legendFormat": "{{description}} ({{sample_name}})",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Statuses",
+            "type": "status-history"
+        }
+    ],
     "schemaVersion": 37,
     "style": "dark",
     "tags": [],
