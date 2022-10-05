@@ -176,6 +176,7 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 	allReports := []*report.Report{}
 
 	stepsgen := make(map[string]any, 0)
+	stepsgen[misc.ContextAttachment] = make(map[string][]byte)
 	stepsgen[misc.ContextTimeout] = sample.Timeout
 
 	for _, variables := range sample.Variables {

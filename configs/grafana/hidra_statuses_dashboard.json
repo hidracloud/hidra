@@ -56,7 +56,7 @@
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
     "id": null,
-    "iteration": 1664962083430,
+    "iteration": 1664963509417,
     "links": [],
     "liveNow": false,
     "panels": [
@@ -119,9 +119,9 @@
                         "type": "prometheus",
                         "uid": "${DS_PROMETHEUS}"
                     },
-                    "editorMode": "builder",
-                    "expr": "hidra_sample_status{sample_name=~\"$sample\"}",
-                    "legendFormat": "{{description}} ({{sample_name}})",
+                    "editorMode": "code",
+                    "expr": "bottomk(10, min(hidra_sample_status{sample_name=~\"$sample\"}) by (sample_name, description))",
+                    "legendFormat": "{{description}} ({{sample_name}}) {{ job }}",
                     "range": true,
                     "refId": "A"
                 }
@@ -160,13 +160,13 @@
         ]
     },
     "time": {
-        "from": "now-12h",
+        "from": "now-15m",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Hidra Statuses",
     "uid": "oot7K-M4k",
-    "version": 1,
+    "version": 6,
     "weekStart": ""
 }
