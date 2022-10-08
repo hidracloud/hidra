@@ -330,7 +330,7 @@ func (p *HTTP) onFailure(ctx2 context.Context, args map[string]string, stepsgen 
 	if _, ok := stepsgen[misc.ContextAttachment].(map[string][]byte); ok {
 		// get output from context
 		if _, ok := stepsgen[misc.ContextOutput].([]byte); !ok {
-			return nil, errContextNotFound
+			return nil, nil
 		}
 
 		if output, ok := stepsgen[misc.ContextOutput].([]byte); ok {
