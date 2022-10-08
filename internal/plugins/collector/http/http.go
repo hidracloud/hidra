@@ -24,8 +24,12 @@ var (
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
+		Timeout: 60 * time.Second,
 		Transport: &http.Transport{
-			MaxIdleConns: 100,
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 100,
+			IdleConnTimeout:     10 * time.Second,
+			DisableKeepAlives:   true,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
