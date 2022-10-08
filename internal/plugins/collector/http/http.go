@@ -336,38 +336,6 @@ func (p *HTTP) onFailure(ctx2 context.Context, args map[string]string, stepsgen 
 		if output, ok := stepsgen[misc.ContextOutput].([]byte); ok {
 			stepsgen[misc.ContextAttachment].(map[string][]byte)["response.html"] = output
 		}
-
-		// create a tmp file
-		/*
-			tmpFile, err := os.CreateTemp("", "screenshot-*.png")
-
-			if err != nil {
-				return nil, err
-			}
-
-			// take an screenshot an save to tmp file
-			err = utils.TakeScreenshotWithChromedp(stepsgen[misc.ContextHTTPURL].(string), tmpFile.Name())
-
-			if err != nil {
-				return nil, err
-			}
-
-			// read tmp file
-			data, err := os.ReadFile(tmpFile.Name())
-
-			if err != nil {
-				return nil, err
-			}
-
-			// add screenshot to attachments
-			stepsgen[misc.ContextAttachment).(map[string][]byte)["screenshot.png"] = data
-
-			// remove tmp file
-			err = os.Remove(tmpFile.Name())
-
-			if err != nil {
-				return nil, err
-			}*/
 	}
 	// Generate an screenshot of current response
 	return nil, nil

@@ -92,7 +92,7 @@ func (p *BasePlugin) RunStep(ctx context.Context, stepsgen map[string]any, step 
 		return metrics, fmt.Errorf("step %s should have failed", step.Name)
 	}
 
-	if err != nil {
+	if err != nil && step.Name != "onFailure" {
 		stepsgen[misc.ContextLastError] = err
 		step.Name = "onFailure"
 
