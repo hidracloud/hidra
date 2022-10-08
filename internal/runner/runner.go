@@ -68,6 +68,18 @@ func (s *StepParamTemplate) Replace(m map[string]string) (map[string]string, err
 	return result, nil
 }
 
+// RestoreOriginParamsMetrics replaces the parameters in the metrics.
+func RestoreOriginParamsMetrics(metrics []*metrics.Metric, params map[string]string) []*metrics.Metric {
+	for _, metric := range metrics {
+		for k, v := range params {
+			if _, ok := metric.Labels[k]; ok {
+				metric.Labels[k] = v
+			}
+		}
+	}
+	return metrics
+}
+
 // RunWithVariables runs the step with variables.
 func RunWithVariables(ctx context.Context, variables map[string]string, stepsgen map[string]any, sample *config.SampleConfig) ([]*metrics.Metric, *report.Report, error) {
 	var allMetrics, newMetrics []*metrics.Metric
@@ -135,13 +147,13 @@ func RunWithVariables(ctx context.Context, variables map[string]string, stepsgen
 
 		stepParamTemplate.Context = ctx
 
-		step.Parameters, err = stepParamTemplate.Replace(step.Parameters)
+		params, err := stepParamTemplate.Replace(step.Parameters)
 
 		if err != nil {
 			return nil, nil, err
 		}
 
-		for k, v := range step.Parameters {
+		for k, v := range params {
 			log.Debugf("|__%s %s: %v", strings.Repeat("_", depthSize), k, v)
 		}
 
@@ -160,11 +172,12 @@ func RunWithVariables(ctx context.Context, variables map[string]string, stepsgen
 
 		newMetrics, err = plugin.RunStep(ctx, stepsgen, &plugins.Step{
 			Name:   step.Action,
-			Args:   step.Parameters,
+			Args:   params,
 			Negate: step.Negate,
 		})
 
-		allMetrics = append(allMetrics, newMetrics...)
+		originMetrics := RestoreOriginParamsMetrics(newMetrics, step.Parameters)
+		allMetrics = append(allMetrics, originMetrics...)
 
 		if err != nil {
 			err = fmt.Errorf("%s#%d: %s", sample.Path, stepCounter, err)

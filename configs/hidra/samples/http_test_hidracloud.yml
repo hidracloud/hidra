@@ -7,7 +7,7 @@ steps:
   - plugin: http
     action: request
     parameters:
-      url: https://hidra.cloud/
+      url: https://hidra.cloud/?timestamp={{ .Date.Unix }}
   - plugin: string
     action: outputShouldContain
     parameters:
