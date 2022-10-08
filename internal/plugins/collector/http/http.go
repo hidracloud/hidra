@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -328,11 +329,12 @@ func (p *HTTP) onFailure(ctx2 context.Context, args map[string]string, stepsgen 
 	if _, ok := stepsgen[misc.ContextAttachment].(map[string][]byte); ok {
 		// get output from context
 		if _, ok := stepsgen[misc.ContextOutput].([]byte); !ok {
-			return nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextOutput)
+			return nil, errors.New("context doesn't have the expected")
 		}
 
-		output := stepsgen[misc.ContextOutput].([]byte)
-		stepsgen[misc.ContextAttachment].(map[string][]byte)["response.html"] = output
+		if output, ok := stepsgen[misc.ContextOutput].([]byte); ok {
+			stepsgen[misc.ContextAttachment].(map[string][]byte)["response.html"] = output
+		}
 
 		// create a tmp file
 		/*
