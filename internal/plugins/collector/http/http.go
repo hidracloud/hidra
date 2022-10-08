@@ -19,6 +19,29 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/utils"
 )
 
+var (
+	httpClient = &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Transport: &http.Transport{
+			MaxIdleConns: 100,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				d := &net.Dialer{}
+
+				if _, ip := ctx.Value(misc.ContextHTTPForceIP).(string); ip {
+					addr = fmt.Sprintf("%s:%s", ctx.Value(misc.ContextHTTPForceIP), strings.Split(addr, ":")[1])
+				}
+
+				return d.DialContext(ctx, network, addr)
+			},
+		},
+	}
+)
+
 // HTTP represents a HTTP plugin.
 type HTTP struct {
 	plugins.BasePlugin
@@ -32,56 +55,6 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 
 	if _, ok := c["body"]; ok {
 		body = c["body"]
-	}
-
-	var clientJar http.CookieJar
-	if sharedJar, ok := stepsgen[misc.ContextSharedJar].(http.CookieJar); ok {
-		clientJar = sharedJar
-	} else {
-		stepsgen[misc.ContextSharedJar] = clientJar
-	}
-
-	tlsSkipInsecure := false
-
-	if _, ok := stepsgen[misc.ContextHTTPTlsInsecureSkipVerify].(bool); ok {
-		tlsSkipInsecure = stepsgen[misc.ContextHTTPTlsInsecureSkipVerify].(bool)
-	}
-
-	var httpClient *http.Client
-
-	if _, ok := stepsgen[misc.ContextHTTPClient].(*http.Client); ok {
-		httpClient = stepsgen[misc.ContextHTTPClient].(*http.Client)
-	} else {
-		timeout := 30 * time.Second
-
-		if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
-			timeout = stepsgen[misc.ContextTimeout].(time.Duration)
-		}
-
-		httpClient = &http.Client{
-			Jar: clientJar,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-			Timeout: timeout,
-			Transport: &http.Transport{
-				DisableKeepAlives: true,
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: tlsSkipInsecure,
-				},
-				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-					d := &net.Dialer{}
-
-					if _, ok := stepsgen[misc.ContextHTTPForceIP].(string); ok {
-						addr = fmt.Sprintf("%s:%s", stepsgen[misc.ContextHTTPForceIP], strings.Split(addr, ":")[1])
-					}
-
-					return d.DialContext(ctx, network, addr)
-				},
-			},
-		}
-
-		stepsgen[misc.ContextHTTPClient] = httpClient
 	}
 
 	dnsStartTime := time.Time{}
@@ -119,6 +92,20 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
 			tlsStopTime = time.Now()
 		},
+	}
+
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	if _, ok := stepsgen[misc.ContextHTTPForceIP].(string); ok {
+		// nolint:staticcheck
+		ctx = context.WithValue(ctx, misc.ContextHTTPForceIP, stepsgen[misc.ContextHTTPForceIP])
 	}
 
 	ctx = httptrace.WithClientTrace(ctx, clientTrace)
@@ -380,14 +367,6 @@ func (p *HTTP) onFailure(ctx2 context.Context, args map[string]string, stepsgen 
 	return nil, nil
 }
 
-// onClose implements the plugins.Plugin interface.
-func (p *HTTP) onClose(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
-	if client, ok := stepsgen[misc.ContextHTTPClient].(*http.Client); ok {
-		client.CloseIdleConnections()
-	}
-	return nil, nil
-}
-
 // Init initializes the plugin.
 func (p *HTTP) Init() {
 	p.Primitives()
@@ -475,13 +454,6 @@ func (p *HTTP) Init() {
 		Description: "Executes the steps if the previous step failed",
 		Fn:          p.onFailure,
 	})
-
-	p.RegisterStep(&plugins.StepDefinition{
-		Name:        "onClose",
-		Description: "Executes the steps if the previous step succeeded",
-		Fn:          p.onClose,
-	})
-
 }
 
 // Init initializes the plugin.

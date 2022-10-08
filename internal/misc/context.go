@@ -15,12 +15,8 @@ var (
 	ContextFTPHost = "ftp.host"
 	// ContextOutput is the context key for the output.
 	ContextOutput = "output"
-	// ContextSharedJar is the context key for the shared jar.
-	ContextSharedJar = "http.sharedjar"
 	// ContextHTTPTlsInsecureSkipVerify is the context key for the TLS insecure skip verify.
 	ContextHTTPTlsInsecureSkipVerify = "http.tlsinsecureskipverify"
-	// ContextHTTPClient is the context key for the HTTP client.
-	ContextHTTPClient = "http.client"
 	// ContextHTTPForceIP is the context key for the HTTP force IP.
 	ContextHTTPForceIP = "http.forceip"
 	// ContextConnectionIP is the context key for the connection IP.
