@@ -30,7 +30,6 @@ var (
 			MaxIdleConns:        100,
 			MaxIdleConnsPerHost: 100,
 			IdleConnTimeout:     10 * time.Second,
-			DisableKeepAlives:   true,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
