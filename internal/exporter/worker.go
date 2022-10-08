@@ -25,15 +25,18 @@ var (
 
 	// runningSamples is the running samples
 	sampleRunningTime map[string]*atomic.Uint64
+	// sampleRunningTimeLock is the sample running time lock
+	sampleRunningTimeMutex *sync.RWMutex
 
 	// lastSchedulerRun is the last scheduler run
 	lastRun map[string]time.Time
-
-	// lastRunMutex is the mutex to protect the last scheduler run
+	// lastRunMutex is the last run mutex
 	lastRunMutex *sync.RWMutex
 
 	// prometheusMetricStore is the prometheus metric store
 	prometheusMetricStore = make(map[string]*prometheus.GaugeVec)
+	// prometheusMetricStoreMutex is the prometheus metric store mutex
+	prometheusMetricStoreMutex = &sync.RWMutex{}
 
 	// prometheusStatusMetricStore is the prometheus status metric store
 	prometheusStatusMetric *prometheus.GaugeVec
@@ -46,8 +49,8 @@ var (
 func InitializeWorker(config *config.ExporterConfig) {
 	runningTime = &atomic.Uint64{}
 	sampleRunningTime = make(map[string]*atomic.Uint64)
+	sampleRunningTimeMutex = &sync.RWMutex{}
 	lastRun = make(map[string]time.Time)
-	lastRunMutex = &sync.RWMutex{}
 }
 
 // updateMetrics updates the metrics
@@ -119,8 +122,8 @@ func createLabels(metric *metrics.Metric, sample *config.SampleConfig) prometheu
 
 // initializePrometheusMetrics initializes the prometheus metrics
 func initializePrometheusMetrics(metric *metrics.Metric) *prometheus.GaugeVec {
-	lastRunMutex.RLock()
-	defer lastRunMutex.RUnlock()
+	prometheusMetricStoreMutex.RLock()
+	defer prometheusMetricStoreMutex.RUnlock()
 	if _, ok := prometheusMetricStore[metric.Name]; !ok {
 		metricLabels := make([]string, 0)
 
@@ -204,14 +207,16 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 				runningTime.Add(uint64(time.Since(startTime).Milliseconds()))
 
-				lastRunMutex.Lock()
-
+				sampleRunningTimeMutex.Lock()
 				if _, ok := sampleRunningTime[sample.Name]; !ok {
 					sampleRunningTime[sample.Name] = &atomic.Uint64{}
 				}
 
 				randomOffset := time.Duration(rand.Intn(int(sample.Interval.Seconds()))) * time.Second
 				sampleRunningTime[sample.Name].Add(uint64(time.Since(startTime).Milliseconds()))
+				sampleRunningTimeMutex.Unlock()
+
+				lastRunMutex.Lock()
 				lastRun[sample.Name] = time.Now().Add(randomOffset)
 				lastRunMutex.Unlock()
 

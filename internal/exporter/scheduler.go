@@ -78,10 +78,11 @@ func refreshSamples(cnf *config.ExporterConfig) {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(configSamples), func(i, j int) { configSamples[i], configSamples[j] = configSamples[j], configSamples[i] })
 
+	prometheusMetricStoreMutex.RLock()
 	for _, metric := range prometheusMetricStore {
 		metric.Reset()
 	}
-
+	prometheusMetricStoreMutex.RUnlock()
 	if prometheusLastUpdate != nil {
 		prometheusLastUpdate.Reset()
 	}
@@ -138,7 +139,9 @@ func scheduleDecide(sample *config.SampleConfig, executionDurationAvg, execution
 		return true
 	}
 
+	sampleRunningTimeMutex.RLock()
 	currentSampleRunningTime, exists := sampleRunningTime[sample.Name]
+	sampleRunningTimeMutex.RUnlock()
 
 	if !exists {
 		log.Debugf("Sample %s has never been executed, scheduling...", sample.Name)
@@ -186,6 +189,7 @@ func enqueueSamples(config *config.ExporterConfig) {
 // InitializeScheduler initializes the scheduler
 func InitializeScheduler(cnf *config.ExporterConfig) {
 	lastRun = make(map[string]time.Time)
+	lastRunMutex = &sync.RWMutex{}
 	samplesMutex = &sync.RWMutex{}
 	refreshSamples(cnf)
 	refreshSampleCommonTags()
