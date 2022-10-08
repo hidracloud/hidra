@@ -107,7 +107,16 @@ func RunWithVariables(ctx context.Context, variables map[string]string, stepsgen
 		}
 
 		for step := range stepsgen {
-			delete(stepsgen, step)
+			switch step {
+			case misc.ContextAttachment:
+				attachments := stepsgen[step].(map[string][]byte)
+				for name := range attachments {
+					delete(attachments, name)
+				}
+				delete(stepsgen, step)
+			default:
+				delete(stepsgen, step)
+			}
 		}
 	}()
 

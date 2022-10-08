@@ -44,6 +44,8 @@ var (
 			},
 		},
 	}
+
+	errContextNotFound = errors.New("context doesn't have the expected")
 )
 
 // HTTP represents a HTTP plugin.
@@ -243,7 +245,7 @@ func (p *HTTP) statusCodeShouldBe(ctx2 context.Context, args map[string]string, 
 	// get context for current step
 
 	if _, ok := stepsgen[misc.ContextHTTPResponse].(*http.Response); !ok {
-		return nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse)
+		return nil, errContextNotFound
 	}
 
 	resp := stepsgen[misc.ContextHTTPResponse].(*http.Response)
@@ -268,7 +270,7 @@ func (p *HTTP) bodyShouldContain(ctx2 context.Context, args map[string]string, s
 	// get context for current step
 
 	if _, ok := stepsgen[misc.ContextOutput].([]byte); !ok {
-		return nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse)
+		return nil, errContextNotFound
 	}
 
 	output := utils.BytesToLowerCase(stepsgen[misc.ContextOutput].([]byte))
@@ -286,7 +288,7 @@ func (p *HTTP) shouldRedirectTo(ctx2 context.Context, args map[string]string, st
 
 	// get context for current step
 	if _, ok := stepsgen[misc.ContextHTTPResponse].(*http.Response); !ok {
-		return nil, fmt.Errorf("context doesn't have the expected value %s", misc.ContextHTTPResponse)
+		return nil, errContextNotFound
 	}
 
 	resp := stepsgen[misc.ContextHTTPResponse].(*http.Response)
@@ -328,45 +330,44 @@ func (p *HTTP) onFailure(ctx2 context.Context, args map[string]string, stepsgen 
 	if _, ok := stepsgen[misc.ContextAttachment].(map[string][]byte); ok {
 		// get output from context
 		if _, ok := stepsgen[misc.ContextOutput].([]byte); !ok {
-			return nil, errors.New("context doesn't have the expected")
+			return nil, errContextNotFound
 		}
+
+		if output, ok := stepsgen[misc.ContextOutput].([]byte); ok {
+			stepsgen[misc.ContextAttachment].(map[string][]byte)["response.html"] = output
+		}
+
+		// create a tmp file
 		/*
-			if output, ok := stepsgen[misc.ContextOutput].([]byte); ok {
-				stepsgen[misc.ContextAttachment].(map[string][]byte)["response.html"] = output
+			tmpFile, err := os.CreateTemp("", "screenshot-*.png")
+
+			if err != nil {
+				return nil, err
 			}
 
-			// create a tmp file
+			// take an screenshot an save to tmp file
+			err = utils.TakeScreenshotWithChromedp(stepsgen[misc.ContextHTTPURL].(string), tmpFile.Name())
 
+			if err != nil {
+				return nil, err
+			}
 
-				tmpFile, err := os.CreateTemp("", "screenshot-*.png")
+			// read tmp file
+			data, err := os.ReadFile(tmpFile.Name())
 
-				if err != nil {
-					return nil, err
-				}
+			if err != nil {
+				return nil, err
+			}
 
-				// take an screenshot an save to tmp file
-				err = utils.TakeScreenshotWithChromedp(stepsgen[misc.ContextHTTPURL].(string), tmpFile.Name())
+			// add screenshot to attachments
+			stepsgen[misc.ContextAttachment).(map[string][]byte)["screenshot.png"] = data
 
-				if err != nil {
-					return nil, err
-				}
+			// remove tmp file
+			err = os.Remove(tmpFile.Name())
 
-				// read tmp file
-				data, err := os.ReadFile(tmpFile.Name())
-
-				if err != nil {
-					return nil, err
-				}
-
-				// add screenshot to attachments
-				stepsgen[misc.ContextAttachment).(map[string][]byte)["screenshot.png"] = data
-
-				// remove tmp file
-				err = os.Remove(tmpFile.Name())
-
-				if err != nil {
-					return nil, err
-				}*/
+			if err != nil {
+				return nil, err
+			}*/
 	}
 	// Generate an screenshot of current response
 	return nil, nil
