@@ -367,6 +367,12 @@ func (p *HTTP) onFailure(ctx2 context.Context, args map[string]string, stepsgen 
 	return nil, nil
 }
 
+// onClose implements the plugins.Plugin interface.
+func (p *HTTP) onClose(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	httpClient.CloseIdleConnections()
+	return nil, nil
+}
+
 // Init initializes the plugin.
 func (p *HTTP) Init() {
 	p.Primitives()
@@ -453,6 +459,12 @@ func (p *HTTP) Init() {
 		Name:        "onFailure",
 		Description: "Executes the steps if the previous step failed",
 		Fn:          p.onFailure,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "onClose",
+		Description: "Executes the steps when the test is finished",
+		Fn:          p.onClose,
 	})
 }
 
