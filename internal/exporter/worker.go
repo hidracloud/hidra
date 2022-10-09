@@ -11,6 +11,7 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
+	"github.com/hidracloud/hidra/v3/internal/report"
 	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -154,6 +155,50 @@ func RunSampleWithTimeout(ctx context.Context, sample *config.SampleConfig, time
 	return runner.RunSample(ctx, sample)
 }
 
+// RunOneWorker runs one worker
+func RunOneWorker(worker int, config *config.ExporterConfig) {
+	for {
+		sample := <-samplesJobs
+		startTime := time.Now()
+		log.Debugf("Running sample %s, with description %s from worker %d", sample.Name, sample.Description, worker)
+
+		// Run the sample
+		ctx, cancel := context.WithCancel(context.Background())
+		result := RunSampleWithTimeout(ctx, sample, sample.Timeout)
+
+		// Update the metrics
+		updateMetrics(result.Metrics, sample, result.Error)
+
+		if result.Error != nil {
+			log.Debugf("Saving report %d for sample %s", len(result.Reports), sample.Name)
+			report.Save(result.Reports)
+		}
+
+		runningTime.Add(uint64(time.Since(startTime).Milliseconds()))
+
+		sampleRunningTimeMutex.Lock()
+		if _, ok := sampleRunningTime[sample.Name]; !ok {
+			sampleRunningTime[sample.Name] = &atomic.Uint64{}
+		}
+
+		randomOffset := time.Duration(rand.Intn(int(sample.Interval.Seconds()))) * time.Second
+		sampleRunningTime[sample.Name].Add(uint64(time.Since(startTime).Milliseconds()))
+		sampleRunningTimeMutex.Unlock()
+
+		lastRunMutex.Lock()
+		lastRun[sample.Name] = time.Now().Add(randomOffset)
+		lastRunMutex.Unlock()
+
+		if time.Since(startTime) > 30*time.Second {
+			log.Warnf("Sample %s took more than a minute from worker %d", sample.Name, worker)
+		}
+
+		cancel()
+
+		time.Sleep(config.WorkerConfig.SleepBetweenJobs)
+	}
+}
+
 // RunWorkers runs the workers
 func RunWorkers(cnf *config.ExporterConfig) {
 
@@ -181,53 +226,6 @@ func RunWorkers(cnf *config.ExporterConfig) {
 	prometheus.MustRegister(prometheusStatusMetric)
 
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
-		go func(worker int) {
-			for {
-				sample := <-samplesJobs
-				startTime := time.Now()
-				log.Debugf("Running sample %s, with description %s from worker %d", sample.Name, sample.Description, worker)
-
-				// Run the sample
-				ctx, cancel := context.WithCancel(context.Background())
-				result := RunSampleWithTimeout(ctx, sample, sample.Timeout)
-
-				// Update the metrics
-				updateMetrics(result.Metrics, sample, result.Error)
-
-				if result.Error != nil {
-					log.Debugf("Saving report %d for sample %s", len(result.Reports), sample.Name)
-					for _, oneReport := range result.Reports {
-						rErr := oneReport.Save()
-
-						if rErr != nil {
-							log.Errorf("Error saving report: %s", rErr)
-						}
-					}
-				}
-
-				runningTime.Add(uint64(time.Since(startTime).Milliseconds()))
-
-				sampleRunningTimeMutex.Lock()
-				if _, ok := sampleRunningTime[sample.Name]; !ok {
-					sampleRunningTime[sample.Name] = &atomic.Uint64{}
-				}
-
-				randomOffset := time.Duration(rand.Intn(int(sample.Interval.Seconds()))) * time.Second
-				sampleRunningTime[sample.Name].Add(uint64(time.Since(startTime).Milliseconds()))
-				sampleRunningTimeMutex.Unlock()
-
-				lastRunMutex.Lock()
-				lastRun[sample.Name] = time.Now().Add(randomOffset)
-				lastRunMutex.Unlock()
-
-				if time.Since(startTime) > 30*time.Second {
-					log.Warnf("Sample %s took more than a minute from worker %d", sample.Name, worker)
-				}
-
-				cancel()
-
-				time.Sleep(cnf.WorkerConfig.SleepBetweenJobs)
-			}
-		}(i)
+		go RunOneWorker(i, cnf)
 	}
 }

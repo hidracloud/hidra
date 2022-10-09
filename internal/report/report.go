@@ -333,3 +333,18 @@ func (r *Report) Save() error {
 
 	return r.SaveFile()
 }
+
+// Save saves an slice of reports to a file.
+func Save(reports []*Report) {
+	if !IsEnabled {
+		return
+	}
+
+	for _, oneReport := range reports {
+		rErr := oneReport.Save()
+
+		if rErr != nil {
+			log.Errorf("Error saving report: %s", rErr)
+		}
+	}
+}
