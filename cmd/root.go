@@ -21,6 +21,9 @@ import (
 var (
 	exitOnError bool
 	outputPath  string
+
+	// configNotFoundErr is the error returned when the config file is not found.
+	configNotFoundErr = "config file not found"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -54,7 +57,7 @@ var exporterCmd = &cobra.Command{
 		exporterConf, err := config.LoadExporterConfigFromFile(confPath)
 
 		if err != nil {
-			log.Fatal("Error loading config: ", err)
+			log.Fatal(configNotFoundErr, err)
 		}
 
 		// Set log level
@@ -96,7 +99,7 @@ var testCmd = &cobra.Command{
 			sampleConf, err := config.LoadSampleConfigFromFile(sample)
 
 			if err != nil {
-				log.Fatal("Error loading config: ", err)
+				log.Fatal(configNotFoundErr, err)
 			}
 
 			ctx := context.TODO()

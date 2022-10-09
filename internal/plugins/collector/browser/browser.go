@@ -17,6 +17,10 @@ import (
 
 var (
 	errPluginNotInitialized = errors.New("plugin not initialized")
+	// selectorDesc describes the selector primitive.
+	selectorDesc = "Selector of the element"
+	// selectorTypeDesc describes the selectorType primitive.
+	selectorTypeDesc = "Selector type"
 )
 
 // Browser represents a Browser plugin.
@@ -216,12 +220,12 @@ func (p *Browser) Init() {
 		Params: []plugins.StepParam{
 			{
 				Name:        "selector",
-				Description: "Selector of the element",
+				Description: selectorDesc,
 				Optional:    false,
 			},
 			{
 				Name:        "selectorBy",
-				Description: "Selector type",
+				Description: selectorTypeDesc,
 				Optional:    true,
 			},
 			{
@@ -239,12 +243,12 @@ func (p *Browser) Init() {
 		Params: []plugins.StepParam{
 			{
 				Name:        "selector",
-				Description: "Selector of the element",
+				Description: selectorDesc,
 				Optional:    false,
 			},
 			{
 				Name:        "selectorBy",
-				Description: "Selector type",
+				Description: selectorTypeDesc,
 				Optional:    true,
 			},
 			{
@@ -262,12 +266,12 @@ func (p *Browser) Init() {
 		Params: []plugins.StepParam{
 			{
 				Name:        "selector",
-				Description: "Selector of the element",
+				Description: selectorDesc,
 				Optional:    false,
 			},
 			{
 				Name:        "selectorBy",
-				Description: "Selector type",
+				Description: selectorTypeDesc,
 				Optional:    true,
 			},
 		},
@@ -280,12 +284,12 @@ func (p *Browser) Init() {
 		Params: []plugins.StepParam{
 			{
 				Name:        "selector",
-				Description: "Selector of the element",
+				Description: selectorDesc,
 				Optional:    false,
 			},
 			{
 				Name:        "selectorBy",
-				Description: "Selector type",
+				Description: selectorTypeDesc,
 				Optional:    true,
 			},
 		},
