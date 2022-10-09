@@ -10,6 +10,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/utils"
+	"github.com/miekg/dns"
 
 	"github.com/likexian/whois"
 	whoisparser "github.com/likexian/whois-parser"
@@ -131,41 +132,35 @@ func (p *DNS) dig(ctx2 context.Context, args map[string]string, stepsgen map[str
 		return nil, err
 	}
 
+	results := 0
+
 	switch ntype {
 	case "a":
-		a, err := dig.A(host)
-		if err != nil {
-			return nil, err
-		}
-		if len(a) == 0 {
-			return nil, fmt.Errorf("no A record found")
-		}
+		var a []*dns.A
+		a, err = dig.A(host)
+		results = len(a)
 	case "aaaa":
-		aaaa, err := dig.AAAA(host)
-		if err != nil {
-			return nil, err
-		}
-		if len(aaaa) == 0 {
-			return nil, fmt.Errorf("no AAAA record found")
-		}
+		var aaaa []*dns.AAAA
+		aaaa, err = dig.AAAA(host)
+		results = len(aaaa)
 	case "cname":
-		cname, err := dig.CNAME(host)
-		if err != nil {
-			return nil, err
-		}
-		if len(cname) == 0 {
-			return nil, fmt.Errorf("no CNAME record found")
-		}
+		var cname []*dns.CNAME
+		cname, err = dig.CNAME(host)
+		results = len(cname)
 	case "mx":
-		mx, err := dig.MX(host)
-		if err != nil {
-			return nil, err
-		}
-		if len(mx) == 0 {
-			return nil, fmt.Errorf("no MX record found")
-		}
+		var mx []*dns.MX
+		mx, err = dig.MX(host)
+		results = len(mx)
 	default:
 		return nil, fmt.Errorf("invalid type %s", ntype)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == 0 {
+		return nil, fmt.Errorf("no results found")
 	}
 	return nil, nil
 
