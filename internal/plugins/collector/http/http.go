@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptrace"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -72,6 +74,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 	tlsStartTime := time.Time{}
 	tlsStopTime := time.Time{}
 
+	var certificates []*x509.Certificate
+
 	clientTrace := &httptrace.ClientTrace{
 		DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
 			dnsStartTime = time.Now()
@@ -97,6 +101,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 		},
 		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
 			tlsStopTime = time.Now()
+			certificates = cs.PeerCertificates
 		},
 	}
 
@@ -221,6 +226,48 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			},
 		},
 	}
+
+	if len(certificates) > 0 {
+		// extract hostname from URL
+		u, err := url.Parse(stepsgen[misc.ContextHTTPURL].(string))
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, certificate := range certificates {
+			customMetrics = append(customMetrics, &metrics.Metric{
+				Name: "tls_certificate_not_after",
+				Labels: map[string]string{
+					"serial_number": certificate.SerialNumber.String(),
+					"subject":       certificate.Subject.String(),
+					"host":          u.Host,
+				},
+				Value: float64(certificate.NotAfter.Unix()),
+			})
+
+			customMetrics = append(customMetrics, &metrics.Metric{
+				Name: "tls_certificate_not_before",
+				Labels: map[string]string{
+					"serial_number": certificate.SerialNumber.String(),
+					"subject":       certificate.Subject.String(),
+					"host":          u.Host,
+				},
+				Value: float64(certificate.NotBefore.Unix()),
+			})
+
+			customMetrics = append(customMetrics, &metrics.Metric{
+				Name: "tls_certificate_version",
+				Labels: map[string]string{
+					"serial_number": certificate.SerialNumber.String(),
+					"subject":       certificate.Subject.String(),
+					"host":          u.Host,
+				},
+				Value: float64(certificate.Version),
+			})
+		}
+	}
+
 	return customMetrics, err
 }
 
