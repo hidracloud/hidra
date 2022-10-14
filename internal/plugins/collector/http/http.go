@@ -227,7 +227,13 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 		},
 	}
 
-	if len(certificates) > 0 {
+	certificatesShouldBeValidated := len(certificates) > 0
+
+	if val, ok := stepsgen[misc.ContextHTTPTlsInsecureSkipVerify].(bool); ok && val {
+		certificatesShouldBeValidated = false
+	}
+
+	if certificatesShouldBeValidated {
 		// extract hostname from URL
 		u, err := url.Parse(stepsgen[misc.ContextHTTPURL].(string))
 
