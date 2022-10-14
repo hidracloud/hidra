@@ -1,7 +1,3 @@
-<p align="center">
-  <img width="176.5" height="202" src="https://github.com/hidracloud/hidra/blob/main/docs/logo.svg?raw=true">
-</p>
-
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/hidra)](https://artifacthub.io/packages/search?repo=hidra)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hidracloud/hidra)](https://goreportcard.com/report/github.com/hidracloud/hidra) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5722/badge)](https://bestpractices.coreinfrastructure.org/projects/5722)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=hidracloud_hidra&metric=bugs)](https://sonarcloud.io/summary/new_code?id=hidracloud_hidra)
