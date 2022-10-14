@@ -1,0 +1,50 @@
+before:
+  hooks:
+    - go mod tidy
+    - go mod vendor
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    ldflags:
+      - -X github.com/hidracloud/hidra/v3/internal/misc.Version={{.Version}} -X github.com/hidracloud/hidra/v3/internal/misc.Commit={{.Commit}} -X github.com/hidracloud/hidra/v3/internal/misc.BuildDate={{.Date}} -X github.com/hidracloud/hidra/v3/internal/misc.Branch={{.Branch}}
+archives:
+  - replacements: {}
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+nfpms:
+  - package_name: hidra
+    file_name_template: "{{ .ConventionalFileName }}"
+    vendor: "Hidra Team"
+    homepage: https://hidra.cloud
+    maintainer: "José Carlos <hola@josecarlos.me>"
+    description: "Hidra is a tool for monitoring your services easily."
+    license: "GPL-3.0"
+    formats:
+      - deb
+      - rpm
+      - apk
+    dependencies:
+      - chromium
+    contents:
+      - src: ./configs/hidra/exporter.yml
+        dst: /etc/hidra/exporter.yml
+        type: config|noreplace
+
+# furies:
+#   - account: "JoseCarlosGarcia95"
+#     secret_name: FURY_IO_TOKEN
+
+release:
+  prerelease: auto

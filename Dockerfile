@@ -1,21 +1,29 @@
-FROM alpine:3.14 as base
-RUN apk add --no-cache\
-    ca-certificates\
-    chromium-chromedriver
+ARG GOLANG_VERSION=1.19.1
+ARG ALPINE_VERSION=3.16
 
-FROM golang:1.19-alpine as build
+FROM golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 WORKDIR /app
+
 COPY go.mod go.mod
 COPY go.sum go.sum
-RUN go mod download
+
+RUN go mod download 
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o hidra cmd/hidra/main.go
+RUN go build -o hidra .
 
-FROM base as runtime
+FROM golang:${GOLANG_VERSION}-buster as release-maker
 
-COPY --from=build /app/hidra /usr/local/bin/hidra
+FROM alpine:${ALPINE_VERSION} AS production
 
-ENTRYPOINT [ "/usr/local/bin/hidra" ]
+RUN apk add --no-cache ca-certificates chromium-chromedriver
+
+COPY --from=builder /app/hidra /usr/local/bin/hidra
+
+# RUN addgroup -S hidra && adduser -S -G hidra hidra
+# USER hidra
+USER root
+
+ENTRYPOINT ["/usr/local/bin/hidra"]

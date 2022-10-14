@@ -1,0 +1,19 @@
+description: "This is a sample to test the HTTP plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: http
+    action: request
+    parameters:
+      url: https://hidra.cloud/?timestamp={{ .Date.Unix }}
+  - plugin: string
+    action: outputShouldContain
+    parameters:
+      search: Hidra
+
+  - plugin: http
+    action: statusCodeShouldBe
+    parameters:
+      statusCode: 200

@@ -1,4 +1,4 @@
-.git
-.gitignore
+vendor/
+deployments/
 Dockerfile
-examples
+docker-compose.yml

@@ -1,0 +1,11 @@
+version: "3"
+
+tasks:
+  sync-git-prehooks:
+    cmds:
+      - cp -r githooks/* .git/hooks/
+      - chmod +x .git/hooks/*
+  clean-release:
+    cmds:
+      - sh -c "rm -rf build"
+    silent: true

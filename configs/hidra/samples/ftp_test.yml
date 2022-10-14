@@ -1,0 +1,28 @@
+description: "This is a sample to test the FTP plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: ftp
+    action: connectTo
+    parameters:
+      to: ftp.dlptest.com:21
+
+  - action: login
+    parameters:
+      user: dlpuser
+      password: rNrKYTX9g7z3RgJRmxWuGHbeu
+
+  - action: write
+    parameters:
+      data: "test"
+      file: test-file.txt
+
+  - action: read
+    parameters:
+      file: test-file.txt
+
+  - action: delete
+    parameters:
+      file: test-file.txt

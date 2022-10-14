@@ -5,41 +5,64 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: -exporter -conf ./examples -maxExecutor 8 -jaeger-endpoint http://jaeger:14268/api/traces
+    command: exporter configs/hidra/exporter.yml
     environment:
       - OTEL_LOG_LEVEL=true
       - DEBUG=true
+    working_dir: /app
     volumes:
-      - ./examples:/examples
+      - ./:/app
     ports:
       - "19090:19090"
     expose:
       - 19090
-    links:
-      - jaeger
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ACCESS_KEY=hidratest
+      - MINIO_SECRET_KEY=hidratest
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    expose:
+      - 9000
+      - 9001 
   prometheus:
-    image: prom/prometheus:v2.33.4
+    image: prom/prometheus:v2.38.0
     command: --config.file=/etc/prometheus/prometheus.yml
     volumes:
-      - ./etc/prometheus:/etc/prometheus
+      - ./configs/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
     links:
       - hidra
     ports:
       - "9090:9090"
+
     expose:
       - 9090
-  jaeger:
-    image: jaegertracing/all-in-one:1.32
+  grafana:
+    image: grafana/grafana:9.1.3
+    volumes:
+      - grafana_data:/var/lib/grafana
     ports:
-      - "5775:5775/udp"
-      - "6831:6831/udp"
-      - "6832:6832/udp"
-      - "5778:5778"
-      - "16686:16686"
-      - "14268:14268"
-      - "9411:9411"
+      - "3000:3000"
     expose:
-      - 6831
-      - 16686
-      - 5778
-      - 14268
+      - 3000
+    links:
+      - prometheus
+
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: release-maker
+    volumes:
+      - ./:/app
+    working_dir: /app
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+  minio_data: {}

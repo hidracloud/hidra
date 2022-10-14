@@ -1,0 +1,29 @@
+log_level: info
+http_server:
+  listen_address: :19090
+# is the path to the directory where you're storing samples
+samples_path: ./configs/hidra/samples
+scheduler:
+  # is the interval to refresh the samples from the samples_path
+  refresh_samples_interval: 60s
+  # is the interval to check if a sample should be rescheduled
+  enqueue_samples_interval: 5s
+  # is the interval to run garbage collection
+  gc_interval: 5m
+worker:
+  # is the amount of workers that will run samples in parallel
+  parallel_jobs: 16
+  # max queue size is the maximum number of samples that can be queued
+  max_queue_size: 1000
+  # sleep between jobs is the time that a worker will sleep between jobs. This is useful if your system is busy and you want to give it a break
+  sleep_between_jobs: 1s
+report:
+  enabled: true
+  # s3:
+  #   enabled: true
+  #   bucket: hidra-reports
+  #   region: ""
+  #   access_key_id: "hidratest"
+  #   secret_access_key: "hidratest"
+  #   endpoint: "minio:9000"
+  #   use_ssl: false

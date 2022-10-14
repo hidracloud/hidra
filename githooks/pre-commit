@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+echo "Running go tests..."
+go test ./...
+
+echo "Running golanci-lint..."
+golangci-lint run
+
+# Generate version.go
+# echo "Generating version.go..."
+# echo "package misc" > internal/misc/version.go
+# echo "const Version = \"$(git describe --tags --always)\"" >> internal/misc/version.go
+# echo "const BuildDate = \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"" >> internal/misc/version.go
+# echo "const Commit = \"$(git rev-parse HEAD)\"" >> internal/misc/version.go
+# echo "const Branch = \"$(git rev-parse --abbrev-ref HEAD)\"" >> internal/misc/version.go

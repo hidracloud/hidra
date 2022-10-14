@@ -1,0 +1,14 @@
+description: "This is a sample to test the HTTP plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: http
+    action: request
+    parameters:
+      url: https://google.com/
+  - plugin: http
+    action: statusCodeShouldBe
+    parameters:
+      statusCode: 301

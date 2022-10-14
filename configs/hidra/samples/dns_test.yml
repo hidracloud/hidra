@@ -1,0 +1,21 @@
+description: "This is a sample to test the DNS plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+variables:
+  - domain: google.com
+  - domain: hidra.cloud
+steps:
+  - plugin: dns
+    action: whoisFrom
+    parameters:
+      domain: "{{ .Variables.domain }}"
+
+  - action: shouldBeValidFor
+    parameters:
+      for: 1d
+
+  - action: dnsSecShouldBeValid
+    parameters:
+      domain: "{{ .Variables.domain }}"

@@ -1,0 +1,17 @@
+description: "This is a sample to test the TCP plugin"
+tags:
+  tenant: "hidra"
+interval: "1m"
+timeout: "10s"
+steps:
+  - plugin: tcp
+    action: connectTo
+    parameters:
+      to: google.com:80
+
+  - action: write
+    parameters:
+      data: "SEVBRCAvIEhUVFAvMS4xDQoNCgo="
+
+  - action: read
+    parameters: {}
