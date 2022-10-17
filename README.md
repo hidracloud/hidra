@@ -28,7 +28,7 @@ Docker images are available on [Github Container Registry](https://github.com/hi
 You can use the install script to install Hidra on your system. The script will download the latest release binary and install it in your system. You can find the script [here](https://raw.githubusercontent.com/hidracloud/hidra/main/install.sh).
 
 ```bash
-curl -s https://raw.githubusercontent.com/hidracloud/hidra/main/install.sh | bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/hidracloud/hidra/main/install.sh)"
 ```
 
 ### Build from source
