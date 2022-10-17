@@ -146,7 +146,8 @@ func (p *Browser) waitVisible(ctx2 context.Context, args map[string]string, step
 // onClose implements the browser.onClose primitive.
 func (p *Browser) onClose(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	var err error
-	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); ok {
 		chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 		cancel := stepsgen[misc.ContextBrowserChromedpCancel].(context.CancelFunc)
 
