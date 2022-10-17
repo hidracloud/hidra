@@ -1,17 +1,14 @@
 {
-    "__inputs": [
-        {
-            "name": "DS_PROMETHEUS",
-            "label": "prometheus",
-            "description": "",
-            "type": "datasource",
-            "pluginId": "prometheus",
-            "pluginName": "Prometheus"
-        }
-    ],
+    "__inputs": [{
+        "name": "DS_PROMETHEUS_[4 TESTING]",
+        "label": "Prometheus [4 Testing]",
+        "description": "",
+        "type": "datasource",
+        "pluginId": "prometheus",
+        "pluginName": "Prometheus"
+    }],
     "__elements": [],
-    "__requires": [
-        {
+    "__requires": [{
             "type": "grafana",
             "id": "grafana",
             "name": "Grafana",
@@ -31,128 +28,142 @@
         }
     ],
     "annotations": {
-        "list": [
-            {
-                "builtIn": 1,
-                "datasource": {
-                    "type": "grafana",
-                    "uid": "-- Grafana --"
-                },
-                "enable": true,
-                "hide": true,
-                "iconColor": "rgba(0, 211, 255, 1)",
-                "name": "Annotations & Alerts",
-                "target": {
-                    "limit": 100,
-                    "matchAny": false,
-                    "tags": [],
-                    "type": "dashboard"
-                },
+        "list": [{
+            "builtIn": 1,
+            "datasource": {
+                "type": "grafana",
+                "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "target": {
+                "limit": 100,
+                "matchAny": false,
+                "tags": [],
                 "type": "dashboard"
-            }
-        ]
+            },
+            "type": "dashboard"
+        }]
     },
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
     "id": null,
-    "iteration": 1664963509417,
+    "iteration": 1665993054604,
     "links": [],
     "liveNow": false,
-    "panels": [
-        {
+    "panels": [{
+        "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS_[4 TESTING]}"
+        },
+        "fieldConfig": {
+            "defaults": {
+                "color": {
+                    "mode": "thresholds"
+                },
+                "custom": {
+                    "fillOpacity": 70,
+                    "lineWidth": 0,
+                    "spanNulls": false
+                },
+                "mappings": [],
+                "thresholds": {
+                    "mode": "absolute",
+                    "steps": [{
+                            "color": "dark-red",
+                            "value": null
+                        },
+                        {
+                            "color": "dark-green",
+                            "value": 1
+                        }
+                    ]
+                }
+            },
+            "overrides": []
+        },
+        "gridPos": {
+            "h": 18,
+            "w": 24,
+            "x": 0,
+            "y": 0
+        },
+        "id": 2,
+        "options": {
+            "alignValue": "left",
+            "legend": {
+                "displayMode": "list",
+                "placement": "bottom"
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+                "mode": "single",
+                "sort": "none"
+            }
+        },
+        "targets": [{
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${DS_PROMETHEUS_[4 TESTING]}"
             },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "custom": {
-                        "fillOpacity": 70,
-                        "lineWidth": 0,
-                        "spanNulls": false
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "dark-red",
-                                "value": null
-                            },
-                            {
-                                "color": "dark-green",
-                                "value": 1
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 18,
-                "w": 24,
-                "x": 0,
-                "y": 0
-            },
-            "id": 2,
-            "options": {
-                "alignValue": "left",
-                "legend": {
-                    "displayMode": "list",
-                    "placement": "bottom"
-                },
-                "mergeValues": true,
-                "rowHeight": 0.9,
-                "showValue": "auto",
-                "tooltip": {
-                    "mode": "single",
-                    "sort": "none"
-                }
-            },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
-                    },
-                    "editorMode": "code",
-                    "expr": "bottomk(10, min(hidra_sample_status{sample_name=~\"$sample\"}) by (sample_name, description))",
-                    "legendFormat": "{{description}} ({{sample_name}}) {{ job }}",
-                    "range": true,
-                    "refId": "A"
-                }
-            ],
-            "title": "Statuses",
-            "type": "state-timeline"
-        }
-    ],
+            "editorMode": "code",
+            "expr": "bottomk(10, min(hidra_sample_status{sample_name=~\"$sample\", job=~\"$job\"}) by (sample_name, description))",
+            "legendFormat": "{{description}} ({{sample_name}}) {{ job }}",
+            "range": true,
+            "refId": "A"
+        }],
+        "title": "Statuses",
+        "type": "state-timeline"
+    }],
     "schemaVersion": 36,
     "style": "dark",
     "tags": [],
     "templating": {
-        "list": [
-            {
+        "list": [{
                 "current": {},
                 "datasource": {
                     "type": "prometheus",
-                    "uid": "${DS_PROMETHEUS}"
+                    "uid": "${DS_PROMETHEUS_[4 TESTING]}"
                 },
-                "definition": "label_values(hidra_sample_status, sample_name)",
+                "definition": "query_result(hidra_sample_status)",
                 "hide": 0,
                 "includeAll": true,
                 "multi": true,
                 "name": "sample",
                 "options": [],
                 "query": {
-                    "query": "label_values(hidra_sample_status, sample_name)",
+                    "query": "query_result(hidra_sample_status)",
                     "refId": "StandardVariableQuery"
                 },
                 "refresh": 1,
-                "regex": "",
+                "regex": ".*sample_name=\\\"([^\\\"]*)\\\".*",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "current": {},
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "${DS_PROMETHEUS_[4 TESTING]}"
+                },
+                "definition": "query_result(hidra_sample_status)",
+                "hide": 0,
+                "includeAll": true,
+                "multi": true,
+                "name": "job",
+                "options": [],
+                "query": {
+                    "query": "query_result(hidra_sample_status)",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 1,
+                "regex": ".*job=\\\"([^\\\"]*)\\\".*",
                 "skipUrlSync": false,
                 "sort": 0,
                 "type": "query"
@@ -167,6 +178,6 @@
     "timezone": "",
     "title": "Hidra Statuses",
     "uid": "oot7K-M4k",
-    "version": 6,
+    "version": 2,
     "weekStart": ""
 }
