@@ -10,22 +10,36 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hidracloud_hidra&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=hidracloud_hidra)
 
 # Hidra
+
 Hidra allows you to monitor the status of your services without headaches.
 
 ## Installation
 
 ### Precompiles binaries
+
 Precompiled binaries for released versions are available in the release section on Github. Using the latest production release binary is the recommended way of installing Hidra. You can find latest release [here](https://github.com/hidracloud/hidra/releases/latest)
 
 ### Docker images
+
 Docker images are available on [Github Container Registry](https://github.com/hidracloud/hidra/pkgs/container/hidra).
 
+### Using install script
+
+You can use the install script to install Hidra on your system. The script will download the latest release binary and install it in your system. You can find the script [here](https://raw.githubusercontent.com/hidracloud/hidra/main/install.sh).
+
+```bash
+curl -s https://raw.githubusercontent.com/hidracloud/hidra/main/install.sh | bash
+```
+
 ### Build from source
+
 To build Hidra from source code, you need:
+
 - Go version 1.19 or greater.
 - [Goreleaser](https://goreleaser.com)
 
 To build Hidra, run the following command:
+
 ```bash
 goreleaser release --snapshot --rm-dist
 ```
@@ -35,6 +49,7 @@ You can find the binaries in the `dist` folder.
 ## Usage
 
 ### Exporter
+
 Hidra has support for exposing metrics to Prometheus. If you want to use Hidra in exporter mode, run:
 
 ```bash
@@ -44,9 +59,11 @@ hidra exporter /etc/hidra/exporter.yml
 You can find an example of the configuration file [here](https://github.com/hidracloud/hidra/blob/main/configs/hidra/exporter.yml)
 
 #### Grafana
+
 You can find a Grafana dashboard [here](https://github.com/hidracloud/hidra/blob/main/configs/grafana)
 
 ### Test mode
+
 Hidra has support for running in test mode. Test mode will allow you to run one time a set of samples, and check if the results are as expected. If you want to use Hidra in test mode, run:
 
 ```bash
@@ -56,12 +73,15 @@ hidra test sample1.yml sample2.yml ... samplen.yml
 If you want to exit on error, just add the flag `--exit-on-error`.
 
 ### Sample examples
+
 You can find some sample examples [here](https://github.com/hidracloud/hidra/blob/main/configs/hidra/samples/)
 
 ### Docker compose
+
 You can find an example of a docker compose file [here](https://github.com/hidracloud/hidra/blob/main/docker-compose.yml)
 
 ## Samples
+
 Samples are the way Hidra knows what to do. A sample is a YAML file that contains the information needed to run a test. You can find some sample examples [here](https://github.com/hidracloud/hidra/blob/main/configs/hidra/samples). You can also find a sample example below:
 
 ```yaml
@@ -92,6 +112,7 @@ steps:
 You can find more information about plugins in next section.
 
 ## Plugins
+
 - [browser](https://github.com/hidracloud/hidra/blob/main/docs/plugins/browser/README.md)
 - [dns](https://github.com/hidracloud/hidra/blob/main/docs/plugins/dns/README.md)
 - [ftp](https://github.com/hidracloud/hidra/blob/main/docs/plugins/ftp/README.md)
