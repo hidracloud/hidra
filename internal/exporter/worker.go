@@ -11,7 +11,6 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
-	"github.com/hidracloud/hidra/v3/internal/report"
 	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -168,11 +167,6 @@ func RunOneWorker(worker int, config *config.ExporterConfig) {
 
 		// Update the metrics
 		updateMetrics(result.Metrics, sample, result.Error)
-
-		if result.Error != nil {
-			log.Debugf("Saving report %d for sample %s", len(result.Reports), sample.Name)
-			report.Save(result.Reports)
-		}
 
 		runningTime.Add(uint64(time.Since(startTime).Milliseconds()))
 
