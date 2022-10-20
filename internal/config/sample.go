@@ -66,6 +66,10 @@ func LoadSampleConfig(data []byte) (*SampleConfig, error) {
 		config.Variables = append(config.Variables, make(map[string]string))
 	}
 
+	if config.Interval == 0 {
+		config.Interval = 60 * time.Second
+	}
+
 	return &config, nil
 }
 
