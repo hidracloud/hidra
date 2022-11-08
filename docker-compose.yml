@@ -29,7 +29,7 @@ services:
       - "9001:9001"
     expose:
       - 9000
-      - 9001 
+      - 9001
   prometheus:
     image: prom/prometheus:v2.38.0
     command: --config.file=/etc/prometheus/prometheus.yml
@@ -53,15 +53,6 @@ services:
       - 3000
     links:
       - prometheus
-
-  builder:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: release-maker
-    volumes:
-      - ./:/app
-    working_dir: /app
 volumes:
   prometheus_data: {}
   grafana_data: {}
