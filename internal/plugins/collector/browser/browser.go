@@ -46,7 +46,15 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 
 	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
-	err := chromedp.Run(chromedpCtx, performance.Enable(), chromedp.Navigate(args["url"]))
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
+	err := chromedp.Run(ackCtx, performance.Enable(), chromedp.Navigate(args["url"]))
 
 	return nil, err
 }
@@ -78,7 +86,15 @@ func (p *Browser) urlShouldBe(ctx2 context.Context, args map[string]string, step
 
 	var url string
 
-	err := chromedp.Run(chromedpCtx, chromedp.Location(&url))
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
+	err := chromedp.Run(ackCtx, chromedp.Location(&url))
 
 	if err != nil {
 		return nil, err
@@ -101,7 +117,15 @@ func (p *Browser) textShouldBe(ctx2 context.Context, args map[string]string, ste
 
 	var text string
 
-	err := chromedp.Run(chromedpCtx, chromedp.Text(args["selector"], &text, selector2By(args["selectorBy"])))
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
+	err := chromedp.Run(ackCtx, chromedp.Text(args["selector"], &text, selector2By(args["selectorBy"])))
 
 	if err != nil {
 		return nil, err
@@ -122,8 +146,16 @@ func (p *Browser) sendKeys(ctx2 context.Context, args map[string]string, stepsge
 
 	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
 	err := chromedp.Run(
-		chromedpCtx,
+		ackCtx,
 		chromedp.SendKeys(args["selector"], args["keys"], selector2By(args["selectorBy"])),
 	)
 
@@ -138,7 +170,15 @@ func (p *Browser) waitVisible(ctx2 context.Context, args map[string]string, step
 
 	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
-	err := chromedp.Run(chromedpCtx, chromedp.WaitVisible(args["selector"], selector2By(args["selectorBy"])))
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
+	err := chromedp.Run(ackCtx, chromedp.WaitVisible(args["selector"], selector2By(args["selectorBy"])))
 
 	return nil, err
 }
@@ -167,7 +207,15 @@ func (p *Browser) click(ctx2 context.Context, args map[string]string, stepsgen m
 
 	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
-	err := chromedp.Run(chromedpCtx, chromedp.Click(args["selector"], selector2By(args["selectorBy"])))
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
+	err := chromedp.Run(ackCtx, chromedp.Click(args["selector"], selector2By(args["selectorBy"])))
 
 	return nil, err
 }
