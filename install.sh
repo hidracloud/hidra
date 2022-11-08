@@ -6,11 +6,17 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-# Get latest release from github
-RELEASE=$(curl -s https://api.github.com/repos/hidracloud/hidra/releases/latest | grep "tag_name" | cut -d '"' -f 4)
+VERSION="$1"
+RELEASE="v$VERSION"
 
-# Remove v from tag
-VERSION=${RELEASE:1}
+if [ -z "$VERSION" ]; then
+    # Get latest release from github
+    RELEASE=$(curl -s https://api.github.com/repos/hidracloud/hidra/releases/latest | grep "tag_name" | cut -d '"' -f 4)
+
+    # Remove v from tag
+    VERSION=${RELEASE:1}
+fi
+
 
 # Detect if darwin or linux
 if [[ "$OSTYPE" == "darwin"* ]]; then
