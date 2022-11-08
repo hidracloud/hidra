@@ -13,6 +13,11 @@ steps:
     parameters:
       url: https://hidra.cloud/
 
+  - action: setViewPort
+    parameters:
+      width: 400
+      height: 711
+
   - action: textShouldBe
     parameters:
       selector: "#td-cover-block-0 > div > div > div > div > h1"

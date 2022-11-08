@@ -5,9 +5,6 @@ Browser plugin is used to interact with a browser
 Waits for a duration
 #### Parameters
 - duration: Duration to wait
-### onClose
-Close the connection
-#### Parameters
 ### navigateTo
 Navigates to a URL
 #### Parameters
@@ -38,3 +35,11 @@ Clicks on an element
 #### Parameters
 - selector: Selector of the element
 -  (optional) selectorBy: Selector type
+### setViewPort
+Sets the viewport size
+#### Parameters
+- width: Width of the viewport
+- height: Height of the viewport
+### onClose
+Close the connection
+#### Parameters

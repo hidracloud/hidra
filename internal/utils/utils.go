@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -352,6 +353,15 @@ func BytesToLowerCase(b []byte) []byte {
 		b[i] = bytes.ToLower([]byte{b[i]})[0]
 	}
 	return b
+}
+
+// StringToInt converts a string to an int
+func StringToInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return i
 }
 
 // BytesContainsString checks if a byte slice contains a string

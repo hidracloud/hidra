@@ -10,6 +10,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/utils"
 
 	"github.com/chromedp/cdproto/performance"
 	"github.com/chromedp/chromedp"
@@ -105,6 +106,33 @@ func (p *Browser) urlShouldBe(ctx2 context.Context, args map[string]string, step
 	}
 
 	return nil, nil
+}
+
+// setViewPort implements the browser.setViewPort primitive.
+func (p *Browser) setViewPort(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+		return nil, errPluginNotInitialized
+	}
+
+	chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
+
+	timeout := 30 * time.Second
+
+	if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+		timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+	}
+
+	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
+	err := chromedp.Run(
+		ackCtx,
+		chromedp.EmulateViewport(
+			int64(utils.StringToInt(args["width"])),
+			int64(utils.StringToInt(args["height"])),
+		),
+	)
+
+	return nil, err
 }
 
 // textShouldBe implements the browser.textShouldBe primitive.
@@ -356,6 +384,24 @@ func (p *Browser) Init() {
 			},
 		},
 		Fn: p.wait,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "setViewPort",
+		Description: "Sets the viewport size",
+		Params: []plugins.StepParam{
+			{
+				Name:        "width",
+				Description: "Width of the viewport",
+				Optional:    false,
+			},
+			{
+				Name:        "height",
+				Description: "Height of the viewport",
+				Optional:    false,
+			},
+		},
+		Fn: p.setViewPort,
 	})
 
 	p.RegisterStep(&plugins.StepDefinition{
