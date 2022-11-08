@@ -1,4 +1,4 @@
-ARG GOLANG_VERSION=1.19.1
+ARG GOLANG_VERSION=1.19.3
 ARG ALPINE_VERSION=3.16
 
 FROM golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} AS builder
@@ -13,8 +13,6 @@ RUN go mod download
 COPY . .
 
 RUN go build -o hidra .
-
-FROM golang:${GOLANG_VERSION}-buster as release-maker
 
 FROM alpine:${ALPINE_VERSION} AS production
 
