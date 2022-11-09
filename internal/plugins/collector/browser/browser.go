@@ -227,6 +227,28 @@ func (p *Browser) onClose(ctx2 context.Context, args map[string]string, stepsgen
 	return nil, err
 }
 
+// onFailure implements the browser.onFailure primitive.
+func (p *Browser) onFailure(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	var err error
+
+	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); ok {
+		chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
+
+		// Take a screenshot
+		var buf []byte
+
+		err = chromedp.Run(chromedpCtx, chromedp.CaptureScreenshot(&buf))
+
+		if err != nil {
+			return nil, err
+		}
+
+		stepsgen[misc.ContextAttachment].(map[string][]byte)["screenshot.png"] = buf
+	}
+
+	return nil, err
+}
+
 // click implements the browser.click primitive.
 func (p *Browser) click(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
@@ -409,6 +431,13 @@ func (p *Browser) Init() {
 		Description: "Close the connection",
 		Params:      []plugins.StepParam{},
 		Fn:          p.onClose,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "onFailure",
+		Description: "Close the connection on failure",
+		Params:      []plugins.StepParam{},
+		Fn:          p.onFailure,
 	})
 }
 
