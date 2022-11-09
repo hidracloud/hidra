@@ -231,7 +231,10 @@ func (p *Browser) onClose(ctx2 context.Context, args map[string]string, stepsgen
 func (p *Browser) onFailure(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	var err error
 
-	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); ok {
+	if _, ok := stepsgen[misc.ContextAttachment].(map[string][]byte); ok {
+		if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+			return nil, errPluginNotInitialized
+		}
 		chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
 		timeout := 30 * time.Second
