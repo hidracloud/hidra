@@ -234,10 +234,18 @@ func (p *Browser) onFailure(ctx2 context.Context, args map[string]string, stepsg
 	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); ok {
 		chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
 
+		timeout := 30 * time.Second
+
+		if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+			timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+		}
+
+		ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
 		// Take a screenshot
 		var buf []byte
 
-		err = chromedp.Run(chromedpCtx, chromedp.CaptureScreenshot(&buf))
+		err = chromedp.Run(ackCtx, chromedp.CaptureScreenshot(&buf))
 
 		if err != nil {
 			return nil, err
