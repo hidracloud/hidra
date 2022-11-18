@@ -21,6 +21,8 @@ var (
 	ContextHTTPForceIP = "http.forceip"
 	// ContextConnectionIP is the context key for the connection IP.
 	ContextConnectionIP = "connection.ip"
+	// ContextHTTPFollowRedirects is the context key for the HTTP follow redirects.
+	ContextHTTPFollowRedirects = "http.followredirects"
 	// ContextHTTPHeaders is the context key for the HTTP headers.
 	ContextHTTPHeaders = "http.headers"
 	// ContextHTTPMethod is the context key for the HTTP method.

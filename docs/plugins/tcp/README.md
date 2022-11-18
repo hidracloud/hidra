@@ -1,10 +1,6 @@
 # tcp
 TCP plugin is used to connect to a TCP server
 ## Available actions
-### connectTo
-Connect to a TCP server
-#### Parameters
-- to: Host to connect to
 ### write
 Write a file to a TCP server
 #### Parameters
@@ -16,3 +12,7 @@ Read a file from a FTP server
 ### onClose
 Close the connection
 #### Parameters
+### connectTo
+Connect to a TCP server
+#### Parameters
+- to: Host to connect to

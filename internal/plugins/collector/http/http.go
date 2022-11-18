@@ -25,7 +25,15 @@ import (
 var (
 	httpClient = &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
+			// Get context from request
+			ctx := req.Context()
+
+			// Check if context has followRedirects
+			if _, ok := ctx.Value(misc.ContextHTTPFollowRedirects).(bool); !ok {
+				return http.ErrUseLastResponse
+			}
+
+			return nil
 		},
 		Timeout: 60 * time.Second,
 		Transport: &http.Transport{
@@ -117,6 +125,11 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 	if _, ok := stepsgen[misc.ContextHTTPForceIP].(string); ok {
 		// nolint:staticcheck
 		ctx = context.WithValue(ctx, misc.ContextHTTPForceIP, stepsgen[misc.ContextHTTPForceIP])
+	}
+
+	if _, ok := stepsgen[misc.ContextHTTPFollowRedirects].(bool); ok {
+		// nolint:staticcheck
+		ctx = context.WithValue(ctx, misc.ContextHTTPFollowRedirects, stepsgen[misc.ContextHTTPFollowRedirects])
 	}
 
 	ctx = httptrace.WithClientTrace(ctx, clientTrace)
@@ -478,6 +491,15 @@ func (p *HTTP) Init() {
 		},
 		Fn: func(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 			stepsgen[misc.ContextHTTPForceIP] = args["ip"]
+			return nil, nil
+		},
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "followRedirects",
+		Description: "Follows the redirect",
+		Fn: func(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+			stepsgen[misc.ContextHTTPFollowRedirects] = true
 			return nil, nil
 		},
 	})

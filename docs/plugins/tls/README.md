@@ -1,6 +1,9 @@
 # tls
 TLS plugin is used to check TLS certificates
 ## Available actions
+### onClose
+Close the connection
+#### Parameters
 ### connectTo
 Connects to a TLS server
 #### Parameters
@@ -13,6 +16,3 @@ Checks if a DNS record should be present
 Checks if a certificate is valid for a given host
 #### Parameters
 - for: Duration for which the certificate should be valid
-### onClose
-Close the connection
-#### Parameters
