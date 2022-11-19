@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
+
+	// We need to import the plugins to be able to use them
+	_ "github.com/hidracloud/hidra/v3/internal/plugins/all"
 )
 
 // ExporterConfig is the configuration for the exporter.
