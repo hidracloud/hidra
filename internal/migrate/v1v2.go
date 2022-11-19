@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/hidracloud/hidra/v3/internal/config"
+	"github.com/hidracloud/hidra/v3/config"
 	"gopkg.in/yaml.v3"
 )
 

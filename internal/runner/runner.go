@@ -8,7 +8,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hidracloud/hidra/v3/internal/config"
+	"github.com/hidracloud/hidra/v3/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"

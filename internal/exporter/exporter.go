@@ -5,7 +5,7 @@ import (
 	"net/http/pprof"
 	"os"
 
-	"github.com/hidracloud/hidra/v3/internal/config"
+	"github.com/hidracloud/hidra/v3/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )

@@ -1,9 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"time"
 
+	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"gopkg.in/yaml.v3"
 )
 
@@ -88,4 +90,38 @@ func LoadSampleConfigFromFile(path string) (*SampleConfig, error) {
 	cnf.Path = path
 
 	return cnf, nil
+}
+
+// Verify verifies the sample configuration.
+func (c *SampleConfig) Verify() error {
+	if c.Description == "" {
+		return fmt.Errorf("description is required")
+	}
+
+	lastPlugin := ""
+	for _, step := range c.Steps {
+		if step.Action == "" {
+			return fmt.Errorf("action is required")
+		}
+
+		if step.Plugin != "" {
+			lastPlugin = step.Plugin
+		}
+
+		if step.Parameters == nil {
+			return fmt.Errorf("parameters is required")
+		}
+
+		plugin := plugins.GetPlugin(lastPlugin)
+
+		if plugin == nil {
+			return fmt.Errorf("plugin %s not found", step.Plugin)
+		}
+
+		if !plugin.StepExists(step.Action) {
+			return fmt.Errorf("action %s not found", step.Action)
+		}
+	}
+
+	return nil
 }

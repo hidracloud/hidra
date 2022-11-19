@@ -1,12 +1,6 @@
 # dns
 DNS plugin is used to check DNS information
 ## Available actions
-### dig
-Ask NS about the domain
-#### Parameters
-- ns: The NS to ask
-- type: The type of the query
-- host: The host to ask
 ### whoisFrom
 Gets the whois information from a domain
 #### Parameters
@@ -21,3 +15,9 @@ Checks if the domain is valid for a given number of duration
 Checks if the domain has DNSSEC enabled
 #### Parameters
 - domain: The domain to check if DNSSEC is enabled
+### dig
+Ask NS about the domain
+#### Parameters
+- ns: The NS to ask
+- type: The type of the query
+- host: The host to ask
