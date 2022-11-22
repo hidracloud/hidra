@@ -11,6 +11,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/utils"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/chromedp/cdproto/performance"
 	"github.com/chromedp/chromedp"
@@ -232,6 +233,7 @@ func (p *Browser) onFailure(ctx2 context.Context, args map[string]string, stepsg
 	var err error
 
 	if _, ok := stepsgen[misc.ContextAttachment].(map[string][]byte); ok {
+		log.Debug("Generating screenshot")
 		if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
 			return nil, errPluginNotInitialized
 		}
@@ -251,9 +253,11 @@ func (p *Browser) onFailure(ctx2 context.Context, args map[string]string, stepsg
 		err = chromedp.Run(ackCtx, chromedp.CaptureScreenshot(&buf))
 
 		if err != nil {
+			log.Debugf("Error taking screenshot: %s", err)
 			return nil, err
 		}
 
+		log.Debug("Screenshot taken")
 		stepsgen[misc.ContextAttachment].(map[string][]byte)["screenshot.png"] = buf
 	}
 

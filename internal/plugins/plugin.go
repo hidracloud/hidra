@@ -6,6 +6,7 @@ import (
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
+	log "github.com/sirupsen/logrus"
 )
 
 // PluginInterface represents a plugin.
@@ -65,10 +66,12 @@ func (p *BasePlugin) Primitives() {
 
 // RunStep runs a step.
 func (p *BasePlugin) RunStep(ctx context.Context, stepsgen map[string]any, step *Step) ([]*metrics.Metric, error) {
+	log.Debugf("Running step %s", step.Name)
 	// get step definition
 	stepDefinition, ok := p.StepDefinitions[step.Name]
 
-	if !ok && step.Name == "onFailure" {
+	if !ok && (step.Name == "onFailure" ||
+		step.Name == "onClose") {
 		return nil, stepsgen[misc.ContextLastError].(error)
 	}
 
@@ -92,7 +95,8 @@ func (p *BasePlugin) RunStep(ctx context.Context, stepsgen map[string]any, step 
 		return metrics, fmt.Errorf("step %s should have failed", step.Name)
 	}
 
-	if err != nil && step.Name != "onFailure" {
+	if err != nil && (step.Name != "onFailure" &&
+		step.Name != "onClose") {
 		stepsgen[misc.ContextLastError] = err
 		step.Name = "onFailure"
 

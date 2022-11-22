@@ -209,6 +209,7 @@ func signalHandler(signal os.Signal, cnf *config.ExporterConfig) {
 		os.Exit(0)
 	case syscall.SIGUSR1:
 	case syscall.SIGURG:
+	case syscall.SIGCHLD:
 	default:
 		log.Warnf("Received unknown signal %s", signal)
 	}
