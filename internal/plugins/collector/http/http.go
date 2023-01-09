@@ -20,6 +20,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -284,6 +285,23 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 				},
 				Value: float64(certificate.Version),
 			})
+		}
+
+		dnsPlugin := plugins.GetPlugin("dns")
+
+		if dnsPlugin != nil {
+			dnsMetrics, err := dnsPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+				Name:    "whoisFrom",
+				Args:    map[string]string{"domain": u.Host},
+				Timeout: 0,
+				Negate:  false,
+			})
+
+			if err != nil {
+				log.Warnf("failed to generate whois metrics: %s", err)
+			} else {
+				customMetrics = append(customMetrics, dnsMetrics...)
+			}
 		}
 	}
 
