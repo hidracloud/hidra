@@ -3,13 +3,16 @@ package exporter
 import (
 	"math"
 	"math/rand"
+	"os"
+	"os/signal"
 	"runtime"
 	"sync"
+	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/hidracloud/hidra/v3/internal/config"
+	"github.com/hidracloud/hidra/v3/config"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 )
 
@@ -17,17 +20,11 @@ var (
 	// samplesMutex is the mutex to protect the samples
 	samplesMutex *sync.RWMutex
 
-	// oldSamplesPath is the old samples path
-	oldSamplesPath []string
-
 	// configSamples is the config samples
 	configSamples []*config.SampleConfig
 
 	// penaltiesSamples is the penalties
 	penaltiesSamples = make(map[string]time.Duration)
-
-	// refreshSampleInProgress is the refresh sample in progress
-	refreshSampleInProgress = false
 
 	// enqueueSamplesInProgress  is the enqueue samples in progress
 	enqueueSamplesInProgress = false
@@ -49,13 +46,6 @@ func refreshSamples(cnf *config.ExporterConfig) {
 
 	samplesMutex.Lock()
 	defer samplesMutex.Unlock()
-
-	if utils.EqualSlices(oldSamplesPath, samplesPath) {
-		log.Debug("Samples are the same, skipping...")
-		return
-	}
-
-	oldSamplesPath = samplesPath
 
 	log.Debug("Samples has been updated, trying to calculate new samples...")
 	configSamples = nil
@@ -82,6 +72,7 @@ func refreshSamples(cnf *config.ExporterConfig) {
 	for _, metric := range prometheusMetricStore {
 		metric.Reset()
 	}
+
 	prometheusMetricStoreMutex.RUnlock()
 	if prometheusLastUpdate != nil {
 		prometheusLastUpdate.Reset()
@@ -90,6 +81,11 @@ func refreshSamples(cnf *config.ExporterConfig) {
 	if prometheusStatusMetric != nil {
 		prometheusStatusMetric.Reset()
 	}
+
+	// we need to reset the last run
+	lastRunMutex.Lock()
+	lastRun = make(map[string]time.Time)
+	lastRunMutex.Unlock()
 
 	log.Debug("Samples has been updated")
 }
@@ -194,23 +190,51 @@ func InitializeScheduler(cnf *config.ExporterConfig) {
 	refreshSamples(cnf)
 	refreshSampleCommonTags()
 
+	listenForOSSignals(cnf)
+
 	samplesJobs = make(chan *config.SampleConfig, cnf.WorkerConfig.MaxQueueSize)
+}
+
+// signalHandler handles signals
+func signalHandler(signal os.Signal, cnf *config.ExporterConfig) {
+	switch signal {
+	case syscall.SIGHUP:
+		log.Debug("Received SIGHUP, refreshing samples...")
+		refreshSamples(cnf)
+	case syscall.SIGINT:
+		os.Exit(0)
+	case syscall.SIGTERM:
+		os.Exit(0)
+	case syscall.SIGQUIT:
+		os.Exit(0)
+	case syscall.SIGUSR1:
+	case syscall.SIGURG:
+	case syscall.SIGCHLD:
+	default:
+		log.Warnf("Received unknown signal %s", signal)
+	}
+}
+
+// listenForOSSignals listens for OS signals
+func listenForOSSignals(cnf *config.ExporterConfig) {
+	sigchnl := make(chan os.Signal, 1)
+	signal.Notify(sigchnl)
+
+	go func() {
+		for {
+			s := <-sigchnl
+			signalHandler(s, cnf)
+		}
+	}()
 }
 
 // TickScheduler ticks the scheduler
 func TickScheduler(config *config.ExporterConfig) {
-	tickerRefreshSamples := time.NewTicker(config.SchedulerConfig.RefreshSamplesInterval)
 	tickerEnqueueSamples := time.NewTicker(config.SchedulerConfig.EnqueueSamplesInterval)
 	tickerGC := time.NewTicker(config.SchedulerConfig.GCInterval)
 	go func() {
 		for {
 			select {
-			case <-tickerRefreshSamples.C:
-				if !refreshSampleInProgress {
-					refreshSampleInProgress = true
-					refreshSamples(config)
-					refreshSampleInProgress = false
-				}
 			case <-tickerEnqueueSamples.C:
 				if !enqueueSamplesInProgress {
 					enqueueSamplesInProgress = true

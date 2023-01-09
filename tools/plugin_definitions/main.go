@@ -55,8 +55,11 @@ func main() {
 			panic(err)
 		}
 	}
-	// Convert to JSON
-	// Print to stdout
-	dumpJSON, _ := json.Marshal(plugins2dump)
+	// dump to json beatifully
+	dumpJSON, err := json.MarshalIndent(plugins2dump, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+
 	println(string(dumpJSON))
 }

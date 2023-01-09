@@ -5,10 +5,13 @@ interval: "1m"
 timeout: "10s"
 steps:
   - plugin: http
+    action: followRedirects
+    parameters: {}
+  - plugin: http
     action: request
     parameters:
       url: https://google.com/
   - plugin: http
     action: statusCodeShouldBe
     parameters:
-      statusCode: 301
+      statusCode: 200

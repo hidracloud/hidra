@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/hidracloud/hidra/v3/internal/config"
+	"github.com/hidracloud/hidra/v3/config"
 	"github.com/likexian/gokit/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -20,12 +20,21 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
 	httpClient = &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
+			// Get context from request
+			ctx := req.Context()
+
+			// Check if context has followRedirects
+			if _, ok := ctx.Value(misc.ContextHTTPFollowRedirects).(bool); !ok {
+				return http.ErrUseLastResponse
+			}
+
+			return nil
 		},
 		Timeout: 60 * time.Second,
 		Transport: &http.Transport{
@@ -117,6 +126,11 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 	if _, ok := stepsgen[misc.ContextHTTPForceIP].(string); ok {
 		// nolint:staticcheck
 		ctx = context.WithValue(ctx, misc.ContextHTTPForceIP, stepsgen[misc.ContextHTTPForceIP])
+	}
+
+	if _, ok := stepsgen[misc.ContextHTTPFollowRedirects].(bool); ok {
+		// nolint:staticcheck
+		ctx = context.WithValue(ctx, misc.ContextHTTPFollowRedirects, stepsgen[misc.ContextHTTPFollowRedirects])
 	}
 
 	ctx = httptrace.WithClientTrace(ctx, clientTrace)
@@ -271,6 +285,23 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 				},
 				Value: float64(certificate.Version),
 			})
+		}
+
+		dnsPlugin := plugins.GetPlugin("dns")
+
+		if dnsPlugin != nil {
+			dnsMetrics, err := dnsPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+				Name:    "whoisFrom",
+				Args:    map[string]string{"domain": u.Host},
+				Timeout: int(timeout.Seconds()),
+				Negate:  false,
+			})
+
+			if err != nil {
+				log.Warnf("failed to generate whois metrics: %s", err)
+			} else {
+				customMetrics = append(customMetrics, dnsMetrics...)
+			}
 		}
 	}
 
@@ -478,6 +509,15 @@ func (p *HTTP) Init() {
 		},
 		Fn: func(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 			stepsgen[misc.ContextHTTPForceIP] = args["ip"]
+			return nil, nil
+		},
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "followRedirects",
+		Description: "Follows the redirect",
+		Fn: func(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+			stepsgen[misc.ContextHTTPFollowRedirects] = true
 			return nil, nil
 		},
 	})

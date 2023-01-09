@@ -11,6 +11,7 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/utils"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/chromedp/cdproto/performance"
 	"github.com/chromedp/chromedp"
@@ -227,6 +228,42 @@ func (p *Browser) onClose(ctx2 context.Context, args map[string]string, stepsgen
 	return nil, err
 }
 
+// onFailure implements the browser.onFailure primitive.
+func (p *Browser) onFailure(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	var err error
+
+	if _, ok := stepsgen[misc.ContextAttachment].(map[string][]byte); ok {
+		log.Debug("Generating screenshot")
+		if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
+			return nil, errPluginNotInitialized
+		}
+		chromedpCtx := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context)
+
+		timeout := 30 * time.Second
+
+		if _, ok := stepsgen[misc.ContextTimeout].(time.Duration); ok {
+			timeout = stepsgen[misc.ContextTimeout].(time.Duration)
+		}
+
+		ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+
+		// Take a screenshot
+		var buf []byte
+
+		err = chromedp.Run(ackCtx, chromedp.CaptureScreenshot(&buf))
+
+		if err != nil {
+			log.Debugf("Error taking screenshot: %s", err)
+			return nil, err
+		}
+
+		log.Debug("Screenshot taken")
+		stepsgen[misc.ContextAttachment].(map[string][]byte)["screenshot.png"] = buf
+	}
+
+	return nil, err
+}
+
 // click implements the browser.click primitive.
 func (p *Browser) click(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextBrowserChromedpCtx].(context.Context); !ok {
@@ -409,6 +446,13 @@ func (p *Browser) Init() {
 		Description: "Close the connection",
 		Params:      []plugins.StepParam{},
 		Fn:          p.onClose,
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "onFailure",
+		Description: "Close the connection on failure",
+		Params:      []plugins.StepParam{},
+		Fn:          p.onFailure,
 	})
 }
 

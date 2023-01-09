@@ -1,0 +1,521 @@
+[{
+        "name": "string",
+        "description": "String plugin is used to check strings",
+        "step_definitions": {
+            "outputShouldContain": {
+                "name": "outputShouldContain",
+                "description": "Checks if the output contains a string",
+                "params": [{
+                    "name": "search",
+                    "description": "The string to search",
+                    "optional": false
+                }]
+            }
+        }
+    },
+    {
+        "name": "http",
+        "description": "HTTP plugin is used to make HTTP requests",
+        "step_definitions": {
+            "addHTTPHeader": {
+                "name": "addHTTPHeader",
+                "description": "Adds a HTTP header to the request. If the header already exists, it will be overwritten",
+                "params": [{
+                        "name": "key",
+                        "description": "The header name",
+                        "optional": false
+                    },
+                    {
+                        "name": "value",
+                        "description": "The header value",
+                        "optional": false
+                    }
+                ]
+            },
+            "allowInsecureTLS": {
+                "name": "allowInsecureTLS",
+                "description": "Allows insecure TLS connections. This is useful for testing purposes, but should not be used in production",
+                "params": null
+            },
+            "bodyShouldContain": {
+                "name": "bodyShouldContain",
+                "description": "[DEPRECATED] Please use outputShouldContain from string plugin. Checks if the body contains the expected value",
+                "params": [{
+                    "name": "search",
+                    "description": "The expected value",
+                    "optional": false
+                }]
+            },
+            "followRedirects": {
+                "name": "followRedirects",
+                "description": "Follows the redirect",
+                "params": null
+            },
+            "forceIP": {
+                "name": "forceIP",
+                "description": "Forces the IP address to use for the request",
+                "params": [{
+                    "name": "ip",
+                    "description": "The IP address",
+                    "optional": false
+                }]
+            },
+            "onClose": {
+                "name": "onClose",
+                "description": "Executes the steps when the test is finished",
+                "params": null
+            },
+            "onFailure": {
+                "name": "onFailure",
+                "description": "Executes the steps if the previous step failed",
+                "params": null
+            },
+            "request": {
+                "name": "request",
+                "description": "Makes a HTTP request",
+                "params": [{
+                        "name": "method",
+                        "description": "The HTTP method",
+                        "optional": true
+                    },
+                    {
+                        "name": "url",
+                        "description": "The URL",
+                        "optional": false
+                    },
+                    {
+                        "name": "body",
+                        "description": "The body",
+                        "optional": true
+                    }
+                ]
+            },
+            "setUserAgent": {
+                "name": "setUserAgent",
+                "description": "Sets the User-Agent header",
+                "params": [{
+                    "name": "user-agent",
+                    "description": "The User-Agent value",
+                    "optional": false
+                }]
+            },
+            "shouldRedirectTo": {
+                "name": "shouldRedirectTo",
+                "description": "Checks if the response redirects to the expected URL",
+                "params": [{
+                    "name": "url",
+                    "description": "The expected URL",
+                    "optional": false
+                }]
+            },
+            "statusCodeShouldBe": {
+                "name": "statusCodeShouldBe",
+                "description": "Checks if the status code is equal to the expected value",
+                "params": [{
+                    "name": "statusCode",
+                    "description": "The expected status code",
+                    "optional": false
+                }]
+            }
+        }
+    },
+    {
+        "name": "ftp",
+        "description": "FTP plugin is used to connect to a FTP server",
+        "step_definitions": {
+            "connectTo": {
+                "name": "connectTo",
+                "description": "Connect to a FTP server",
+                "params": [{
+                    "name": "to",
+                    "description": "Host to connect to",
+                    "optional": false
+                }]
+            },
+            "delete": {
+                "name": "delete",
+                "description": "Delete a file from a FTP server",
+                "params": [{
+                    "name": "file",
+                    "description": "File to delete",
+                    "optional": false
+                }]
+            },
+            "login": {
+                "name": "login",
+                "description": "Login to a FTP server",
+                "params": [{
+                        "name": "user",
+                        "description": "User to login with",
+                        "optional": false
+                    },
+                    {
+                        "name": "password",
+                        "description": "Password to login with",
+                        "optional": false
+                    }
+                ]
+            },
+            "onClose": {
+                "name": "onClose",
+                "description": "Close the connection",
+                "params": []
+            },
+            "read": {
+                "name": "read",
+                "description": "Read a file from a FTP server",
+                "params": [{
+                    "name": "file",
+                    "description": "File to read",
+                    "optional": false
+                }]
+            },
+            "write": {
+                "name": "write",
+                "description": "Write a file to a FTP server",
+                "params": [{
+                        "name": "file",
+                        "description": "File to write",
+                        "optional": false
+                    },
+                    {
+                        "name": "data",
+                        "description": "Data to write",
+                        "optional": false
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "name": "tcp",
+        "description": "TCP plugin is used to connect to a TCP server",
+        "step_definitions": {
+            "connectTo": {
+                "name": "connectTo",
+                "description": "Connect to a TCP server",
+                "params": [{
+                    "name": "to",
+                    "description": "Host to connect to",
+                    "optional": false
+                }]
+            },
+            "onClose": {
+                "name": "onClose",
+                "description": "Close the connection",
+                "params": []
+            },
+            "read": {
+                "name": "read",
+                "description": "Read a file from a FTP server",
+                "params": [{
+                    "name": "bytesToRead",
+                    "description": "Number of bytes to read",
+                    "optional": true
+                }]
+            },
+            "write": {
+                "name": "write",
+                "description": "Write a file to a TCP server",
+                "params": [{
+                    "name": "data",
+                    "description": "Data to write",
+                    "optional": false
+                }]
+            }
+        }
+    },
+    {
+        "name": "udp",
+        "description": "UDP plugin is used to connect to a UDP server",
+        "step_definitions": {
+            "connectTo": {
+                "name": "connectTo",
+                "description": "Connect to a UDP server",
+                "params": [{
+                    "name": "to",
+                    "description": "Host to connect to",
+                    "optional": false
+                }]
+            },
+            "onClose": {
+                "name": "onClose",
+                "description": "Close the connection",
+                "params": []
+            },
+            "read": {
+                "name": "read",
+                "description": "Read a file from a FTP server",
+                "params": [{
+                    "name": "bytesToRead",
+                    "description": "Number of bytes to read",
+                    "optional": true
+                }]
+            },
+            "write": {
+                "name": "write",
+                "description": "Write a file to a UDP server",
+                "params": [{
+                    "name": "data",
+                    "description": "Data to write",
+                    "optional": false
+                }]
+            }
+        }
+    },
+    {
+        "name": "browser",
+        "description": "Browser plugin is used to interact with a browser",
+        "step_definitions": {
+            "click": {
+                "name": "click",
+                "description": "Clicks on an element",
+                "params": [{
+                        "name": "selector",
+                        "description": "Selector of the element",
+                        "optional": false
+                    },
+                    {
+                        "name": "selectorBy",
+                        "description": "Selector type",
+                        "optional": true
+                    }
+                ]
+            },
+            "navigateTo": {
+                "name": "navigateTo",
+                "description": "Navigates to a URL",
+                "params": [{
+                    "name": "url",
+                    "description": "URL to navigate to",
+                    "optional": false
+                }]
+            },
+            "onClose": {
+                "name": "onClose",
+                "description": "Close the connection",
+                "params": []
+            },
+            "onFailure": {
+                "name": "onFailure",
+                "description": "Close the connection on failure",
+                "params": []
+            },
+            "sendKeys": {
+                "name": "sendKeys",
+                "description": "Sends keys to an element",
+                "params": [{
+                        "name": "selector",
+                        "description": "Selector of the element",
+                        "optional": false
+                    },
+                    {
+                        "name": "selectorBy",
+                        "description": "Selector type",
+                        "optional": true
+                    },
+                    {
+                        "name": "keys",
+                        "description": "Keys to send",
+                        "optional": false
+                    }
+                ]
+            },
+            "setViewPort": {
+                "name": "setViewPort",
+                "description": "Sets the viewport size",
+                "params": [{
+                        "name": "width",
+                        "description": "Width of the viewport",
+                        "optional": false
+                    },
+                    {
+                        "name": "height",
+                        "description": "Height of the viewport",
+                        "optional": false
+                    }
+                ]
+            },
+            "textShouldBe": {
+                "name": "textShouldBe",
+                "description": "Checks if the text of an element is the expected one",
+                "params": [{
+                        "name": "selector",
+                        "description": "Selector of the element",
+                        "optional": false
+                    },
+                    {
+                        "name": "selectorBy",
+                        "description": "Selector type",
+                        "optional": true
+                    },
+                    {
+                        "name": "text",
+                        "description": "Expected text",
+                        "optional": false
+                    }
+                ]
+            },
+            "urlShouldBe": {
+                "name": "urlShouldBe",
+                "description": "Checks if the current URL is the expected one",
+                "params": [{
+                    "name": "url",
+                    "description": "Expected URL",
+                    "optional": false
+                }]
+            },
+            "wait": {
+                "name": "wait",
+                "description": "Waits for a duration",
+                "params": [{
+                    "name": "duration",
+                    "description": "Duration to wait",
+                    "optional": false
+                }]
+            },
+            "waitVisible": {
+                "name": "waitVisible",
+                "description": "Waits for an element to be visible",
+                "params": [{
+                        "name": "selector",
+                        "description": "Selector of the element",
+                        "optional": false
+                    },
+                    {
+                        "name": "selectorBy",
+                        "description": "Selector type",
+                        "optional": true
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "name": "dns",
+        "description": "DNS plugin is used to check DNS information",
+        "step_definitions": {
+            "dig": {
+                "name": "dig",
+                "description": "Ask NS about the domain",
+                "params": [{
+                        "name": "ns",
+                        "description": "The NS to ask",
+                        "optional": false
+                    },
+                    {
+                        "name": "type",
+                        "description": "The type of the query",
+                        "optional": false
+                    },
+                    {
+                        "name": "host",
+                        "description": "The host to ask",
+                        "optional": false
+                    }
+                ]
+            },
+            "dnsSecShouldBeValid": {
+                "name": "dnsSecShouldBeValid",
+                "description": "Checks if the domain has DNSSEC enabled",
+                "params": [{
+                    "name": "domain",
+                    "description": "The domain to check if DNSSEC is enabled",
+                    "optional": false
+                }]
+            },
+            "shouldBeValidFor": {
+                "name": "shouldBeValidFor",
+                "description": "Checks if the domain is valid for a given number of duration",
+                "params": [{
+                        "name": "for",
+                        "description": "The duration to check if the domain is valid",
+                        "optional": false
+                    },
+                    {
+                        "name": "dateFormat",
+                        "description": "Date format to parse, default is 2006-01-02T15:04:05.999Z",
+                        "optional": true
+                    }
+                ]
+            },
+            "whoisFrom": {
+                "name": "whoisFrom",
+                "description": "Gets the whois information from a domain",
+                "params": [{
+                        "name": "domain",
+                        "description": "The domain to get the whois information",
+                        "optional": false
+                    },
+                    {
+                        "name": "dateFormat",
+                        "description": "Date format to parse, default is 2006-01-02T15:04:05.999Z",
+                        "optional": true
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "name": "icmp",
+        "description": "ICMP plugin is used to ping and traceroute hosts",
+        "step_definitions": {
+            "ping": {
+                "name": "ping",
+                "description": "Ping a host",
+                "params": [{
+                    "name": "hostname",
+                    "description": "Hostname to ping",
+                    "optional": false
+                }]
+            },
+            "traceroute": {
+                "name": "traceroute",
+                "description": "Traceroute a host",
+                "params": [{
+                    "name": "hostname",
+                    "description": "Hostname to traceroute",
+                    "optional": false
+                }]
+            }
+        }
+    },
+    {
+        "name": "tls",
+        "description": "TLS plugin is used to check TLS certificates",
+        "step_definitions": {
+            "connectTo": {
+                "name": "connectTo",
+                "description": "Connects to a TLS server",
+                "params": [{
+                    "name": "to",
+                    "description": "Host to connect to",
+                    "optional": false
+                }]
+            },
+            "dnsShouldBePresent": {
+                "name": "dnsShouldBePresent",
+                "description": "Checks if a DNS record should be present",
+                "params": [{
+                    "name": "dns",
+                    "description": "DNS name to check",
+                    "optional": false
+                }]
+            },
+            "onClose": {
+                "name": "onClose",
+                "description": "Close the connection",
+                "params": []
+            },
+            "shouldBeValidFor": {
+                "name": "shouldBeValidFor",
+                "description": "Checks if a certificate is valid for a given host",
+                "params": [{
+                    "name": "for",
+                    "description": "Duration for which the certificate should be valid",
+                    "optional": false
+                }]
+            }
+        }
+    }
+]

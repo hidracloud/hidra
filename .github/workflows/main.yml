@@ -44,6 +44,8 @@ jobs:
           working-directory: "./"
       - name: Test
         run: go test ./...
+      - name: Verify all samples
+        run: go run main.go verify configs/hidra/samples/*.yml
       - name: Run hidra on test mode
         run: go run main.go test configs/hidra/samples/*.yml  --exit-on-error
 
