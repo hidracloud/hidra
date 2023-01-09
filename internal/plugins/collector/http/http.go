@@ -293,7 +293,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			dnsMetrics, err := dnsPlugin.RunStep(ctx, stepsgen, &plugins.Step{
 				Name:    "whoisFrom",
 				Args:    map[string]string{"domain": u.Host},
-				Timeout: 0,
+				Timeout: int(timeout.Seconds()),
 				Negate:  false,
 			})
 
