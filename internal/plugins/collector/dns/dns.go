@@ -27,7 +27,14 @@ type DNS struct {
 
 // whoisFrom returns the whois information from a domain.
 func (p *DNS) whoisFrom(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
-	whoisResult, err := whois.Whois(args["domain"])
+	domain := args["domain"]
+
+	// If domain is a subdomain, get the root domain
+	if strings.Count(domain, ".") > 1 {
+		domain = strings.Join(strings.Split(domain, ".")[1:], ".")
+	}
+
+	whoisResult, err := whois.Whois(domain)
 
 	if err != nil {
 		return nil, err
