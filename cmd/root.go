@@ -94,6 +94,11 @@ var testCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		exitCode := 0
 		log.SetLevel(log.DebugLevel)
+		if !utils.IsHeadless() {
+			os.Setenv("BROWSER_NO_HEADLESS", "1")
+			log.Debug("Setting up browser in headless mode")
+		}
+
 		for _, sample := range args {
 			// Load sample config
 			sampleConf, err := config.LoadSampleConfigFromFile(sample)

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -333,6 +334,16 @@ func HTMLStripTags(s string) string {
 // Base64Encode encodes a string to base64
 func Base64Encode(s string) string {
 	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+// isHeadless returns true if user doesn't have a graphical environment
+func IsHeadless() bool {
+	if runtime.GOOS == "windows" {
+		return false
+	} else if runtime.GOOS == "darwin" {
+		return false
+	}
+	return os.Getenv("DISPLAY") == ""
 }
 
 // fullScreenshot takes a screenshot of the entire browser viewport.
