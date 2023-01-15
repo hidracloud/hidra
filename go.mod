@@ -4,17 +4,17 @@ go 1.19
 
 require (
 	github.com/StalkR/dnssec-analyzer v1.0.0
-	github.com/chromedp/cdproto v0.0.0-20220924210414-0e3390be1777
-	github.com/chromedp/chromedp v0.8.6
+	github.com/chromedp/cdproto v0.0.0-20230109101555-6b041c6303cc
+	github.com/chromedp/chromedp v0.8.7
 	github.com/go-ping/ping v1.1.0
 	github.com/grokify/html-strip-tags-go v0.0.1
 	github.com/jlaffaye/ftp v0.1.0
 	github.com/likexian/gokit v0.25.9
-	github.com/likexian/whois v1.14.2
-	github.com/likexian/whois-parser v1.24.1
+	github.com/likexian/whois v1.14.4
+	github.com/likexian/whois-parser v1.24.2
 	github.com/lixiangzhong/dnsutil v1.4.0
 	github.com/miekg/dns v1.1.50
-	github.com/minio/minio-go/v7 v7.0.43
+	github.com/minio/minio-go/v7 v7.0.47
 	github.com/pixelbender/go-traceroute v0.0.0-20190414152342-e631ab553a80
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
@@ -54,13 +54,12 @@ require (
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
-	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect
-	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.6-0.20210726203631-07bc1bf47fb2 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
+	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
+	golang.org/x/sys v0.2.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 )
