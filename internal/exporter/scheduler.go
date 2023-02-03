@@ -65,7 +65,6 @@ func refreshSamples(cnf *config.ExporterConfig) {
 	}
 
 	// user used to create similar samples near each other, so we shuffle them
-	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(configSamples), func(i, j int) { configSamples[i], configSamples[j] = configSamples[j], configSamples[i] })
 
 	prometheusMetricStoreMutex.RLock()
