@@ -10,10 +10,11 @@ COPY go.sum go.sum
 
 RUN go mod download 
 
-COPY cmd .
-COPY internal .
-COPY config .
-COPY tools .
+COPY cmd ./cmd
+COPY internal ./internal
+COPY config ./config
+COPY tools ./tools
+COPY main.go .
 
 RUN go build -o hidra .
 
