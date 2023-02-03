@@ -23,8 +23,7 @@ RUN apk add --no-cache ca-certificates chromium-chromedriver
 
 COPY --from=builder /app/hidra /usr/local/bin/hidra
 
-# RUN addgroup -S hidra && adduser -S -G hidra hidra
-# USER hidra
-USER root
+RUN addgroup -S hidra && adduser -S -G hidra hidra
+USER hidra
 
 ENTRYPOINT ["/usr/local/bin/hidra"]
