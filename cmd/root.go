@@ -78,6 +78,12 @@ var exporterCmd = &cobra.Command{
 					UseSSL:          exporterConf.ReportConfig.S3Config.UseSSL,
 				})
 			}
+
+			if exporterConf.ReportConfig.CallbackConfig.Enabled {
+				report.SetCallbackConfiguration(&report.CallbackConfig{
+					URL: exporterConf.ReportConfig.CallbackConfig.URL,
+				})
+			}
 		}
 
 		// Start exporter
