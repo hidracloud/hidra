@@ -298,7 +298,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			})
 
 			if err != nil {
-				log.Warnf("failed to generate whois metrics: %s", err)
+				log.Debugf("failed to generate whois metrics: %s", err)
 			} else {
 				customMetrics = append(customMetrics, dnsMetrics...)
 			}
