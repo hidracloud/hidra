@@ -2,6 +2,8 @@ package dummy
 
 import (
 	"context"
+	"errors"
+	"math/rand"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
@@ -14,6 +16,10 @@ type Dummy struct {
 
 // doNothing does nothing.
 func (p *Dummy) doNothing(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	// run random and generate random errors
+	if rand.Int()%5 == 0 {
+		return nil, errors.New("random error")
+	}
 	return nil, nil
 }
 
