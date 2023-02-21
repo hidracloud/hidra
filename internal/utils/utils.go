@@ -380,6 +380,11 @@ func BytesContainsString(b []byte, s string) bool {
 	return bytes.Contains(b, []byte(s))
 }
 
+// BytesContainsStringXTimes checks if a byte slice contains a string x times
+func BytesContainsStringTimes(b []byte, s string) int {
+	return bytes.Count(b, []byte(s))
+}
+
 // TakeScreenshotWithChromedp takes a screenshot of the current browser window.
 func TakeScreenshotWithChromedp(url, file string) error {
 	// create context
