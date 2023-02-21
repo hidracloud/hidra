@@ -378,7 +378,8 @@ func (p *HTTP) bodyShouldContain(ctx2 context.Context, args map[string]string, s
 	}
 
 	appear := utils.BytesContainsStringTimes(output, strings.ToLower(args["search"]))
-	if times <= appear {
+
+	if times > appear {
 		return nil, fmt.Errorf("expected body to contain %s %d times, but only %d", args["search"], times, appear)
 	}
 
