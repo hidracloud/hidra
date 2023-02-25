@@ -74,6 +74,11 @@ type ExporterConfig struct {
 			URL string `yaml:"url"`
 		} `yaml:"callback"`
 	} `yaml:"report"`
+
+	UsageConfig struct {
+		// Enabled is the flag to enable the usage.
+		Enabled bool `yaml:"enabled"`
+	} `yaml:"usage"`
 }
 
 // LoadExporterConfig loads from byte array.
