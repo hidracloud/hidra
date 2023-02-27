@@ -3,8 +3,8 @@ package cmd
 import (
 	"github.com/hidracloud/hidra/v3/config"
 	"github.com/hidracloud/hidra/v3/internal/exporter"
-	"github.com/hidracloud/hidra/v3/internal/report"
 	"github.com/hidracloud/hidra/v3/internal/utils"
+	"github.com/hidracloud/hidra/v3/report"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
