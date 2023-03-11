@@ -55,10 +55,27 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 	}
 
 	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
+	customMetrics := make([]*metrics.Metric, 0)
 
-	err := chromedp.Run(ackCtx, performance.Enable(), chromedp.Navigate(args["url"]))
+	err := chromedp.Run(ackCtx, performance.Enable(), chromedp.ActionFunc(func(cxt context.Context) error {
+		perfMetrics, err := performance.GetMetrics().Do(cxt)
 
-	return nil, err
+		if err != nil {
+			return err
+		}
+
+		for _, metric := range perfMetrics {
+			customMetrics = append(customMetrics, &metrics.Metric{
+				Name:        utils.CamelCaseToSnakeCase(metric.Name),
+				Description: fmt.Sprintf("Performance metric %s", metric.Name),
+				Value:       metric.Value,
+			})
+		}
+
+		return nil
+	}), chromedp.Navigate(args["url"]))
+
+	return customMetrics, err
 }
 
 func selector2By(selector string) func(*chromedp.Selector) {

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -408,4 +409,18 @@ func TakeScreenshotWithChromedp(url, file string) error {
 	}
 
 	return nil
+}
+
+// CamelCaseToSnakeCase converts a string from camel case to snake case
+func CamelCaseToSnakeCase(s string) string {
+	// detect upper case letters
+	upper := regexp.MustCompile(`[A-Z]`)
+
+	// replace upper case letters with lower case letters and a preceding underscore
+	newString := strings.ToLower(upper.ReplaceAllStringFunc(s, func(s string) string {
+		return "_" + s
+	}))
+
+	// remove leading underscore
+	return strings.TrimPrefix(newString, "_")
 }
