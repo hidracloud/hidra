@@ -1,4 +1,4 @@
-ARG GOLANG_VERSION=1.19.5
+ARG GOLANG_VERSION=1.20.2
 ARG ALPINE_VERSION=3.17
 
 FROM golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} AS builder
@@ -14,6 +14,7 @@ COPY cmd ./cmd
 COPY internal ./internal
 COPY config ./config
 COPY tools ./tools
+COPY report ./report
 COPY main.go .
 
 RUN go build -o hidra .
