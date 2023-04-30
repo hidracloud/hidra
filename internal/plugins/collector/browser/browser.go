@@ -115,6 +115,7 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 					"url": args["url"],
 				},
 				Value: metric.Value,
+				Purge: false,
 			})
 		}
 
@@ -134,6 +135,7 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 				"type":     strings.ToLower(requestInfo.Type),
 			},
 			Value: float64(requestInfo.ResponseFinishedTimestamp.Sub(requestInfo.Timestamp).Milliseconds()),
+			Purge: true,
 		})
 	}
 

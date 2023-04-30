@@ -64,6 +64,15 @@ func InitializeWorker(config *config.ExporterConfig) {
 
 // updateMetrics updates the metrics
 func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, startTime time.Time, err error) {
+	// Purge metrics if metric.Purge is true
+	for _, metric := range allMetrics {
+		if metric.Purge {
+			prometheusMetric := initializePrometheusMetrics(metric)
+			labels := createLabels(metric, sample)
+			prometheusMetric.Delete(labels)
+		}
+	}
+
 	for _, metric := range allMetrics {
 		prometheusMetric := initializePrometheusMetrics(metric)
 		labels := createLabels(metric, sample)
