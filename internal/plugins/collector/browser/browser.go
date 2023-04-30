@@ -115,7 +115,6 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 					"url": args["url"],
 				},
 				Value: metric.Value,
-				Purge: false,
 			})
 		}
 
