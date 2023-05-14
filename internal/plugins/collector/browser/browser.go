@@ -132,9 +132,11 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 			Labels: map[string]string{
 				"part_url": requestInfo.URL,
 				"type":     strings.ToLower(requestInfo.Type),
+				"url":      args["url"],
 			},
-			Value: float64(requestInfo.ResponseFinishedTimestamp.Sub(requestInfo.Timestamp).Milliseconds()),
-			Purge: true,
+			Value:       float64(requestInfo.ResponseFinishedTimestamp.Sub(requestInfo.Timestamp).Milliseconds()),
+			Purge:       true,
+			PurgeLabels: []string{"url"},
 		})
 	}
 

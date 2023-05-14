@@ -69,7 +69,17 @@ func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, st
 		if metric.Purge {
 			prometheusMetric := initializePrometheusMetrics(metric)
 			labels := createLabels(metric, sample)
-			prometheusMetric.Delete(labels)
+
+			// Get only labels present on metric.PurgeLabels
+			purgeLabels := prometheus.Labels{}
+
+			for _, label := range metric.PurgeLabels {
+				if value, ok := labels[label]; ok {
+					purgeLabels[label] = value
+				}
+			}
+
+			prometheusMetric.DeletePartialMatch(purgeLabels)
 		}
 	}
 
