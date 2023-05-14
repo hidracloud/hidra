@@ -109,7 +109,7 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 
 		for _, metric := range perfMetrics {
 			customMetrics = append(customMetrics, &metrics.Metric{
-				Name:        utils.CamelCaseToSnakeCase(metric.Name),
+				Name:        "browser_" + utils.CamelCaseToSnakeCase(metric.Name),
 				Description: fmt.Sprintf("Performance metric %s", metric.Name),
 				Labels: map[string]string{
 					"url": args["url"],
@@ -127,7 +127,7 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 
 	for _, requestInfo := range requestsInfo {
 		customMetrics = append(customMetrics, &metrics.Metric{
-			Name:        "request_part_time",
+			Name:        "browser_request_part_time",
 			Description: fmt.Sprintf("Request time for %s", requestInfo.Type),
 			Labels: map[string]string{
 				"part_url": requestInfo.URL,
