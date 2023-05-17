@@ -10,6 +10,10 @@ type Metric struct {
 	Labels map[string]string
 	// Description is the description of the metric.
 	Description string
+	// Purge is the purge of the metric.
+	Purge bool `default:"false"`
+	// PurgeLabels is the purge labels of the metric.
+	PurgeLabels []string
 }
 
 // MetricsToMap converts metrics to map.

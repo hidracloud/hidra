@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -380,6 +381,11 @@ func BytesContainsString(b []byte, s string) bool {
 	return bytes.Contains(b, []byte(s))
 }
 
+// BytesContainsStringXTimes checks if a byte slice contains a string x times
+func BytesContainsStringTimes(b []byte, s string) int {
+	return bytes.Count(b, []byte(s))
+}
+
 // TakeScreenshotWithChromedp takes a screenshot of the current browser window.
 func TakeScreenshotWithChromedp(url, file string) error {
 	// create context
@@ -403,4 +409,18 @@ func TakeScreenshotWithChromedp(url, file string) error {
 	}
 
 	return nil
+}
+
+// CamelCaseToSnakeCase converts a string from camel case to snake case
+func CamelCaseToSnakeCase(s string) string {
+	// detect upper case letters
+	upper := regexp.MustCompile(`[A-Z]`)
+
+	// replace upper case letters with lower case letters and a preceding underscore
+	newString := strings.ToLower(upper.ReplaceAllStringFunc(s, func(s string) string {
+		return "_" + s
+	}))
+
+	// remove leading underscore
+	return strings.TrimPrefix(newString, "_")
 }

@@ -298,7 +298,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			})
 
 			if err != nil {
-				log.Warnf("failed to generate whois metrics: %s", err)
+				log.Debugf("failed to generate whois metrics: %s", err)
 			} else {
 				customMetrics = append(customMetrics, dnsMetrics...)
 			}
@@ -359,8 +359,28 @@ func (p *HTTP) bodyShouldContain(ctx2 context.Context, args map[string]string, s
 
 	output := utils.BytesToLowerCase(stepsgen[misc.ContextOutput].([]byte))
 
-	if !utils.BytesContainsString(output, strings.ToLower(args["search"])) {
-		return nil, fmt.Errorf("expected body to contain %s", args["search"])
+	times := 1
+
+	if val, ok := args["times"]; ok {
+		times, err = strconv.Atoi(val)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if times == 1 {
+		if !bytes.Contains(output, []byte(strings.ToLower(args["search"]))) {
+			return nil, fmt.Errorf("expected body to contain %s", args["search"])
+		}
+
+		return nil, err
+	}
+
+	appear := utils.BytesContainsStringTimes(output, strings.ToLower(args["search"]))
+
+	if times > appear {
+		return nil, fmt.Errorf("expected body to contain %s %d times, but only %d", args["search"], times, appear)
 	}
 
 	return nil, err
@@ -460,6 +480,7 @@ func (p *HTTP) Init() {
 		Description: "[DEPRECATED] Please use outputShouldContain from string plugin. Checks if the body contains the expected value",
 		Params: []plugins.StepParam{
 			{Name: "search", Description: "The expected value", Optional: false},
+			{Name: "times", Description: "The number of times the value should appear in the body", Optional: true},
 		},
 		Fn: p.bodyShouldContain,
 	})

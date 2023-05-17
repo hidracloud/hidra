@@ -168,6 +168,8 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 					"hostname": args["hostname"],
 					"hop":      n.IP.String(),
 				},
+				Purge:       true,
+				PurgeLabels: []string{"hostname"},
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -178,6 +180,8 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 					"hostname": args["hostname"],
 					"hop":      n.IP.String(),
 				},
+				Purge:       true,
+				PurgeLabels: []string{"hostname"},
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -188,6 +192,8 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 					"hostname": args["hostname"],
 					"hop":      n.IP.String(),
 				},
+				Purge:       true,
+				PurgeLabels: []string{"hostname"},
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -198,6 +204,8 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 					"hostname": args["hostname"],
 					"hop":      n.IP.String(),
 				},
+				Purge:       true,
+				PurgeLabels: []string{"hostname"},
 			})
 		}
 	}
