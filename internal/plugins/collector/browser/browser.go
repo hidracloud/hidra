@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
@@ -14,7 +13,6 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/cdproto/performance"
 	"github.com/chromedp/chromedp"
 )
@@ -30,20 +28,6 @@ var (
 // Browser represents a Browser plugin.
 type Browser struct {
 	plugins.BasePlugin
-}
-
-// RequestInfo represents a request info.
-type RequestInfo struct {
-	// Type is the type of the request.
-	Type string
-	// URL is the URL of the request.
-	URL string
-	// Timestamp is the timestamp of the request.
-	Timestamp time.Time
-	// ResponseReceivedTimestamp is the timestamp of the response received.
-	ResponseReceivedTimestamp time.Time
-	// ResponseFinishedTimestamp is the timestamp of the response finished.
-	ResponseFinishedTimestamp time.Time
 }
 
 // navigateTo implements the browser.navigateTo primitive.
@@ -71,76 +55,10 @@ func (p *Browser) navigateTo(ctx2 context.Context, args map[string]string, steps
 	}
 
 	ackCtx, _ := context.WithTimeout(chromedpCtx, timeout) //nolint:all
-	customMetrics := make([]*metrics.Metric, 0)
 
-	requestsInfo := make(map[string]*RequestInfo)
+	err := chromedp.Run(ackCtx, performance.Enable(), chromedp.Navigate(args["url"]))
 
-	chromedp.ListenTarget(
-		ackCtx,
-		func(ev interface{}) {
-			if ev, ok := ev.(*network.EventRequestWillBeSent); ok {
-				requestsInfo[string(ev.RequestID)] = &RequestInfo{
-					Type:      string(ev.Type),
-					Timestamp: ev.Timestamp.Time(),
-				}
-			}
-
-			if ev, ok := ev.(*network.EventResponseReceived); ok {
-				if requestInfo, ok := requestsInfo[string(ev.RequestID)]; ok {
-					requestInfo.ResponseReceivedTimestamp = ev.Timestamp.Time()
-					requestInfo.URL = ev.Response.URL
-				}
-			}
-
-			if ev, ok := ev.(*network.EventLoadingFinished); ok {
-				if requestInfo, ok := requestsInfo[string(ev.RequestID)]; ok {
-					requestInfo.ResponseFinishedTimestamp = ev.Timestamp.Time()
-				}
-			}
-		},
-	)
-
-	err := chromedp.Run(ackCtx, performance.Enable(), chromedp.ActionFunc(func(cxt context.Context) error {
-		perfMetrics, err := performance.GetMetrics().Do(cxt)
-
-		if err != nil {
-			return err
-		}
-
-		for _, metric := range perfMetrics {
-			customMetrics = append(customMetrics, &metrics.Metric{
-				Name:        "browser_" + utils.CamelCaseToSnakeCase(metric.Name),
-				Description: fmt.Sprintf("Performance metric %s", metric.Name),
-				Labels: map[string]string{
-					"url": args["url"],
-				},
-				Value: metric.Value,
-			})
-		}
-
-		return nil
-	}), chromedp.Navigate(args["url"]))
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, requestInfo := range requestsInfo {
-		customMetrics = append(customMetrics, &metrics.Metric{
-			Name:        "browser_request_part_time",
-			Description: fmt.Sprintf("Request time for %s", requestInfo.Type),
-			Labels: map[string]string{
-				"part_url": requestInfo.URL,
-				"type":     strings.ToLower(requestInfo.Type),
-				"url":      args["url"],
-			},
-			Value:       float64(requestInfo.ResponseFinishedTimestamp.Sub(requestInfo.Timestamp).Milliseconds()),
-			Purge:       true,
-			PurgeLabels: []string{"url"},
-		})
-	}
-
-	return customMetrics, err
+	return nil, err
 }
 
 func selector2By(selector string) func(*chromedp.Selector) {

@@ -19,10 +19,8 @@ import (
 var (
 	// IsEnabled returns true if the report is enabled.
 	IsEnabled = false
-	// ReportS3Conf is the S3 report configuration.
+	// ReportS3Conf
 	ReportS3Conf *ReportS3Config
-	// CallbackConf is the callback report configuration.
-	CallbackConf *CallbackConfig
 	// BasePath is the base path of the report.
 	BasePath = "/tmp/hidra"
 )
@@ -85,20 +83,9 @@ type ReportS3Config struct {
 	UseSSL bool `yaml:"use_ssl"`
 }
 
-// CallbackConfig is the callback report configuration.
-type CallbackConfig struct {
-	// URL is the URL of the callback.
-	URL string `yaml:"url"`
-}
-
 // SetS3Configuration configures the S3 report.
 func SetS3Configuration(reportS3Conf *ReportS3Config) {
 	ReportS3Conf = reportS3Conf
-}
-
-// SetCallbackConfiguration configures the callback report.
-func SetCallbackConfiguration(callbackConf *CallbackConfig) {
-	CallbackConf = callbackConf
 }
 
 // SetBasePath set base path of report
@@ -224,13 +211,6 @@ func (r *Report) Save() error {
 
 	if ReportS3Conf != nil {
 		err := r.SaveS3()
-		if err != nil {
-			return err
-		}
-	}
-
-	if CallbackConf != nil {
-		err := r.SendCallback()
 		if err != nil {
 			return err
 		}

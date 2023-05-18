@@ -4,17 +4,16 @@ tags:
 interval: "1m"
 timeout: "10s"
 steps:
-- plugin: http
-  action: request
-  parameters:
-    url: https://hidra.cloud/?timestamp={{ .Date.Unix }}
-- plugin: string
-  action: outputShouldContain
-  parameters:
-    search: Hidra
-    times: 3
+  - plugin: http
+    action: request
+    parameters:
+      url: https://hidra.cloud/?timestamp={{ .Date.Unix }}
+  - plugin: string
+    action: outputShouldContain
+    parameters:
+      search: Hidra
 
-- plugin: http
-  action: statusCodeShouldBe
-  parameters:
-    statusCode: 200
+  - plugin: http
+    action: statusCodeShouldBe
+    parameters:
+      statusCode: 200

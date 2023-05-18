@@ -3,7 +3,6 @@ package str
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
@@ -26,32 +25,11 @@ func (p *Strings) outputShouldContain(ctx2 context.Context, args map[string]stri
 
 	output := stepsgen[misc.ContextOutput].([]byte)
 
-	var err error
-	times := 1
-
-	if args["times"] != "" {
-		times, err = strconv.Atoi(args["times"])
-
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if times == 1 {
-		if utils.BytesContainsString(output, search) {
-			return []*metrics.Metric{}, nil
-		}
-
-		return []*metrics.Metric{}, fmt.Errorf("output does not contain %s", search)
-	}
-
-	appear := utils.BytesContainsStringTimes(output, search)
-
-	if times <= appear {
+	if utils.BytesContainsString(output, search) {
 		return []*metrics.Metric{}, nil
 	}
 
-	return []*metrics.Metric{}, fmt.Errorf("output does not contain %s %d times, appear %d", search, times, appear)
+	return []*metrics.Metric{}, fmt.Errorf("output does not contain %s", search)
 }
 
 // Init initializes the plugin.
@@ -66,11 +44,6 @@ func (p *Strings) Init() {
 				Name:        "search",
 				Description: "The string to search",
 				Optional:    false,
-			},
-			{
-				Name:        "times",
-				Description: "The number of times the string should appear",
-				Optional:    true,
 			},
 		},
 		Fn: p.outputShouldContain,

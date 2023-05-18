@@ -28,7 +28,4 @@ import (
 
 	// Run browser initialization
 	_ "github.com/hidracloud/hidra/v3/internal/plugins/collector/browser"
-
-	// Run dummy initialization
-	_ "github.com/hidracloud/hidra/v3/internal/plugins/collector/dummy"
 )

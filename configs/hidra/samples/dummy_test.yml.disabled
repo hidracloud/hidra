@@ -1,9 +1,0 @@
-description: "This is a sample to test the dummy plugin"
-tags:
-  tenant: "hidra"
-interval: "1m"
-timeout: "10s"
-steps:
-- plugin: dummy
-  action: doNothing
-  parameters: {}

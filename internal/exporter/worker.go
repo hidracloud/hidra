@@ -25,19 +25,16 @@ var (
 
 	// runningSamples is the running samples
 	sampleRunningTime map[string]*atomic.Uint64
-
 	// sampleRunningTimeLock is the sample running time lock
 	sampleRunningTimeMutex *sync.RWMutex
 
 	// lastSchedulerRun is the last scheduler run
 	lastRun map[string]time.Time
-
 	// lastRunMutex is the last run mutex
 	lastRunMutex *sync.RWMutex
 
 	// prometheusMetricStore is the prometheus metric store
 	prometheusMetricStore = make(map[string]*prometheus.GaugeVec)
-
 	// prometheusMetricStoreMutex is the prometheus metric store mutex
 	prometheusMetricStoreMutex = &sync.RWMutex{}
 
@@ -46,12 +43,6 @@ var (
 
 	// prometheusLastUpdate is the last time the metrics were updated
 	prometheusLastUpdate *prometheus.GaugeVec
-
-	// enableUsage is the flag to enable the usage
-	enableUsage = false
-
-	// prometheusTimeToRun is the time to run the sample
-	prometheusTimeToRun *prometheus.GaugeVec
 )
 
 // InitializeWorker initializes the worker
@@ -63,26 +54,7 @@ func InitializeWorker(config *config.ExporterConfig) {
 }
 
 // updateMetrics updates the metrics
-func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, startTime time.Time, err error) {
-	// Purge metrics if metric.Purge is true
-	for _, metric := range allMetrics {
-		if metric.Purge {
-			prometheusMetric := initializePrometheusMetrics(metric)
-			labels := createLabels(metric, sample)
-
-			// Get only labels present on metric.PurgeLabels
-			purgeLabels := prometheus.Labels{}
-
-			for _, label := range metric.PurgeLabels {
-				if value, ok := labels[label]; ok {
-					purgeLabels[label] = value
-				}
-			}
-
-			prometheusMetric.DeletePartialMatch(purgeLabels)
-		}
-	}
-
+func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, err error) {
 	for _, metric := range allMetrics {
 		prometheusMetric := initializePrometheusMetrics(metric)
 		labels := createLabels(metric, sample)
@@ -96,10 +68,6 @@ func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, st
 		prometheusStatusMetric.With(statusLabels).Set(0)
 	} else {
 		prometheusStatusMetric.With(statusLabels).Set(1)
-	}
-
-	if enableUsage {
-		prometheusTimeToRun.With(statusLabels).Set(float64(time.Since(startTime).Milliseconds()))
 	}
 
 	prometheusLastUpdate.With(statusLabels).Set(float64(time.Now().Unix()))
@@ -198,7 +166,7 @@ func RunOneWorker(worker int, config *config.ExporterConfig) {
 		result := RunSampleWithTimeout(ctx, sample, sample.Timeout)
 
 		// Update the metrics
-		updateMetrics(result.Metrics, sample, startTime, result.Error)
+		updateMetrics(result.Metrics, sample, result.Error)
 
 		runningTime.Add(uint64(time.Since(startTime).Milliseconds()))
 
@@ -250,21 +218,6 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 	prometheus.MustRegister(prometheusLastUpdate)
 	prometheus.MustRegister(prometheusStatusMetric)
-
-	if cnf.UsageConfig.Enabled {
-		enableUsage = true
-
-		prometheusTimeToRun = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Name:      "time_to_run",
-				Help:      "Hidra time to run",
-				Namespace: "hidra",
-			},
-			sampleCommonTags,
-		)
-
-		prometheus.MustRegister(prometheusTimeToRun)
-	}
 
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
 		go RunOneWorker(i, cnf)

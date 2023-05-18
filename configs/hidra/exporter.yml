@@ -27,9 +27,3 @@ report:
   #   secret_access_key: "hidratest"
   #   endpoint: "minio:9000"
   #   use_ssl: false
-  # callback:
-  #   enabled: true
-  #   url: http://localhost:19091
-usage:
-  # Enabled is the flag to enable the usage collector
-  enabled: true

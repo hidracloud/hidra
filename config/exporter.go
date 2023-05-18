@@ -66,19 +66,7 @@ type ExporterConfig struct {
 			// UseSSL is the flag to use SSL.
 			UseSSL bool `yaml:"use_ssl"`
 		} `yaml:"s3"`
-		// CallbackConfig is the configuration for the callback.
-		CallbackConfig struct {
-			// Enabled is the flag to enable the callback.
-			Enabled bool `yaml:"enabled"`
-			// URL is the URL.
-			URL string `yaml:"url"`
-		} `yaml:"callback"`
 	} `yaml:"report"`
-
-	UsageConfig struct {
-		// Enabled is the flag to enable the usage.
-		Enabled bool `yaml:"enabled"`
-	} `yaml:"usage"`
 }
 
 // LoadExporterConfig loads from byte array.

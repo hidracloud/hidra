@@ -22,7 +22,7 @@ type FTP struct {
 }
 
 // whoisFrom returns the whois information from a domain.
-func (p *FTP) connectTo(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+func (p *FTP) connectTo(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn); ok {
 		err := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn).Quit()
 
@@ -50,7 +50,7 @@ func (p *FTP) connectTo(ctx context.Context, args map[string]string, stepsgen ma
 }
 
 // login logs in to the FTP server.
-func (p *FTP) login(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+func (p *FTP) login(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn); !ok {
 		return nil, errNoFTPConnection
 	}
@@ -67,7 +67,7 @@ func (p *FTP) login(ctx context.Context, args map[string]string, stepsgen map[st
 }
 
 // write writes a file to the FTP server.
-func (p *FTP) write(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+func (p *FTP) write(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn); !ok {
 		return nil, errNoFTPConnection
 	}
@@ -107,7 +107,7 @@ func (p *FTP) write(ctx context.Context, args map[string]string, stepsgen map[st
 }
 
 // read reads a file from the FTP server.
-func (p *FTP) read(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+func (p *FTP) read(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn); !ok {
 		return nil, errNoFTPConnection
 	}
@@ -155,7 +155,7 @@ func (p *FTP) read(ctx context.Context, args map[string]string, stepsgen map[str
 }
 
 // delete deletes a file from the FTP server.
-func (p *FTP) delete(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+func (p *FTP) delete(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn); !ok {
 		return nil, errNoFTPConnection
 	}
@@ -185,7 +185,7 @@ func (p *FTP) delete(ctx context.Context, args map[string]string, stepsgen map[s
 }
 
 // onClose closes the connection.
-func (p *FTP) onClose(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+func (p *FTP) onClose(ctx2 context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	if _, ok := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn); ok {
 		err := stepsgen[misc.ContextFTPConnection].(*ftpclient.ServerConn).Quit()
 
