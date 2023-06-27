@@ -64,6 +64,54 @@ type HTTP struct {
 	plugins.BasePlugin
 }
 
+// CacheAgeShouldBeLowerThan represents a HTTP cache age should be lower than.
+func (p *HTTP) cacheAgeShouldBeLowerThan(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	var err error
+
+	// get context for current step
+	if _, ok := stepsgen[misc.ContextHTTPResponse].(*http.Response); !ok {
+		return nil, errContextNotFound
+	}
+
+	resp := stepsgen[misc.ContextHTTPResponse].(*http.Response)
+
+	ageStr := resp.Header.Get("Age")
+
+	if ageStr == "" {
+		return nil, fmt.Errorf("cache age not found")
+	}
+
+	age, err := strconv.ParseInt(ageStr, 10, 64)
+
+	if err != nil {
+		return nil, err
+	}
+
+	maxAge, err := strconv.ParseInt(args["maxAge"], 10, 64)
+
+	customMetrics := []*metrics.Metric{
+		{
+			Name:        "http_response_cache_age",
+			Description: "The HTTP response cache age",
+			Value:       float64(age),
+			Labels: map[string]string{
+				"method": stepsgen[misc.ContextHTTPMethod].(string),
+				"url":    stepsgen[misc.ContextHTTPURL].(string),
+			},
+		},
+	}
+
+	if err != nil {
+		return customMetrics, err
+	}
+
+	if age > maxAge {
+		return customMetrics, fmt.Errorf("cache age is %d, expected to be lower than %d", age, maxAge)
+	}
+
+	return customMetrics, err
+}
+
 // RequestByMethod makes a HTTP request by method.
 func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
 	var err error
@@ -541,6 +589,15 @@ func (p *HTTP) Init() {
 			stepsgen[misc.ContextHTTPFollowRedirects] = true
 			return nil, nil
 		},
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "cacheAgeShouldBeLowerThan",
+		Description: "Checks if the cache age is lower than the expected value",
+		Params: []plugins.StepParam{
+			{Name: "maxAge", Description: "The max age", Optional: false},
+		},
+		Fn: p.cacheAgeShouldBeLowerThan,
 	})
 
 	p.RegisterStep(&plugins.StepDefinition{
