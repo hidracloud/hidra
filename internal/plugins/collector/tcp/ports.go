@@ -59,23 +59,14 @@ func UniquePorts(intSlices ...[]uint16) []uint16 {
 	return result
 }
 
-// PortRange returns a slice of ports that are open, ordered in ascending order
-func CheckOpenPorts(protocol string, host string, start, end uint16, workers int) (openedPorts []uint16) {
+func CheckOpenPorts(protocol string, host string, checkPorts chan uint16, taskToRun uint32, workers int) (openedPorts []uint16) {
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 
-	// how much work we will do
-	taskToRun := end - start
-
-	// make chan with all ports to check
-	var checkPorts = make(chan uint16, taskToRun+1)
-	for i := start; i <= end; i++ {
-		checkPorts <- i
-	}
 	defer close(checkPorts)
 
 	ranTasks := uint32(0)
-	for i := int(0); i < workers; i++ {
+	for i := 0; i < workers; i++ {
 		// increment worker count
 		wg.Add(1)
 
@@ -89,7 +80,7 @@ func CheckOpenPorts(protocol string, host string, start, end uint16, workers int
 				// increment processed tasks
 				atomic.AddUint32(&ranTasks, 1)
 
-				if uint16(ranTasks) >= taskToRun {
+				if ranTasks >= taskToRun {
 					break
 				}
 
@@ -120,62 +111,32 @@ func CheckOpenPorts(protocol string, host string, start, end uint16, workers int
 	return openedPorts
 }
 
-// CheckOpenPorts checks from a slice of ports and returns the opened ports
-func CheckOpenPortsFromSlice(protocol string, host string, ports []uint16, workers int) (openedPorts []uint16) {
-	var wg sync.WaitGroup
-	var mutex sync.Mutex
+// CheckOpenPortsRange checks from a range of ports and returns the opened ports
+func CheckOpenPortsRange(protocol string, host string, start, end uint16, workers int) []uint16 {
+	// how much work we will do
+	taskToRun := (end - start) + 1
 
 	// make chan with all ports to check
-	var checkPorts = make(chan uint16, len(ports))
+	var checkPorts = make(chan uint16, taskToRun)
+	for i := start; i <= end; i++ {
+		checkPorts <- i
+	}
+
+	return CheckOpenPorts(protocol, host, checkPorts, uint32(taskToRun), workers)
+}
+
+// CheckOpenPorts checks from a slice of ports and returns the opened ports
+func CheckOpenPortsFromSlice(protocol string, host string, ports []uint16, workers int) (openedPorts []uint16) {
+	// how much work we will do
+	taskToRun := len(ports)
+
+	// make chan with all ports to check
+	var checkPorts = make(chan uint16, taskToRun)
 	for _, port := range ports {
 		checkPorts <- port
 	}
-	defer close(checkPorts)
 
-	ranTasks := uint32(0)
-	for i := 0; i < workers; i++ {
-		// increment worker count
-		wg.Add(1)
-
-		// worker starts here
-		go func() {
-			// we will notify this worker finished work
-			defer wg.Done()
-
-			// worker loop
-			for {
-				// increment processed tasks
-				atomic.AddUint32(&ranTasks, 1)
-
-				if ranTasks > uint32(len(ports)) {
-					break
-				}
-
-				// port we are checking
-				port := <-checkPorts
-
-				// check it
-				if IsPortOpen(protocol, host, port) {
-					mutex.Lock()
-
-					// it is open, add it to the list
-					openedPorts = append(openedPorts, port)
-
-					mutex.Unlock()
-				}
-			}
-		}()
-	}
-
-	// wait for workers
-	wg.Wait()
-
-	// sort opened ports in ascending order
-	sort.Slice(openedPorts, func(i, j int) bool {
-		return openedPorts[i] < openedPorts[j]
-	})
-
-	return openedPorts
+	return CheckOpenPorts(protocol, host, checkPorts, uint32(taskToRun), workers)
 }
 
 func getExpectedPorts(ports string) []uint16 {
@@ -225,7 +186,7 @@ func (s *TcpPortsScenario) checkOpenPorts(ctx2 context.Context, args map[string]
 	openedPorts1 := CheckOpenPortsFromSlice("tcp4", args["host"], expectedPorts, runtime.NumCPU())
 
 	// check a bunch of ports
-	openedPorts2 := CheckOpenPorts("tcp4", args["host"], from_port, to_port, workers)
+	openedPorts2 := CheckOpenPortsRange("tcp4", args["host"], from_port, to_port, workers)
 
 	// merge slices
 	openedPorts := UniquePorts(openedPorts1, openedPorts2)
