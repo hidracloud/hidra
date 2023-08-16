@@ -3,15 +3,16 @@ tags:
   tenant: "hidra"
 interval: "1m"
 timeout: "10s"
+retry: 3
 steps:
-- plugin: http
-  action: followRedirects
-  parameters: {}
-- plugin: http
-  action: request
-  parameters:
-    url: https://google.com/
-- plugin: http
-  action: statusCodeShouldBe
-  parameters:
-    statusCode: 200
+  - plugin: http
+    action: followRedirects
+    parameters: {}
+  - plugin: http
+    action: request
+    parameters:
+      url: https://google.com/
+  - plugin: http
+    action: statusCodeShouldBe
+    parameters:
+      statusCode: 200
