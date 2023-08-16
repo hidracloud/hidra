@@ -237,6 +237,10 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 				break
 			}
 		}
+
+		if err == nil {
+			break
+		}
 	}
 
 	allMetrics = append(allMetrics, retriesMetric)
