@@ -216,6 +216,8 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 		retriesMetric.Value = float64(tries)
 		allMetrics = []*metrics.Metric{}
 
+		time.Sleep(time.Duration(tries) * time.Second)
+
 		for _, variables := range sample.Variables {
 			var newMetrics []*metrics.Metric
 			newMetrics, err = RunWithVariables(ctx, variables, stepsgen, sample)
