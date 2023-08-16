@@ -29,6 +29,9 @@ type SampleConfig struct {
 	// Timeout is the timeout to scrape the sample.
 	Timeout time.Duration `yaml:"timeout,omitempty"`
 
+	// Retry is the retry to scrape the sample.
+	Retry int `yaml:"retry,omitempty" default:"0"`
+
 	// Steps is the steps to scrape the sample.
 	Steps []StepConfig `yaml:"steps,omitempty"`
 
@@ -70,6 +73,10 @@ func LoadSampleConfig(data []byte) (*SampleConfig, error) {
 
 	if config.Interval == 0 {
 		config.Interval = 60 * time.Second
+	}
+
+	if config.Retry < 0 {
+		config.Retry = 0
 	}
 
 	return &config, nil
