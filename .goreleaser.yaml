@@ -10,8 +10,6 @@ builds:
       - darwin
     ldflags:
       - -X github.com/hidracloud/hidra/v3/internal/misc.Version={{.Version}} -X github.com/hidracloud/hidra/v3/internal/misc.Commit={{.Commit}} -X github.com/hidracloud/hidra/v3/internal/misc.BuildDate={{.Date}} -X github.com/hidracloud/hidra/v3/internal/misc.Branch={{.Branch}}
-archives:
-  - replacements: {}
 checksum:
   name_template: "checksums.txt"
 snapshot:
