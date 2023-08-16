@@ -1,6 +1,6 @@
 module github.com/hidracloud/hidra/v3
 
-go 1.20
+go 1.21
 
 require (
 	github.com/StalkR/dnssec-analyzer v1.0.0
