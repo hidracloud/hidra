@@ -133,6 +133,8 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 
 	var certificates []*x509.Certificate
 
+	ipAddress := ""
+
 	clientTrace := &httptrace.ClientTrace{
 		DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
 			dnsStartTime = time.Now()
@@ -146,6 +148,10 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 
 			dnsStopTime = time.Now()
 			stepsgen[misc.ContextConnectionIP] = dnsAddr
+
+			if len(dnsInfo.Addrs) > 0 {
+				ipAddress = dnsInfo.Addrs[0].String()
+			}
 		},
 		ConnectStart: func(network, addr string) {
 			tcpStartTime = time.Now()
@@ -349,6 +355,23 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 				log.Debugf("failed to generate whois metrics: %s", err)
 			} else {
 				customMetrics = append(customMetrics, dnsMetrics...)
+			}
+		}
+
+		icmpPlugin := plugins.GetPlugin("icmp")
+
+		if icmpPlugin != nil {
+			tracerouteMetrics, err := icmpPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+				Name:    "traceroute",
+				Args:    map[string]string{"hostname": ipAddress},
+				Timeout: int(timeout.Seconds()),
+				Negate:  false,
+			})
+
+			if err != nil {
+				log.Debugf("failed to generate traceroute metrics: %s", err)
+			} else {
+				customMetrics = append(customMetrics, tracerouteMetrics...)
 			}
 		}
 	}

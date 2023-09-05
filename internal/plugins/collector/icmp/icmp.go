@@ -2,6 +2,7 @@ package icmp
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os/user"
 	"time"
@@ -145,7 +146,7 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 
 	hops, err := traceroute.Trace(ipAddresses[0])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error while tracing route, maybe we don't have permissions: %s", err)
 	}
 
 	maxDistance := 0
@@ -162,7 +163,7 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 
 			customMetrics = append(customMetrics, &metrics.Metric{
 				Name:        "icmp_traceroute_rtt",
-				Value:       float64(n.RTT[1].Milliseconds()),
+				Value:       float64(n.RTT[0].Milliseconds()),
 				Description: "traceroute rtt",
 				Labels: map[string]string{
 					"hostname": args["hostname"],
