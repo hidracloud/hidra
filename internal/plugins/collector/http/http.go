@@ -133,8 +133,6 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 
 	var certificates []*x509.Certificate
 
-	ipAddress := ""
-
 	clientTrace := &httptrace.ClientTrace{
 		DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
 			dnsStartTime = time.Now()
@@ -148,10 +146,6 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 
 			dnsStopTime = time.Now()
 			stepsgen[misc.ContextConnectionIP] = dnsAddr
-
-			if len(dnsInfo.Addrs) > 0 {
-				ipAddress = dnsInfo.Addrs[0].String()
-			}
 		},
 		ConnectStart: func(network, addr string) {
 			tcpStartTime = time.Now()
@@ -363,7 +357,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 		if icmpPlugin != nil {
 			tracerouteMetrics, err := icmpPlugin.RunStep(ctx, stepsgen, &plugins.Step{
 				Name:    "traceroute",
-				Args:    map[string]string{"hostname": ipAddress},
+				Args:    map[string]string{"hostname": u.Host},
 				Timeout: int(timeout.Seconds()),
 				Negate:  false,
 			})
