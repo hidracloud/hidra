@@ -167,7 +167,6 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				Description: "traceroute rtt",
 				Labels: map[string]string{
 					"hostname": args["hostname"],
-					"hop":      n.IP.String(),
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
@@ -179,7 +178,6 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				Description: "traceroute distance",
 				Labels: map[string]string{
 					"hostname": args["hostname"],
-					"hop":      n.IP.String(),
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
@@ -191,7 +189,6 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				Description: "traceroute ip",
 				Labels: map[string]string{
 					"hostname": args["hostname"],
-					"hop":      n.IP.String(),
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
@@ -203,7 +200,6 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				Description: "traceroute last time",
 				Labels: map[string]string{
 					"hostname": args["hostname"],
-					"hop":      n.IP.String(),
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
