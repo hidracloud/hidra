@@ -107,34 +107,41 @@ func purgeMetrics() {
 
 }
 
+// addMetric2PurgeListIfNeeeded adds the metric to purge list if needed
+func addMetric2PurgeListIfNeeeded(metric *metrics.Metric, sample *config.SampleConfig) {
+	if metric.Purge {
+		prometheusMetric := initializePrometheusMetrics(metric)
+		labels := createLabels(metric, sample)
+
+		// Get only labels present on metric.PurgeLabels
+		purgeLabels := prometheus.Labels{}
+
+		for _, label := range metric.PurgeLabels {
+			if value, ok := labels[label]; ok {
+				purgeLabels[label] = value
+			}
+		}
+
+		purgeTime := time.Now().Add(metric.PurgeAfter)
+
+		add2PurgeList(purgeLabels, purgeTime, prometheusMetric)
+	}
+}
+
+// createMetrics creates the metrics
+func createMetrics(metric *metrics.Metric, sample *config.SampleConfig) {
+	prometheusMetric := initializePrometheusMetrics(metric)
+	labels := createLabels(metric, sample)
+
+	prometheusMetric.With(labels).Set(metric.Value)
+}
+
 // updateMetrics updates the metrics
 func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, startTime time.Time, err error) {
 	// Purge metrics if metric.Purge is true
 	for _, metric := range allMetrics {
-		if metric.Purge {
-			prometheusMetric := initializePrometheusMetrics(metric)
-			labels := createLabels(metric, sample)
-
-			// Get only labels present on metric.PurgeLabels
-			purgeLabels := prometheus.Labels{}
-
-			for _, label := range metric.PurgeLabels {
-				if value, ok := labels[label]; ok {
-					purgeLabels[label] = value
-				}
-			}
-
-			purgeTime := time.Now().Add(metric.PurgeAfter)
-
-			add2PurgeList(purgeLabels, purgeTime, prometheusMetric)
-		}
-	}
-
-	for _, metric := range allMetrics {
-		prometheusMetric := initializePrometheusMetrics(metric)
-		labels := createLabels(metric, sample)
-
-		prometheusMetric.With(labels).Set(metric.Value)
+		addMetric2PurgeListIfNeeeded(metric, sample)
+		createMetrics(metric, sample)
 	}
 
 	statusLabels := createLabelsForStatus(sample)
@@ -272,6 +279,32 @@ func RunOneWorker(worker int, config *config.ExporterConfig) {
 	}
 }
 
+// runBackgroundMetricsTask runs the background metrics task
+func runBackgroundMetricsTask() {
+	for {
+		backgroundTask := runner.GetNextBackgroundTask()
+
+		for backgroundTask != nil {
+			log.Debug("Running background task")
+			allMetrics, sample, err := backgroundTask()
+
+			if err != nil {
+				log.Debug("Error getting background task metrics", err)
+			}
+
+			if sample != nil {
+				for _, metric := range allMetrics {
+					addMetric2PurgeListIfNeeeded(metric, sample)
+					createMetrics(metric, sample)
+				}
+			}
+
+			backgroundTask = runner.GetNextBackgroundTask()
+		}
+		time.Sleep(10 * time.Second)
+	}
+}
+
 // RunWorkers runs the workers
 func RunWorkers(cnf *config.ExporterConfig) {
 
@@ -314,6 +347,7 @@ func RunWorkers(cnf *config.ExporterConfig) {
 	}
 
 	go purgeMetrics()
+	go runBackgroundMetricsTask()
 
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
 		go RunOneWorker(i, cnf)

@@ -54,7 +54,24 @@ var testCmd = &cobra.Command{
 				{"Result", resultEmoji},
 			}
 
-			for _, metric := range result.Metrics {
+			metrics := result.Metrics
+
+			// Get metrics from background tasks
+			bgTask := runner.GetNextBackgroundTask()
+
+			for bgTask != nil {
+				log.Debug("Running background task")
+				bgTasksMetrics, _, err := bgTask()
+
+				if err != nil {
+					log.Debug("Error getting background task metrics", err)
+				}
+
+				metrics = append(metrics, bgTasksMetrics...)
+				bgTask = runner.GetNextBackgroundTask()
+			}
+
+			for _, metric := range metrics {
 				infoTable = append(infoTable, []string{fmt.Sprintf("%s (%s) (%v)", metric.Description, metric.Name, metric.Labels), fmt.Sprintf("%f", metric.Value)})
 			}
 

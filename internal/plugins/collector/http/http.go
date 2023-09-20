@@ -16,9 +16,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hidracloud/hidra/v3/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/hidracloud/hidra/v3/internal/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -352,22 +354,28 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			}
 		}
 
-		icmpPlugin := plugins.GetPlugin("icmp")
+		var sample *config.SampleConfig
 
-		if icmpPlugin != nil {
-			tracerouteMetrics, err := icmpPlugin.RunStep(ctx, stepsgen, &plugins.Step{
-				Name:    "traceroute",
-				Args:    map[string]string{"hostname": u.Host},
-				Timeout: int(timeout.Seconds()),
-				Negate:  false,
-			})
-
-			if err != nil {
-				log.Debugf("failed to generate traceroute metrics: %s", err)
-			} else {
-				customMetrics = append(customMetrics, tracerouteMetrics...)
-			}
+		if val, ok := stepsgen[misc.ContextSample].(*config.SampleConfig); ok {
+			sample = val
 		}
+
+		runner.RegisterBackgroundTask(func() ([]*metrics.Metric, *config.SampleConfig, error) {
+			icmpPlugin := plugins.GetPlugin("icmp")
+
+			if icmpPlugin != nil {
+				tracerouteMetrics, err := icmpPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+					Name:    "traceroute",
+					Args:    map[string]string{"hostname": u.Host},
+					Timeout: int(timeout.Seconds()),
+					Negate:  false,
+				})
+
+				return tracerouteMetrics, sample, err
+			}
+
+			return nil, sample, fmt.Errorf("icmp plugin not found")
+		})
 	}
 
 	return customMetrics, err
