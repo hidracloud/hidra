@@ -44,6 +44,8 @@ type ExporterConfig struct {
 		MaxQueueSize int `yaml:"max_queue_size"`
 		// SleepBetweenJobs is the sleep between jobs.
 		SleepBetweenJobs time.Duration `yaml:"sleep_between_jobs"`
+		// DisableBGTasks is the flag to disable the background tasks.
+		DisableBGTasks bool `yaml:"disable_bg_tasks"`
 	} `yaml:"worker"`
 
 	// ReportConfig is the configuration for the report.

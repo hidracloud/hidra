@@ -347,7 +347,10 @@ func RunWorkers(cnf *config.ExporterConfig) {
 	}
 
 	go purgeMetrics()
-	go runBackgroundMetricsTask()
+
+	if !cnf.WorkerConfig.DisableBGTasks {
+		go runBackgroundMetricsTask()
+	}
 
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
 		go RunOneWorker(i, cnf)

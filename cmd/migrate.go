@@ -19,6 +19,9 @@ var migrateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		exitCode := 0
 		log.SetLevel(log.DebugLevel)
+		log.SetFormatter(&log.TextFormatter{
+			FullTimestamp: true,
+		})
 
 		// Check if output path exists
 		if outputPath == "" {

@@ -22,6 +22,11 @@ var testCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		exitCode := 0
 		log.SetLevel(log.DebugLevel)
+		log.SetFormatter(&log.TextFormatter{
+			FullTimestamp:   true,
+			TimestampFormat: "2006-01-02 15:04:05.000",
+		})
+
 		if !utils.IsHeadless() {
 			os.Setenv("BROWSER_NO_HEADLESS", "1")
 			log.Debug("Setting up browser in headless mode")
@@ -56,21 +61,22 @@ var testCmd = &cobra.Command{
 
 			metrics := result.Metrics
 
-			// Get metrics from background tasks
-			bgTask := runner.GetNextBackgroundTask()
+			if runBgTasks {
+				// Get metrics from background tasks
+				bgTask := runner.GetNextBackgroundTask()
 
-			for bgTask != nil {
-				log.Debug("Running background task")
-				bgTasksMetrics, _, err := bgTask()
+				for bgTask != nil {
+					log.Debug("Running background task")
+					bgTasksMetrics, _, err := bgTask()
 
-				if err != nil {
-					log.Debug("Error getting background task metrics", err)
+					if err != nil {
+						log.Debug("Error getting background task metrics", err)
+					}
+
+					metrics = append(metrics, bgTasksMetrics...)
+					bgTask = runner.GetNextBackgroundTask()
 				}
-
-				metrics = append(metrics, bgTasksMetrics...)
-				bgTask = runner.GetNextBackgroundTask()
 			}
-
 			for _, metric := range metrics {
 				infoTable = append(infoTable, []string{fmt.Sprintf("%s (%s) (%v)", metric.Description, metric.Name, metric.Labels), fmt.Sprintf("%f", metric.Value)})
 			}

@@ -24,6 +24,8 @@ worker:
   max_queue_size: 1000
   # sleep between jobs is the time that a worker will sleep between jobs. This is useful if your system is busy and you want to give it a break
   sleep_between_jobs: 1s
+  # disable bg tasks is the flag to disable background tasks. This is useful if you want to run the exporter in a single process
+  disable_bg_tasks: false
 report:
   enabled: true
   # s3:

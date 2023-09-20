@@ -22,7 +22,6 @@ import (
 	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/hidracloud/hidra/v3/internal/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -337,28 +336,28 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			})
 		}
 
-		dnsPlugin := plugins.GetPlugin("dns")
-
-		if dnsPlugin != nil {
-			dnsMetrics, err := dnsPlugin.RunStep(ctx, stepsgen, &plugins.Step{
-				Name:    "whoisFrom",
-				Args:    map[string]string{"domain": u.Host},
-				Timeout: int(timeout.Seconds()),
-				Negate:  false,
-			})
-
-			if err != nil {
-				log.Debugf("failed to generate whois metrics: %s", err)
-			} else {
-				customMetrics = append(customMetrics, dnsMetrics...)
-			}
-		}
-
 		var sample *config.SampleConfig
 
 		if val, ok := stepsgen[misc.ContextSample].(*config.SampleConfig); ok {
 			sample = val
 		}
+
+		runner.RegisterBackgroundTask(func() ([]*metrics.Metric, *config.SampleConfig, error) {
+			dnsPlugin := plugins.GetPlugin("dns")
+
+			if dnsPlugin != nil {
+				dnsMetrics, err := dnsPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+					Name:    "whoisFrom",
+					Args:    map[string]string{"domain": u.Host},
+					Timeout: int(timeout.Seconds()),
+					Negate:  false,
+				})
+
+				return dnsMetrics, sample, err
+			}
+
+			return nil, sample, fmt.Errorf("dns plugin not found")
+		})
 
 		runner.RegisterBackgroundTask(func() ([]*metrics.Metric, *config.SampleConfig, error) {
 			icmpPlugin := plugins.GetPlugin("icmp")

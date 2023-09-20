@@ -3,7 +3,6 @@ package report
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/hidracloud/hidra/v3/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
-	"github.com/pixelbender/go-traceroute/traceroute"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -135,20 +133,12 @@ func NewReport(sample *config.SampleConfig, allMetrics []*metrics.Metric, variab
 func (r *Report) GenerateConnectionInfo(stepsgen map[string]any) {
 	lastIP := ""
 
-	log.Debug("Generating connection info with traceroute")
-	tracerouteList := []string{}
-	if lastIP, ok := stepsgen[misc.ContextConnectionIP].(string); ok {
-		// nolint: errcheck
-		hops, _ := traceroute.Trace(net.ParseIP(lastIP))
-
-		for _, hop := range hops {
-			tracerouteList = append(tracerouteList, fmt.Sprintf("%d. %v %v", hop.Distance, hop.Nodes[0].IP, hop.Nodes[0].RTT))
-		}
+	if val, ok := stepsgen[misc.ContextConnectionIP].(string); ok {
+		lastIP = val
 	}
 
 	r.ConnectionInfo = ReportConnectionInfo{
-		IP:         lastIP,
-		Traceroute: tracerouteList,
+		IP: lastIP,
 	}
 }
 
