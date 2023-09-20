@@ -12,6 +12,7 @@ import (
 	"github.com/hidracloud/hidra/v3/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/runner"
+	"github.com/hidracloud/hidra/v3/internal/utils"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -52,6 +53,16 @@ var (
 
 	// prometheusTimeToRun is the time to run the sample
 	prometheusTimeToRun *prometheus.GaugeVec
+
+	// toBePurged is the to be purged
+	toBePurged = make(map[string]struct {
+		Labels           map[string]string
+		PurgeAt          time.Time
+		PrometheusMetric *prometheus.GaugeVec
+	})
+
+	// toBePurgedMutex is the to be purged mutex
+	toBePurgedMutex = &sync.Mutex{}
 )
 
 // InitializeWorker initializes the worker
@@ -60,6 +71,40 @@ func InitializeWorker(config *config.ExporterConfig) {
 	sampleRunningTime = make(map[string]*atomic.Uint64)
 	sampleRunningTimeMutex = &sync.RWMutex{}
 	lastRun = make(map[string]time.Time)
+}
+
+// add2PurgeList adds to purge list
+func add2PurgeList(purgeLabels prometheus.Labels, purgeTime time.Time, prometheusMetric *prometheus.GaugeVec) {
+	toBePurgedMutex.Lock()
+	defer toBePurgedMutex.Unlock()
+	toBePurged[utils.Map2Hash(purgeLabels)] = struct {
+		Labels           map[string]string
+		PurgeAt          time.Time
+		PrometheusMetric *prometheus.GaugeVec
+	}{
+		Labels:           purgeLabels,
+		PurgeAt:          purgeTime,
+		PrometheusMetric: prometheusMetric,
+	}
+}
+
+// purgeMetrics purges the metrics
+func purgeMetrics() {
+	for {
+		toBePurgedMutex.Lock()
+
+		for hash, metric := range toBePurged {
+			if time.Now().After(metric.PurgeAt) {
+				metric.PrometheusMetric.DeletePartialMatch(metric.Labels)
+				delete(toBePurged, hash)
+			}
+		}
+
+		toBePurgedMutex.Unlock()
+
+		time.Sleep(1 * time.Minute)
+	}
+
 }
 
 // updateMetrics updates the metrics
@@ -79,7 +124,9 @@ func updateMetrics(allMetrics []*metrics.Metric, sample *config.SampleConfig, st
 				}
 			}
 
-			prometheusMetric.DeletePartialMatch(purgeLabels)
+			purgeTime := time.Now().Add(metric.PurgeAfter)
+
+			add2PurgeList(purgeLabels, purgeTime, prometheusMetric)
 		}
 	}
 
@@ -266,7 +313,10 @@ func RunWorkers(cnf *config.ExporterConfig) {
 		prometheus.MustRegister(prometheusTimeToRun)
 	}
 
+	go purgeMetrics()
+
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {
 		go RunOneWorker(i, cnf)
 	}
+
 }

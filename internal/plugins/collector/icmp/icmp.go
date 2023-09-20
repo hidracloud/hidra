@@ -171,6 +171,7 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
+				PurgeAfter:  time.Second * 60,
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -183,6 +184,7 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
+				PurgeAfter:  time.Second * 60,
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -195,6 +197,7 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
+				PurgeAfter:  time.Second * 60,
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -207,6 +210,7 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 				},
 				Purge:       true,
 				PurgeLabels: []string{"hostname"},
+				PurgeAfter:  time.Second * 60,
 			})
 		}
 	}
@@ -218,6 +222,7 @@ func (p *ICMP) traceroute(ctx2 context.Context, args map[string]string, stepsgen
 		Labels: map[string]string{
 			"hostname": args["hostname"],
 		},
+		PurgeAfter: time.Second * 60,
 	})
 
 	return customMetrics, nil

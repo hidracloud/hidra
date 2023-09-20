@@ -90,6 +90,16 @@ func EqualSlices[T comparable](a, b []T) bool {
 	return true
 }
 
+// Map2Hash converts a map to a hash
+func Map2Hash(m map[string]string) string {
+	var hash string
+	for k, v := range m {
+		hash += k + v
+	}
+
+	return hash
+}
+
 // PrintTable prints a table
 func PrintTable(table [][]string) {
 	// get number of columns from the first table row

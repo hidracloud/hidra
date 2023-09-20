@@ -1,5 +1,7 @@
 package metrics
 
+import "time"
+
 // Metric represents a metric.
 type Metric struct {
 	// Name is the name of the metric.
@@ -14,6 +16,8 @@ type Metric struct {
 	Purge bool `default:"false"`
 	// PurgeLabels is the purge labels of the metric.
 	PurgeLabels []string
+	// PurgeAfter is the purge after of the metric.
+	PurgeAfter time.Duration
 }
 
 // MetricsToMap converts metrics to map.
