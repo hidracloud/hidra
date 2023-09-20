@@ -34,6 +34,12 @@ type ExporterConfig struct {
 		GCInterval time.Duration `yaml:"gc_interval"`
 	} `yaml:"scheduler"`
 
+	BasicAuth struct {
+		Enabled  bool   `yaml:"enabled" default:"false"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+	} `yaml:"basic_auth"`
+
 	WorkerConfig struct {
 		// ParallelJobs is the size of the channel.
 		ParallelJobs int `yaml:"parallel_jobs"`
