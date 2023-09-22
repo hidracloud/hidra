@@ -359,22 +359,22 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			return nil, sample, fmt.Errorf("dns plugin not found")
 		})
 
-		runner.RegisterBackgroundTask(func() ([]*metrics.Metric, *config.SampleConfig, error) {
-			icmpPlugin := plugins.GetPlugin("icmp")
+		// runner.RegisterBackgroundTask(func() ([]*metrics.Metric, *config.SampleConfig, error) {
+		// 	icmpPlugin := plugins.GetPlugin("icmp")
 
-			if icmpPlugin != nil {
-				tracerouteMetrics, err := icmpPlugin.RunStep(ctx, stepsgen, &plugins.Step{
-					Name:    "traceroute",
-					Args:    map[string]string{"hostname": u.Host},
-					Timeout: int(timeout.Seconds()),
-					Negate:  false,
-				})
+		// 	if icmpPlugin != nil {
+		// 		tracerouteMetrics, err := icmpPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+		// 			Name:    "traceroute",
+		// 			Args:    map[string]string{"hostname": u.Host},
+		// 			Timeout: int(timeout.Seconds()),
+		// 			Negate:  false,
+		// 		})
 
-				return tracerouteMetrics, sample, err
-			}
+		// 		return tracerouteMetrics, sample, err
+		// 	}
 
-			return nil, sample, fmt.Errorf("icmp plugin not found")
-		})
+		// 	return nil, sample, fmt.Errorf("icmp plugin not found")
+		// })
 	}
 
 	return customMetrics, err
