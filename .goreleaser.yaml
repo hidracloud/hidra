@@ -54,7 +54,7 @@ nfpms:
 #     secret_name: FURY_IO_TOKEN
 publishers:
   - name: fury.io
-    disable: '{{ if and .Arch (ne .Arch "amd64") }}true{{ else }}false{{ end | lower }}'
+    disable: '{{ if and .Arch (ne .Arch "amd64") }}true{{ else }}false{{ end }}'
     ids:
       - packages
     dir: "{{ dir .ArtifactPath }}"
