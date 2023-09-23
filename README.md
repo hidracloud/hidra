@@ -29,7 +29,7 @@ If you want to install Hidra easily, please use the package repositories.
 ```bash
 # Debian/Ubuntu
 curl https://repo.hidra.cloud/apt/gpg.key | sudo apt-key add -
-echo "deb https://repo.hidra.cloud/apt/" | sudo tee /etc/apt/sources.list.d/hidra.list
+echo "deb [trusted=yes] https://repo.hidra.cloud/apt /" | sudo tee /etc/apt/sources.list.d/hidra.list
 
 # RedHat/CentOS
 curl https://repo.hidra.cloud/rpm/gpg.key | sudo rpm --import -
