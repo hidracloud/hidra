@@ -5,3 +5,4 @@ String plugin is used to check strings
 Checks if the output contains a string
 #### Parameters
 - search: The string to search
+-  (optional) times: The number of times the string should appear

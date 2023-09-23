@@ -3,6 +3,7 @@ tags:
   tenant: "hidra"
 interval: "1m"
 timeout: "10s"
+retry: 3
 steps:
   - plugin: tcp
     action: connectTo

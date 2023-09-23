@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/hidracloud/hidra/v3/internal/plugins"
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,6 +27,9 @@ type SampleConfig struct {
 
 	// Timeout is the timeout to scrape the sample.
 	Timeout time.Duration `yaml:"timeout,omitempty"`
+
+	// Retry is the retry to scrape the sample.
+	Retry int `yaml:"retry,omitempty" default:"0"`
 
 	// Steps is the steps to scrape the sample.
 	Steps []StepConfig `yaml:"steps,omitempty"`
@@ -72,6 +74,10 @@ func LoadSampleConfig(data []byte) (*SampleConfig, error) {
 		config.Interval = 60 * time.Second
 	}
 
+	if config.Retry < 0 {
+		config.Retry = 0
+	}
+
 	return &config, nil
 }
 
@@ -98,28 +104,13 @@ func (c *SampleConfig) Verify() error {
 		return fmt.Errorf("description is required")
 	}
 
-	lastPlugin := ""
 	for _, step := range c.Steps {
 		if step.Action == "" {
 			return fmt.Errorf("action is required")
 		}
 
-		if step.Plugin != "" {
-			lastPlugin = step.Plugin
-		}
-
 		if step.Parameters == nil {
 			return fmt.Errorf("parameters is required")
-		}
-
-		plugin := plugins.GetPlugin(lastPlugin)
-
-		if plugin == nil {
-			return fmt.Errorf("plugin %s not found", step.Plugin)
-		}
-
-		if !plugin.StepExists(step.Action) {
-			return fmt.Errorf("action %s not found", step.Action)
 		}
 	}
 

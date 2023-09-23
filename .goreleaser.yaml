@@ -10,8 +10,6 @@ builds:
       - darwin
     ldflags:
       - -X github.com/hidracloud/hidra/v3/internal/misc.Version={{.Version}} -X github.com/hidracloud/hidra/v3/internal/misc.Commit={{.Commit}} -X github.com/hidracloud/hidra/v3/internal/misc.BuildDate={{.Date}} -X github.com/hidracloud/hidra/v3/internal/misc.Branch={{.Branch}}
-archives:
-  - replacements: {}
 checksum:
   name_template: "checksums.txt"
 snapshot:
@@ -24,7 +22,8 @@ changelog:
       - "^test:"
 
 nfpms:
-  - package_name: hidra
+  - id: packages
+    package_name: hidra
     file_name_template: "{{ .ConventionalFileName }}"
     vendor: "Hidra Team"
     homepage: https://hidra.cloud
@@ -37,14 +36,23 @@ nfpms:
       - apk
     dependencies:
       - chromium
+    scripts:
+      postinstall: ./scripts/postinstall.sh
     contents:
       - src: ./configs/hidra/exporter.yml
-        dst: /etc/hidra/exporter.yml
+        dst: /etc/hidra_exporter/config.yml
+        type: config|noreplace
+      - src: ./configs/systemd/hidra_exporter.service
+        dst: /etc/systemd/system/hidra_exporter.service
+        type: config
+      - src: ./configs/hidra/samples/http_test_hidracloud.yml
+        dst: /etc/hidra_exporter/samples/http_demo_sample.yml.disabled
         type: config|noreplace
 
-# furies:
-#   - account: "JoseCarlosGarcia95"
-#     secret_name: FURY_IO_TOKEN
-
-release:
-  prerelease: auto
+publishers:
+  - name: fury.io
+    ids:
+      - packages
+    disable: "{{ if .IsNightly }}true{{ end }}"
+    dir: "{{ dir .ArtifactPath }}"
+    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/hidracloud/

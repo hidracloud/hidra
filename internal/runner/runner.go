@@ -200,22 +200,52 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 
 	allMetrics := []*metrics.Metric{}
 
-	stepsgen := make(map[string]any, 0)
-	stepsgen[misc.ContextAttachment] = make(map[string][]byte)
-	stepsgen[misc.ContextTimeout] = sample.Timeout
+	stepsgen := map[string]any{
+		misc.ContextAttachment: make(map[string][]byte),
+		misc.ContextTimeout:    sample.Timeout,
+		misc.ContextSample:     sample,
+	}
 
-	for _, variables := range sample.Variables {
-		newMetrics, err := RunWithVariables(ctx, variables, stepsgen, sample)
-		allMetrics = append(allMetrics, newMetrics...)
+	// retries metric
+	retriesMetric := &metrics.Metric{
+		Name:   "retries",
+		Labels: map[string]string{"sample": sample.Name},
+		Value:  0,
+	}
 
-		if err != nil {
-			return &RunnerResult{
-				Metrics: allMetrics,
-				Error:   err,
+	for tries := 0; tries <= sample.Retry; tries++ {
+		retriesMetric.Value = float64(tries)
+		allMetrics = []*metrics.Metric{}
+
+		time.Sleep(time.Duration(tries) * time.Second)
+
+		for _, variables := range sample.Variables {
+			var newMetrics []*metrics.Metric
+			newMetrics, err = RunWithVariables(ctx, variables, stepsgen, sample)
+			allMetrics = append(allMetrics, newMetrics...)
+
+			if err != nil {
+				allMetrics = append(allMetrics, retriesMetric)
+
+				if tries == sample.Retry {
+					return &RunnerResult{
+						Metrics: allMetrics,
+						Error:   err,
+					}
+				}
+
+				// If an error occurred and we haven't reached the maximum number of retries, break the loop
+				break
 			}
 		}
 
+		if err == nil {
+			break
+		}
 	}
+
+	allMetrics = append(allMetrics, retriesMetric)
+
 	return &RunnerResult{
 		Metrics: allMetrics,
 		Error:   err,

@@ -15,6 +15,29 @@ var (
 	sampleCommonTags []string
 )
 
+// basicAuthHandler is the basic auth handler
+func basicAuthHandler(h http.Handler, username, password string, enabled bool) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if enabled {
+			user, pass, ok := r.BasicAuth()
+
+			if !ok || user != username || pass != password {
+				w.Header().Set("WWW-Authenticate", `Basic realm="metrics"`)
+				w.WriteHeader(http.StatusUnauthorized)
+				_, err := w.Write([]byte("Unauthorized.\n"))
+
+				if err != nil {
+					log.Error(err)
+				}
+
+				return
+			}
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
+
 // Initialize initializes the exporter
 func Initialize(config *config.ExporterConfig) {
 	log.Info("Initializing hidra exporter...")
@@ -39,7 +62,8 @@ func Initialize(config *config.ExporterConfig) {
 
 	myMux := http.NewServeMux()
 
-	myMux.Handle(config.HTTPServerConfig.MetricsPath, promhttp.Handler())
+	myMux.Handle(config.HTTPServerConfig.MetricsPath, basicAuthHandler(promhttp.Handler(), config.BasicAuth.Username, config.BasicAuth.Password, config.BasicAuth.Enabled))
+
 	log.Infof("Listening on %s and path %s", config.HTTPServerConfig.ListenAddress, config.HTTPServerConfig.MetricsPath)
 
 	if os.Getenv("DEBUG") == "true" {

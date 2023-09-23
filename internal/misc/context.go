@@ -7,6 +7,8 @@ var (
 	ContextBrowserChromedpCtx = "browser.chromedpctx"
 	// PreviousTimeouts is the context key for the timeouts.
 	ContextTimeout = "timeouts"
+	// ContextSample is the context key for the sample.
+	ContextSample = "sample"
 	// ContextDNSInfo
 	ContextDNSInfo = "dns.info"
 	// ContextFTPConnection is the context key for the FTP connection.

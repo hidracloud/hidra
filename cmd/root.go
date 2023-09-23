@@ -11,6 +11,7 @@ var (
 	outputPath     string
 	stressDuration string
 	stressThreads  int
+	runBgTasks     bool
 
 	// configNotFoundErr is the error returned when the config file is not found.
 	configNotFoundErr = "config file not found"
@@ -44,6 +45,8 @@ func init() {
 	rootCmd.AddCommand(exporterCmd)
 
 	testCmd.PersistentFlags().BoolVar(&exitOnError, "exit-on-error", false, "Exit with error code 1 if any test fails")
+	testCmd.PersistentFlags().BoolVar(&runBgTasks, "run-bg-tasks", false, "Run background tasks")
+
 	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(verifyCmd)

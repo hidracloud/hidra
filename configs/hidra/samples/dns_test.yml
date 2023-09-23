@@ -3,9 +3,9 @@ tags:
   tenant: "hidra"
 interval: "1m"
 timeout: "10s"
+retry: 3
 variables:
   - domain: google.com
-  - domain: hidra.cloud
 steps:
   - plugin: dns
     action: whoisFrom

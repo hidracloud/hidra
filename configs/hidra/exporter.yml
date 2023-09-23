@@ -1,8 +1,8 @@
-log_level: info
+log_level: debug
 http_server:
   listen_address: :19090
 # is the path to the directory where you're storing samples
-samples_path: ./configs/hidra/samples
+samples_path: /etc/hidra_exporter/samples
 scheduler:
   # is the interval to refresh the samples from the samples_path
   refresh_samples_interval: 60s
@@ -10,6 +10,13 @@ scheduler:
   enqueue_samples_interval: 5s
   # is the interval to run garbage collection
   gc_interval: 5m
+basic_auth:
+  # is the flag to enable basic auth
+  enabled: false
+  # is the username to access the exporter
+  username: prometheus
+  # is the password to access the exporter
+  password: prometheus
 worker:
   # is the amount of workers that will run samples in parallel
   parallel_jobs: 16
@@ -17,6 +24,8 @@ worker:
   max_queue_size: 1000
   # sleep between jobs is the time that a worker will sleep between jobs. This is useful if your system is busy and you want to give it a break
   sleep_between_jobs: 1s
+  # disable bg tasks is the flag to disable background tasks. This is useful if you want to run the exporter in a single process
+  disable_bg_tasks: false
 report:
   enabled: true
   # s3:

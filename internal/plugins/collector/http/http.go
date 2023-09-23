@@ -16,11 +16,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hidracloud/hidra/v3/config"
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
 	"github.com/hidracloud/hidra/v3/internal/plugins"
+	"github.com/hidracloud/hidra/v3/internal/runner"
 	"github.com/hidracloud/hidra/v3/internal/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -62,6 +63,54 @@ var (
 // HTTP represents a HTTP plugin.
 type HTTP struct {
 	plugins.BasePlugin
+}
+
+// CacheAgeShouldBeLowerThan represents a HTTP cache age should be lower than.
+func (p *HTTP) cacheAgeShouldBeLowerThan(ctx context.Context, args map[string]string, stepsgen map[string]any) ([]*metrics.Metric, error) {
+	var err error
+
+	// get context for current step
+	if _, ok := stepsgen[misc.ContextHTTPResponse].(*http.Response); !ok {
+		return nil, errContextNotFound
+	}
+
+	resp := stepsgen[misc.ContextHTTPResponse].(*http.Response)
+
+	ageStr := resp.Header.Get("Age")
+
+	if ageStr == "" {
+		return nil, fmt.Errorf("cache age not found")
+	}
+
+	age, err := strconv.ParseInt(ageStr, 10, 64)
+
+	if err != nil {
+		return nil, err
+	}
+
+	maxAge, err := strconv.ParseInt(args["maxAge"], 10, 64)
+
+	customMetrics := []*metrics.Metric{
+		{
+			Name:        "http_response_cache_age",
+			Description: "The HTTP response cache age",
+			Value:       float64(age),
+			Labels: map[string]string{
+				"method": stepsgen[misc.ContextHTTPMethod].(string),
+				"url":    stepsgen[misc.ContextHTTPURL].(string),
+			},
+		},
+	}
+
+	if err != nil {
+		return customMetrics, err
+	}
+
+	if age > maxAge {
+		return customMetrics, fmt.Errorf("cache age is %d, expected to be lower than %d", age, maxAge)
+	}
+
+	return customMetrics, err
 }
 
 // RequestByMethod makes a HTTP request by method.
@@ -293,22 +342,45 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 			})
 		}
 
-		dnsPlugin := plugins.GetPlugin("dns")
+		var sample *config.SampleConfig
 
-		if dnsPlugin != nil {
-			dnsMetrics, err := dnsPlugin.RunStep(ctx, stepsgen, &plugins.Step{
-				Name:    "whoisFrom",
-				Args:    map[string]string{"domain": u.Host},
-				Timeout: int(timeout.Seconds()),
-				Negate:  false,
-			})
-
-			if err != nil {
-				log.Debugf("failed to generate whois metrics: %s", err)
-			} else {
-				customMetrics = append(customMetrics, dnsMetrics...)
-			}
+		if val, ok := stepsgen[misc.ContextSample].(*config.SampleConfig); ok {
+			sample = val
 		}
+
+		runner.RegisterBackgroundTask(func() ([]*metrics.Metric, *config.SampleConfig, error) {
+			dnsPlugin := plugins.GetPlugin("dns")
+
+			if dnsPlugin != nil {
+				dnsMetrics, err := dnsPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+					Name:    "whoisFrom",
+					Args:    map[string]string{"domain": u.Host},
+					Timeout: int(timeout.Seconds()),
+					Negate:  false,
+				})
+
+				return dnsMetrics, sample, err
+			}
+
+			return nil, sample, fmt.Errorf("dns plugin not found")
+		})
+
+		// runner.RegisterBackgroundTask(func() ([]*metrics.Metric, *config.SampleConfig, error) {
+		// 	icmpPlugin := plugins.GetPlugin("icmp")
+
+		// 	if icmpPlugin != nil {
+		// 		tracerouteMetrics, err := icmpPlugin.RunStep(ctx, stepsgen, &plugins.Step{
+		// 			Name:    "traceroute",
+		// 			Args:    map[string]string{"hostname": u.Host},
+		// 			Timeout: int(timeout.Seconds()),
+		// 			Negate:  false,
+		// 		})
+
+		// 		return tracerouteMetrics, sample, err
+		// 	}
+
+		// 	return nil, sample, fmt.Errorf("icmp plugin not found")
+		// })
 	}
 
 	return customMetrics, err
@@ -547,6 +619,15 @@ func (p *HTTP) Init() {
 			stepsgen[misc.ContextHTTPFollowRedirects] = true
 			return nil, nil
 		},
+	})
+
+	p.RegisterStep(&plugins.StepDefinition{
+		Name:        "cacheAgeShouldBeLowerThan",
+		Description: "Checks if the cache age is lower than the expected value",
+		Params: []plugins.StepParam{
+			{Name: "maxAge", Description: "The max age", Optional: false},
+		},
+		Fn: p.cacheAgeShouldBeLowerThan,
 	})
 
 	p.RegisterStep(&plugins.StepDefinition{

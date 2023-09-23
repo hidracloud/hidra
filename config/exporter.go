@@ -5,9 +5,6 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
-
-	// We need to import the plugins to be able to use them
-	_ "github.com/hidracloud/hidra/v3/internal/plugins/all"
 )
 
 // ExporterConfig is the configuration for the exporter.
@@ -34,6 +31,12 @@ type ExporterConfig struct {
 		GCInterval time.Duration `yaml:"gc_interval"`
 	} `yaml:"scheduler"`
 
+	BasicAuth struct {
+		Enabled  bool   `yaml:"enabled" default:"false"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+	} `yaml:"basic_auth"`
+
 	WorkerConfig struct {
 		// ParallelJobs is the size of the channel.
 		ParallelJobs int `yaml:"parallel_jobs"`
@@ -41,6 +44,8 @@ type ExporterConfig struct {
 		MaxQueueSize int `yaml:"max_queue_size"`
 		// SleepBetweenJobs is the sleep between jobs.
 		SleepBetweenJobs time.Duration `yaml:"sleep_between_jobs"`
+		// DisableBGTasks is the flag to disable the background tasks.
+		DisableBGTasks bool `yaml:"disable_bg_tasks"`
 	} `yaml:"worker"`
 
 	// ReportConfig is the configuration for the report.

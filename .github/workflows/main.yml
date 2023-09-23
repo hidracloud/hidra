@@ -27,7 +27,7 @@ jobs:
     needs: build-checker
     strategy:
       matrix:
-        go-version: [1.20.x]
+        go-version: [1.21.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -39,7 +39,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: golangci-lint
-      uses: golangci/golangci-lint-action@v3.4.0
+      uses: golangci/golangci-lint-action@v3.7.0
       with:
         working-directory: "./"
     - name: Test
@@ -48,35 +48,6 @@ jobs:
       run: go run main.go verify configs/hidra/samples/*.yml
     - name: Run hidra on test mode
       run: go run main.go test configs/hidra/samples/*.yml  --exit-on-error
-
-  # security-metrics:
-  #   if: ${{ github.ref == 'refs/heads/main' }}
-  #   name: Analyze
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     actions: read
-  #     contents: read
-  #     security-events: write
-
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       language: ["go"]
-
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v2
-
-  #     - name: Initialize CodeQL
-  #       uses: github/codeql-action/init@v1
-  #       with:
-  #         languages: ${{ matrix.language }}
-
-  #     - name: Autobuild
-  #       uses: github/codeql-action/autobuild@v1
-
-  #     - name: Perform CodeQL Analysis
-  #       uses: github/codeql-action/analyze@v1
 
   build-docker-image:
     runs-on: ubuntu-latest
@@ -125,7 +96,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.20.x
+        go-version: 1.21.x
     - name: Install CGO_ENABLED dependencies
       run: |
         sudo apt-get update && sudo apt-get install -y build-essential
@@ -134,7 +105,7 @@ jobs:
       run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v2
+      uses: goreleaser/goreleaser-action@v4.4.0
       with:
         # either 'goreleaser' (default) or 'goreleaser-pro'
         distribution: goreleaser
@@ -142,6 +113,7 @@ jobs:
         args: release --rm-dist
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        FURY_TOKEN: ${{ secrets.FURY_IO_TOKEN }}
 
     # - uses: "marvinpinto/action-automatic-releases@latest"
     #   with:

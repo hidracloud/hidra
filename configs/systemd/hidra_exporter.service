@@ -1,0 +1,22 @@
+[Unit]
+Description=Prometheus Hidra Exporter
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=DEBUG=true
+ExecStart=/usr/bin/hidra exporter /etc/hidra_exporter/config.yml
+ExecReload=/bin/kill -s HUP $MAINPID
+SyslogIdentifier=hidra
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+ProtectHome=yes
+NoNewPrivileges=yes
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
