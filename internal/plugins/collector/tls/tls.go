@@ -70,21 +70,27 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 			Labels: map[string]string{
 				"host": args["to"],
 			},
-			Value: float64(conn.ConnectionState().Version),
+			Value:       float64(conn.ConnectionState().Version),
+			Purge:       true,
+			PurgeLabels: []string{"host", "subject"},
 		},
 		{
 			Name: "tls_cipher_suite",
 			Labels: map[string]string{
 				"host": args["to"],
 			},
-			Value: float64(conn.ConnectionState().CipherSuite),
+			Value:       float64(conn.ConnectionState().CipherSuite),
+			Purge:       true,
+			PurgeLabels: []string{"host", "subject"},
 		},
 		{
 			Name: "tls_handshake_duration_seconds",
 			Labels: map[string]string{
 				"host": args["to"],
 			},
-			Value: time.Since(startTime).Seconds(),
+			Purge:       true,
+			PurgeLabels: []string{"host", "subject"},
+			Value:       time.Since(startTime).Seconds(),
 		},
 	}
 
@@ -96,7 +102,9 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 				"subject":       certificate.Subject.String(),
 				"host":          args["to"],
 			},
-			Value: float64(certificate.NotAfter.Unix()),
+			Purge:       true,
+			PurgeLabels: []string{"host", "subject"},
+			Value:       float64(certificate.NotAfter.Unix()),
 		})
 
 		customMetrics = append(customMetrics, &metrics.Metric{
@@ -106,7 +114,9 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 				"subject":       certificate.Subject.String(),
 				"host":          args["to"],
 			},
-			Value: float64(certificate.NotBefore.Unix()),
+			Purge:       true,
+			PurgeLabels: []string{"host", "subject"},
+			Value:       float64(certificate.NotBefore.Unix()),
 		})
 
 		customMetrics = append(customMetrics, &metrics.Metric{
@@ -116,7 +126,9 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 				"subject":       certificate.Subject.String(),
 				"host":          args["to"],
 			},
-			Value: float64(certificate.Version),
+			Value:       float64(certificate.Version),
+			Purge:       true,
+			PurgeLabels: []string{"host", "subject"},
 		})
 	}
 

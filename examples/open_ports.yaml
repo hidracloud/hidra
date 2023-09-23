@@ -1,0 +1,11 @@
+name: check_open_ports
+description: We will check open ports at 1.2.3.4
+scrapeInterval: 1h
+scenario:
+  kind: tcp_ports
+  steps:
+    - type: opened
+      timeout: 1m
+      params:
+        host: "1.2.3.4"
+        ports: 9100,9114,9200,9300,9793,22023
