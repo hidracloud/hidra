@@ -2,7 +2,7 @@ log_level: debug
 http_server:
   listen_address: :19090
 # is the path to the directory where you're storing samples
-samples_path: ./configs/hidra/samples
+samples_path: /etc/hidra_exporter/samples
 scheduler:
   # is the interval to refresh the samples from the samples_path
   refresh_samples_interval: 60s
