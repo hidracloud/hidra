@@ -59,7 +59,7 @@ publishers:
     ids:
       - packages
     dir: "{{ dir .ArtifactPath }}"
-    cmd: curl -F package=@{{ .ArtifactName }}-{{ .Arch }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/hidracloud/
+    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/hidracloud/hidra-{{ .Arch }}
 
 release:
   prerelease: auto
