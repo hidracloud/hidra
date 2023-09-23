@@ -22,7 +22,8 @@ changelog:
       - "^test:"
 
 nfpms:
-  - package_name: hidra
+  - id: packages
+    package_name: hidra
     file_name_template: "{{ .ConventionalFileName }}"
     vendor: "Hidra Team"
     homepage: https://hidra.cloud
@@ -51,6 +52,14 @@ nfpms:
 # furies:
 #   - account: "JoseCarlosGarcia95"
 #     secret_name: FURY_IO_TOKEN
+publishers:
+  - name: fury.io
+    # by specifying `packages` id here goreleaser will only use this publisher
+    # with artifacts identified by this id
+    ids:
+      - packages
+    dir: "{{ dir .ArtifactPath }}"
+    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/hidracloud/
 
 release:
   prerelease: auto

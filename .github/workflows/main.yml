@@ -113,6 +113,7 @@ jobs:
         args: release --rm-dist
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        FURY_TOKEN: ${{ secrets.FURY_IO_TOKEN }}
 
     # - uses: "marvinpinto/action-automatic-releases@latest"
     #   with:
