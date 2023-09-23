@@ -49,12 +49,8 @@ nfpms:
         dst: /etc/hidra_exporter/samples/http_demo_sample.yml.disabled
         type: config|noreplace
 
-# furies:
-#   - account: "JoseCarlosGarcia95"
-#     secret_name: FURY_IO_TOKEN
 publishers:
   - name: fury.io
-    disable: '{{ if eq (default "none" .Arch) "amd64" }}true{{ else }}false{{ end }}'
     ids:
       - packages
     dir: "{{ dir .ArtifactPath }}"
