@@ -54,12 +54,8 @@ nfpms:
 #     secret_name: FURY_IO_TOKEN
 publishers:
   - name: fury.io
-    # by specifying `packages` id here goreleaser will only use this publisher
-    # with artifacts identified by this id
+    disable: {{ if and .Arch (ne .Arch "amd64") }}true{{ else }}false{{ end }}
     ids:
       - packages
     dir: "{{ dir .ArtifactPath }}"
-    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/hidracloud/hidra-{{ .Arch }}
-
-release:
-  prerelease: auto
+    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/hidracloud/

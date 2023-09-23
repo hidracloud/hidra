@@ -23,6 +23,25 @@ Precompiled binaries for released versions are available in the release section 
 
 Docker images are available on [Github Container Registry](https://github.com/hidracloud/hidra/pkgs/container/hidra).
 
+### Package repositories
+If you want to install Hidra easily, please use the package repositories. 
+
+```bash
+# Debian/Ubuntu
+curl https://repo.hidra.cloud/apt/gpg.key | sudo apt-key add -
+echo "deb https://repo.hidra.cloud/apt/" | sudo tee /etc/apt/sources.list.d/hidra.list
+
+# RedHat/CentOS
+curl https://repo.hidra.cloud/rpm/gpg.key | sudo rpm --import -
+echo "[hidra]" | sudo tee /etc/yum.repos.d/hidra.repo
+echo "name=Hidra" | sudo tee -a /etc/yum.repos.d/hidra.repo
+echo "baseurl=https://repo.hidra.cloud/rpm/" | sudo tee -a /etc/yum.repos.d/hidra.repo
+echo "enabled=1" | sudo tee -a /etc/yum.repos.d/hidra.repo
+echo "gpgcheck=1" | sudo tee -a /etc/yum.repos.d/hidra.repo
+```
+
+
+
 ### Using install script
 
 You can use the install script to install Hidra on your system. The script will download the latest release binary and install it in your system. You can find the script [here](https://raw.githubusercontent.com/hidracloud/hidra/main/install.sh).
