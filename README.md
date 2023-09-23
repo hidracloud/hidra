@@ -30,6 +30,8 @@ If you want to install Hidra easily, please use the package repositories.
 # Debian/Ubuntu
 curl https://repo.hidra.cloud/apt/gpg.key | sudo apt-key add -
 echo "deb [trusted=yes] https://repo.hidra.cloud/apt /" | sudo tee /etc/apt/sources.list.d/hidra.list
+apt update
+apt install -y hidra
 
 # RedHat/CentOS
 curl https://repo.hidra.cloud/rpm/gpg.key | sudo rpm --import -
@@ -38,8 +40,26 @@ echo "name=Hidra" | sudo tee -a /etc/yum.repos.d/hidra.repo
 echo "baseurl=https://repo.hidra.cloud/rpm/" | sudo tee -a /etc/yum.repos.d/hidra.repo
 echo "enabled=1" | sudo tee -a /etc/yum.repos.d/hidra.repo
 echo "gpgcheck=1" | sudo tee -a /etc/yum.repos.d/hidra.repo
+
+yum install -y hidra
 ```
 
+After installing Hidra, test the installation by running:
+
+```bash
+hidra version
+```
+
+By default, Hidra will install one systemd unit for running hidra exporter, disabled by default. You can enable it by running:
+
+```bash
+systemctl enable hidra_exporter --now
+```
+You can modify the behaviour of exporter by editing the file `/etc/hidra_exporter/config.yml`, and you can add samples directly to /etc/hidra_exporter/samples/ folder, and after adding them, you can reload the service by running:
+
+```bash
+systemctl reload hidra_exporter
+```
 
 
 ### Using install script
