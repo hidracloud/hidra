@@ -15,6 +15,8 @@ Hidra allows you to monitor the status of your services without headaches.
 
 ## Installation
 
+### [Website monitoring with Hidra: A step-by-step guide](https://github.com/hidracloud/hidra/wiki/Website-Monitoring-with-Hidra:-A-Step%E2%80%90by%E2%80%90Step-Guide)
+
 ### Precompiles binaries
 
 Precompiled binaries for released versions are available in the release section on Github. Using the latest production release binary is the recommended way of installing Hidra. You can find latest release [here](https://github.com/hidracloud/hidra/releases/latest)
