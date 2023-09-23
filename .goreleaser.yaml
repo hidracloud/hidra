@@ -35,10 +35,15 @@ nfpms:
       - apk
     dependencies:
       - chromium
+    scripts:
+      postinstall: ./scripts/postinstall.sh
     contents:
       - src: ./configs/hidra/exporter.yml
         dst: /etc/hidra/exporter.yml
         type: config|noreplace
+      - src: ./configs/systemd/hidra_exporter.service
+        dst: /etc/systemd/system/hidra_exporter.service
+        type: config
 
 # furies:
 #   - account: "JoseCarlosGarcia95"
