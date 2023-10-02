@@ -350,6 +350,8 @@ func RunWorkers(cnf *config.ExporterConfig) {
 
 	if !cnf.WorkerConfig.DisableBGTasks {
 		go runBackgroundMetricsTask()
+	} else {
+		runner.DisableBackgroundTask = true
 	}
 
 	for i := 0; i < cnf.WorkerConfig.ParallelJobs; i++ {

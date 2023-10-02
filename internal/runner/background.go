@@ -8,10 +8,15 @@ import (
 var (
 	// BackgroundTask are task that must be run in background
 	BackgroundTask = []func() ([]*metrics.Metric, *config.SampleConfig, error){}
+	// DisableBackgroundTask disable background task
+	DisableBackgroundTask = false
 )
 
 // RegisterBackgroundTask register a background task
 func RegisterBackgroundTask(f func() ([]*metrics.Metric, *config.SampleConfig, error)) {
+	if DisableBackgroundTask {
+		return
+	}
 	BackgroundTask = append(BackgroundTask, f)
 }
 

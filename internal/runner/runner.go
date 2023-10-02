@@ -203,7 +203,10 @@ func RunSample(ctx context.Context, sample *config.SampleConfig) *RunnerResult {
 	stepsgen := map[string]any{
 		misc.ContextAttachment: make(map[string][]byte),
 		misc.ContextTimeout:    sample.Timeout,
-		misc.ContextSample:     sample,
+	}
+
+	if !DisableBackgroundTask {
+		stepsgen[misc.ContextSample] = sample
 	}
 
 	// retries metric
