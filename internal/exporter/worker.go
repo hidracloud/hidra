@@ -75,6 +75,7 @@ func InitializeWorker(config *config.ExporterConfig) {
 
 // add2PurgeList adds to purge list
 func add2PurgeList(purgeLabels prometheus.Labels, purgeTime time.Time, prometheusMetric *prometheus.GaugeVec) {
+	log.Debug("Adding metric to purge list", purgeLabels)
 	toBePurgedMutex.Lock()
 	defer toBePurgedMutex.Unlock()
 	toBePurged[utils.Map2Hash(purgeLabels)] = struct {
@@ -93,8 +94,11 @@ func purgeMetrics() {
 	for {
 		toBePurgedMutex.Lock()
 
+		log.Debug("Purging metrics")
+
 		for hash, metric := range toBePurged {
 			if time.Now().After(metric.PurgeAt) {
+				log.Debug("Purging metric", metric.Labels)
 				metric.PrometheusMetric.DeletePartialMatch(metric.Labels)
 				delete(toBePurged, hash)
 			}

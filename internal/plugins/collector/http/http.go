@@ -314,7 +314,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 				},
 				Value:       float64(certificate.NotAfter.Unix()),
 				Purge:       true,
-				PurgeLabels: []string{"host", "subject"},
+				PurgeLabels: []string{"host"},
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -326,7 +326,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 				},
 				Value:       float64(certificate.NotBefore.Unix()),
 				Purge:       true,
-				PurgeLabels: []string{"host", "subject"},
+				PurgeLabels: []string{"host"},
 			})
 
 			customMetrics = append(customMetrics, &metrics.Metric{
@@ -338,7 +338,7 @@ func (p *HTTP) requestByMethod(ctx context.Context, c map[string]string, stepsge
 				},
 				Value:       float64(certificate.Version),
 				Purge:       true,
-				PurgeLabels: []string{"host", "subject"},
+				PurgeLabels: []string{"host"},
 			})
 		}
 

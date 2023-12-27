@@ -72,7 +72,7 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 			},
 			Value:       float64(conn.ConnectionState().Version),
 			Purge:       true,
-			PurgeLabels: []string{"host", "subject"},
+			PurgeLabels: []string{"host"},
 		},
 		{
 			Name: "tls_cipher_suite",
@@ -81,7 +81,7 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 			},
 			Value:       float64(conn.ConnectionState().CipherSuite),
 			Purge:       true,
-			PurgeLabels: []string{"host", "subject"},
+			PurgeLabels: []string{"host"},
 		},
 		{
 			Name: "tls_handshake_duration_seconds",
@@ -89,7 +89,7 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 				"host": args["to"],
 			},
 			Purge:       true,
-			PurgeLabels: []string{"host", "subject"},
+			PurgeLabels: []string{"host"},
 			Value:       time.Since(startTime).Seconds(),
 		},
 	}
@@ -103,7 +103,7 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 				"host":          args["to"],
 			},
 			Purge:       true,
-			PurgeLabels: []string{"host", "subject"},
+			PurgeLabels: []string{"host"},
 			Value:       float64(certificate.NotAfter.Unix()),
 		})
 
@@ -115,7 +115,7 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 				"host":          args["to"],
 			},
 			Purge:       true,
-			PurgeLabels: []string{"host", "subject"},
+			PurgeLabels: []string{"host"},
 			Value:       float64(certificate.NotBefore.Unix()),
 		})
 
@@ -128,7 +128,7 @@ func (p *TLS) connectTo(ctx2 context.Context, args map[string]string, stepsgen m
 			},
 			Value:       float64(certificate.Version),
 			Purge:       true,
-			PurgeLabels: []string{"host", "subject"},
+			PurgeLabels: []string{"host"},
 		})
 	}
 
