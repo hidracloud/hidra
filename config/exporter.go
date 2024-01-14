@@ -3,9 +3,31 @@ package config
 import (
 	"os"
 	"time"
+	"regexp"
 
 	"gopkg.in/yaml.v3"
 )
+
+var reVar = regexp.MustCompile(`^\${(\w+)}$`)
+
+type StringFromEnv string
+
+func (e *StringFromEnv) UnmarshalYAML(value *yaml.Node) error {
+	var s string
+	if err := value.Decode(&s); err != nil {
+		return err
+	}
+	if match := reVar.FindStringSubmatch(s); len(match) > 0 {
+		*e = StringFromEnv(os.Getenv(match[1]))
+	} else {
+		*e = StringFromEnv(s)
+	}
+	return nil
+}
+
+func (e StringFromEnv) String() string {
+    return string(e)
+}
 
 // ExporterConfig is the configuration for the exporter.
 type ExporterConfig struct {
@@ -33,8 +55,8 @@ type ExporterConfig struct {
 
 	BasicAuth struct {
 		Enabled  bool   `yaml:"enabled" default:"false"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
+		Username StringFromEnv `yaml:"username"`
+		Password StringFromEnv `yaml:"password"`
 	} `yaml:"basic_auth"`
 
 	WorkerConfig struct {

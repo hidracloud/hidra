@@ -14,9 +14,9 @@ basic_auth:
   # is the flag to enable basic auth
   enabled: false
   # is the username to access the exporter
-  username: prometheus
+  username: ${HIDRA_AUTH_BASIC_USER}
   # is the password to access the exporter
-  password: prometheus
+  password: ${HIDRA_AUTH_BASIC_PASSWORD}
 worker:
   # is the amount of workers that will run samples in parallel
   parallel_jobs: 16
