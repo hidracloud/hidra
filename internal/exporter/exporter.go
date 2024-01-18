@@ -62,7 +62,7 @@ func Initialize(config *config.ExporterConfig) {
 
 	myMux := http.NewServeMux()
 
-	myMux.Handle(config.HTTPServerConfig.MetricsPath, basicAuthHandler(promhttp.Handler(), config.BasicAuth.Username, config.BasicAuth.Password, config.BasicAuth.Enabled))
+	myMux.Handle(config.HTTPServerConfig.MetricsPath, basicAuthHandler(promhttp.Handler(), config.BasicAuth.Username.String(), config.BasicAuth.Password.String(), config.BasicAuth.Enabled))
 
 	log.Infof("Listening on %s and path %s", config.HTTPServerConfig.ListenAddress, config.HTTPServerConfig.MetricsPath)
 
