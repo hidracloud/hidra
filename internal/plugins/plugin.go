@@ -3,6 +3,7 @@ package plugins
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hidracloud/hidra/v3/internal/metrics"
 	"github.com/hidracloud/hidra/v3/internal/misc"
@@ -32,9 +33,11 @@ type Step struct {
 	// Args is the arguments of the step.
 	Args map[string]string
 	// Timeout is the timeout of the step.
-	Timeout int
+	Timeout time.Duration
 	// Negate is true if the step should be negated.
 	Negate bool
+	// IgnoreOnError is true if the step should ignore errors.
+	IgnoreOnError bool `default:"false"`
 }
 
 type stepFn func(context.Context, map[string]string, map[string]any) ([]*metrics.Metric, error)
@@ -86,25 +89,30 @@ func (p *BasePlugin) RunStep(ctx context.Context, stepsgen map[string]any, step 
 		}
 	}
 
+	if step.Timeout > 0 {
+		stepsgen[misc.ContextTimeout] = step.Timeout
+	}
+
 	// run step
 	metrics, err := stepDefinition.Fn(ctx, step.Args, stepsgen)
 
-	if err != nil && step.Negate {
-		return metrics, nil
-	} else if err == nil && step.Negate {
-		return metrics, fmt.Errorf("step %s should have failed", step.Name)
+	if !step.IgnoreOnError {
+		if err != nil && step.Negate {
+			return metrics, nil
+		} else if err == nil && step.Negate {
+			return metrics, fmt.Errorf("step %s should have failed", step.Name)
+		}
+
+		if err != nil && (step.Name != "onFailure" &&
+			step.Name != "onClose") {
+			stepsgen[misc.ContextLastError] = err
+			step.Name = "onFailure"
+
+			metrics, _ = p.RunStep(ctx, stepsgen, step)
+
+			return metrics, err
+		}
 	}
-
-	if err != nil && (step.Name != "onFailure" &&
-		step.Name != "onClose") {
-		stepsgen[misc.ContextLastError] = err
-		step.Name = "onFailure"
-
-		metrics, _ = p.RunStep(ctx, stepsgen, step)
-
-		return metrics, err
-	}
-
 	return metrics, nil
 }
 

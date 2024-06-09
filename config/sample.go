@@ -48,6 +48,10 @@ type StepConfig struct {
 	Parameters map[string]string `yaml:"parameters,omitempty"`
 	// Negate is the negate to scrape the sample
 	Negate bool `yaml:"negate,omitempty"`
+	// Ignore on error
+	IgnoreOnError bool `yaml:"ignoreOnError,omitempty" default:"false"`
+	// Timeout is the timeout to run this step.
+	Timeout time.Duration `yaml:"timeout,omitempty"`
 }
 
 // LoadSampleConfig loads from byte array.

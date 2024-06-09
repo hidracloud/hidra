@@ -170,9 +170,11 @@ func RunWithVariables(ctx context.Context, variables map[string]string, stepsgen
 		pluginsByNames[step.Plugin] = plugin
 
 		newMetrics, err = plugin.RunStep(ctx, stepsgen, &plugins.Step{
-			Name:   step.Action,
-			Args:   params,
-			Negate: step.Negate,
+			Name:          step.Action,
+			Args:          params,
+			Negate:        step.Negate,
+			IgnoreOnError: step.IgnoreOnError,
+			Timeout:       step.Timeout,
 		})
 
 		originMetrics := RestoreOriginParamsMetrics(newMetrics, step.Parameters)
