@@ -30,7 +30,7 @@ report:
   enabled: true
   # s3:
   #   enabled: true
-  #   bucket: hidra-reports
+  #   bucket: default
   #   region: ""
   #   access_key_id: "default"
   #   secret_access_key: "default-secret"
