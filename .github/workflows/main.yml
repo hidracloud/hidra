@@ -3,12 +3,13 @@ name: Test and generate releases
 on:
   push:
     tags:
-    - "*"
+      - "*"
     branches:
-    - "*"
+      - "*"
   pull_request:
     branches:
-    - "*"
+      - "*"
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -19,35 +20,42 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-    - name: Turnstyle
-      uses: softprops/turnstyle@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Turnstyle
+        uses: softprops/turnstyle@v2.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   test:
     needs: build-checker
     strategy:
       matrix:
-        go-version: [1.21.x]
+        go-version: [1.23.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ matrix.go-version }}
-    - uses: browser-actions/setup-chrome@latest
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v3.7.0
-      with:
-        working-directory: "./"
-    - name: Test
-      run: go test ./...
-    - name: Verify all samples
-      run: go run main.go verify configs/hidra/samples/*.yml
-    - name: Run hidra on test mode
-      run: go run main.go test configs/hidra/samples/*.yml  --exit-on-error
+      - name: Install Go
+        uses: actions/setup-go@v5.3.0
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - uses: browser-actions/setup-chrome@v1.7.3
+
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6.3.0
+        with:
+          working-directory: "./"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Verify all samples
+        run: go run main.go verify configs/hidra/samples/*.yml
+
+      - name: Run hidra on test mode
+        run: go run main.go test configs/hidra/samples/*.yml  --exit-on-error
 
   build-docker-image:
     runs-on: ubuntu-latest
@@ -55,33 +63,37 @@ jobs:
     permissions:
       contents: read
       packages: write
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
 
-    - name: Log in to the Container registry
-      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5.6.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-      with:
-        context: .
-        file: Containerfile
-        target: runtime
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.8.0
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.13.0
+        with:
+          context: .
+          file: Containerfile
+          target: runtime
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   build-release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -89,33 +101,36 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Fetch all tags
-      run: git fetch --force --tags
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.21.x
-    - name: Install CGO_ENABLED dependencies
-      run: |
-        sudo apt-get update && sudo apt-get install -y build-essential
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
 
-    - name: Set git-tag
-      run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: Fetch all tags
+        run: git fetch --force --tags
 
-    - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v4.4.0
-      with:
-        # either 'goreleaser' (default) or 'goreleaser-pro'
-        distribution: goreleaser
-        version: latest
-        args: release 
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        FURY_TOKEN: ${{ secrets.FURY_IO_TOKEN }}
+      - name: Install Go
+        uses: actions/setup-go@v5.3.0
+        with:
+          go-version: 1.23.x
+
+      - name: Install CGO_ENABLED dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential
+
+      - name: Set git-tag
+        run: echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6.1.0
+        with:
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          version: latest
+          args: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FURY_TOKEN: ${{ secrets.FURY_IO_TOKEN }}
 
     # - uses: "marvinpinto/action-automatic-releases@latest"
     #   with:
