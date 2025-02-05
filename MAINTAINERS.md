@@ -1,2 +1,1 @@
 - José Carlos García (<hola@josecarlos.me> / @JoseCarlosGarcia95) is the main/default maintainer of Hidra.
-- BrutalSys SL (<equipo@brutalsys.com> / @BrutalTeam) as the main/default maintainer, and tester of Hidra.
