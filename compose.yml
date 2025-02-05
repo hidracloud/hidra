@@ -1,0 +1,75 @@
+services:
+  hidra:
+    build:
+      context: .
+      dockerfile: Containerfile
+      target: base
+      args:
+        USER_ID: ${USER_ID:-1000}
+    volumes:
+      - .:/go/src/app
+      - ~/go/pkg:/go/pkg
+      - ./configs/hidra:/etc/hidra_exporter
+    env_file: .env
+    ports:
+      - ${HTTP_PORT:-19090}:${HTTP_PORT:-19090}
+      - ${DELVE_PORT:-2345}:${DELVE_PORT:-2345}
+    tty: true
+    depends_on:
+      - minio
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-01-20T14-49-07Z
+    entrypoint: >
+      minio server /data --console-address :9001
+    environment:
+      MINIO_ACCESS_KEY: default
+      MINIO_SECRET_KEY: default-secret
+    volumes:
+      - minio_storage:/data
+    ports:
+      - ${MINIO_HTTP_PORT:-9000}:9000
+      - ${MINIO_CONSOLE_PORT:-9001}:9001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 1s
+      timeout: 1s
+      retries: 1
+
+  mc:
+    image: quay.io/minio/mc:RELEASE.2025-01-17T23-25-50Z
+    entrypoint: sh
+    command:
+      - -c
+      - >
+        until (mc alias set default http://minio:9000 default default-secret) do sleep 1; done;
+        mc mb --ignore-existing default/default;
+        mc anonymous set download default/default;
+        exit 0;
+    depends_on:
+      - minio
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    command: --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./configs/prometheus:/etc/prometheus
+      - prometheus_storage:/prometheus
+    ports:
+      - ${PROMETHEUS_PORT:-9090}:9090
+    depends_on:
+      - hidra
+
+  grafana:
+    image: grafana/grafana:11.5.1
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    ports:
+      - ${GRAFANA_PORT:-3000}:3000
+    depends_on:
+      - prometheus
+
+volumes:
+  minio_storage:
+  prometheus_storage:
+  grafana_storage:

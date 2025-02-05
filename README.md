@@ -1,3 +1,5 @@
+# Hidra
+
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/hidra)](https://artifacthub.io/packages/search?repo=hidra)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hidracloud/hidra)](https://goreportcard.com/report/github.com/hidracloud/hidra) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5722/badge)](https://bestpractices.coreinfrastructure.org/projects/5722)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=hidracloud_hidra&metric=bugs)](https://sonarcloud.io/summary/new_code?id=hidracloud_hidra)
@@ -9,21 +11,19 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=hidracloud_hidra&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=hidracloud_hidra)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hidracloud_hidra&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=hidracloud_hidra)
 
-# Hidra
-
 Hidra allows you to monitor the status of your services without headaches.
 
 ## Installation
 
 ### [Website monitoring with Hidra: A step-by-step guide](https://github.com/hidracloud/hidra/wiki/Website-Monitoring-with-Hidra:-A-Step%E2%80%90by%E2%80%90Step-Guide)
 
-### Precompiles binaries
+### Precompiled binaries
 
-Precompiled binaries for released versions are available in the release section on Github. Using the latest production release binary is the recommended way of installing Hidra. You can find latest release [here](https://github.com/hidracloud/hidra/releases/latest)
+Precompiled binaries for released versions are available in the release section on GitHub. Using the latest production release binary is the recommended way of installing Hidra. You can find latest release [here](https://github.com/hidracloud/hidra/releases/latest)
 
 ### Docker images
 
-Docker images are available on [Github Container Registry](https://github.com/hidracloud/hidra/pkgs/container/hidra).
+Docker images are available on [GitHub Container Registry](https://github.com/hidracloud/hidra/pkgs/container/hidra).
 
 ### Package repositories
 If you want to install Hidra easily, please use the package repositories. 
@@ -117,9 +117,9 @@ If you want to exit on error, just add the flag `--exit-on-error`.
 
 You can find some sample examples [here](https://github.com/hidracloud/hidra/blob/main/configs/hidra/samples/)
 
-### Docker compose
+### Compose
 
-You can find an example of a docker compose file [here](https://github.com/hidracloud/hidra/blob/main/docker-compose.yml)
+You can find an example of a Compose file [here](https://github.com/hidracloud/hidra/blob/main/compose.yml)
 
 ## Samples
 
@@ -163,3 +163,89 @@ You can find more information about plugins in next section.
 - [tls](https://github.com/hidracloud/hidra/blob/main/docs/plugins/tls/README.md)
 - [udp](https://github.com/hidracloud/hidra/blob/main/docs/plugins/udp/README.md)
 - [string](https://github.com/hidracloud/hidra/blob/main/docs/plugins/string/README.md)
+
+## Development
+
+### Directory structure
+
+The project follows the [_de facto_ standard Go project layout](https://github.com/golang-standards/project-layout) with the additions below:
+
+- `Containerfile`, `compose.yml`, `Makefile`, `.dockerignore` and `.env.example` contain the configuration and manifests that define the development and runtime environments with [OCI](https://opencontainers.org) containers and [Compose](https://docs.docker.com/compose).
+- `.github` holds the [GitHub Actions](https://github.com/features/actions) CI/CD pipelines.
+
+### Getting started
+
+This project comes with a containerized environment that has everything necessary to work on any platform without having to install dependencies on the developers' machines.
+
+**TL;TR**
+
+```Shell
+make
+```
+
+#### Requirements
+
+Before starting using the project, make sure that the following dependencies are installed on the machine:
+
+- [Git](https://git-scm.com).
+- An [OCI runtime](https://opencontainers.org), like [Podman Desktop](https://podman.io) or [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+- [Compose](https://docs.docker.com/compose/install/).
+
+It is necessary to install the latest versions before continuing. You may follow the previous links to read the installation instructions.
+
+#### Initializing
+
+First, initialize the project and run the environment.
+
+```Shell
+make
+```
+
+Then, download third-party dependencies.
+
+```Shell
+make deps
+```
+
+You may stop the environment by running the following command.
+
+```Shell
+make down
+```
+
+### Usage
+
+Commands must be run inside the containerized environment by starting a shell in the main container (`make shell`).
+
+#### Running the development server
+
+Run the following command to start the development server:
+
+```Shell
+make run
+```
+
+> Note that Git is not available in the container, so you should use it from the host machine. It is strongly recommended to use a Git GUI (like [VS Code's](https://code.visualstudio.com/docs/editor/versioncontrol) or [Fork](https://git-fork.com)) instead of the command-line interface.
+
+#### Running tests
+
+To run all automated tests, use the following command.
+
+```Shell
+make test
+```
+
+#### Debugging
+
+It is possible to debug the software with [Delve](https://github.com/go-delve/delve). To run the application in debug mode, run the command below.
+
+```Shell
+make debug
+```
+
+For more advanced scenarios, such as debugging tests, you may open a shell in the container and use the Delve CLI directly.
+
+```Shell
+make shell
+dlv test --listen=:2345 --headless --api-version=2 <package>
+```
