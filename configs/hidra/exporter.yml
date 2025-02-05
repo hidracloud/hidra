@@ -30,10 +30,10 @@ report:
   enabled: true
   # s3:
   #   enabled: true
-  #   bucket: hidra-reports
+  #   bucket: default
   #   region: ""
-  #   access_key_id: "hidratest"
-  #   secret_access_key: "hidratest"
+  #   access_key_id: "default"
+  #   secret_access_key: "default-secret"
   #   endpoint: "minio:9000"
   #   use_ssl: false
   # callback:

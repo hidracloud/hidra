@@ -1,3 +1,13 @@
+#### Common
+.DS_Store
+/.env
+/.idea
+/.vscode
+!/.vscode/launch.json
+Thumbs.db
+
+#### Project
+/__debug_*
 *.exe
 *.exe~
 *.dll
@@ -8,11 +18,8 @@ build/
 *.out
 vendor/
 test.db
-*.env
-.DS_Store
 results.csv
 screenshots/
-.vscode/
 *.png
 dist/
 migration_tests/
