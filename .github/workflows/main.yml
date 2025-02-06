@@ -47,9 +47,13 @@ jobs:
         uses: golangci/golangci-lint-action@v6.3.0
         with:
           working-directory: "./"
-
+        
+      # ICMP tests are skipped because GitHub runners placed in
+      # Azure don't allow pinging by design.
+      #
+      # See: https://github.com/actions/runner-images/issues/1519
       - name: Test
-        run: go test ./...
+        run: go test -tags skip_icmp ./...
 
       - name: Verify all samples
         run: go run main.go verify configs/hidra/samples/*.yml
