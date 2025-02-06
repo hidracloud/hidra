@@ -38,6 +38,23 @@ func basicAuthHandler(h http.Handler, username, password string, enabled bool) h
 	})
 }
 
+func healthHandler() http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.WriteHeader(http.StatusOK)
+		res.Header().Set("Content-Type", "text/plain")
+
+		_, err := res.Write([]byte("💪"))
+
+		if err != nil {
+			http.Error(
+				res,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+		}
+	})
+}
+
 // Initialize initializes the exporter
 func Initialize(config *config.ExporterConfig) {
 	log.Info("Initializing hidra exporter...")
@@ -63,6 +80,7 @@ func Initialize(config *config.ExporterConfig) {
 	myMux := http.NewServeMux()
 
 	myMux.Handle(config.HTTPServerConfig.MetricsPath, basicAuthHandler(promhttp.Handler(), config.BasicAuth.Username.String(), config.BasicAuth.Password.String(), config.BasicAuth.Enabled))
+	myMux.Handle("/_health", healthHandler())
 
 	log.Infof("Listening on %s and path %s", config.HTTPServerConfig.ListenAddress, config.HTTPServerConfig.MetricsPath)
 
