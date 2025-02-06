@@ -1,3 +1,5 @@
+//go:build !skip_icmp
+
 package icmp_test
 
 import (
