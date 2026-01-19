@@ -17,7 +17,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.49
 	github.com/pixelbender/go-traceroute v0.0.0-20190414152342-e631ab553a80
 	github.com/prometheus/client_golang v1.14.0
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.1
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
